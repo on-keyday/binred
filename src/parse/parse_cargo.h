@@ -106,6 +106,9 @@ namespace binred {
             else if (e->has_("bit")) {
                 b = std::make_shared<Bit>();
             }
+            else if (e->has_("uint")) {
+                b = std::make_shared<UInt>();
+            }
             else {
                 r.SetError(ErrorCode::expect_type_keyword);
                 return false;

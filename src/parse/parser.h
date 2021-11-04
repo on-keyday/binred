@@ -50,6 +50,7 @@ namespace binred {
                     "transfer",
                     "default",
                     "int",
+                    "uint",
                     "bit",
                     "byte",
                 });

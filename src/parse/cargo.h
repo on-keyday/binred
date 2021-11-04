@@ -7,12 +7,15 @@
 namespace binred {
     enum class ParamType {
         integer,
+        uint,
         bit,
         byte,
         custom,
     };
 
     struct Param {
+        Param(ParamType t)
+            : type(t) {}
         ParamType type;
         std::string name;
         std::shared_ptr<Condition> if_c;
@@ -22,7 +25,7 @@ namespace binred {
     };
 
     struct Cargo : Element {
-         Cargo()
+        Cargo()
             : Element(ElementType::cargo) {}
         std::string name;
         std::vector<std::shared_ptr<Param>> params;
@@ -40,14 +43,14 @@ namespace binred {
         LengthType type;
     };
 
-    struct NumLength : Length {
+    /* struct NumLength : Length {
         int length = 0;
     };
 
     struct RefLength : Length {
         std::shared_ptr<Cargo> cargo;
         std::string name;
-    };
+    };*/
 
     struct ExprLength : Length {
         ExprLength()
@@ -56,16 +59,34 @@ namespace binred {
     };
 
     struct Builtin : Param {
+        Builtin(ParamType t)
+            : Param(t) {}
         std::shared_ptr<Length> length;
     };
 
-    struct Int : Builtin {};
+    struct Int : Builtin {
+        Int()
+            : Builtin(ParamType::integer) {}
+    };
 
-    struct Bit : Builtin {};
+    struct UInt : Builtin {
+        UInt()
+            : Builtin(ParamType::uint) {}
+    };
 
-    struct Byte : Builtin {};
+    struct Bit : Builtin {
+        Bit()
+            : Builtin(ParamType::bit) {}
+    };
+
+    struct Byte : Builtin {
+        Byte()
+            : Builtin(ParamType::byte) {}
+    };
 
     struct Custom : Param {
+        Custom()
+            : Param(ParamType::custom) {}
         std::string cargoname;
         std::shared_ptr<Cargo> base;
     };
