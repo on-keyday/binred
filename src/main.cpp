@@ -7,7 +7,8 @@
 #include <channel.h>
 #include <thread>
 using Recv = commonlib2::RecvChan<int>;
-void test_thread(Recv r) {
+using Send = commonlib2::SendChan<int>;
+void test_thread(Recv r, Send w) {
     r.set_block(true);
     bool block = true;
     while (true) {

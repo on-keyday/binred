@@ -242,7 +242,7 @@ namespace PROJECT_NAME {
     }
 
     template <class T, template <class...> class Que = std::deque, template <class...> class Map = std::map>
-    struct ForkChan {
+    struct ForkChannel {
        private:
         Map<size_t, SendChan<T, Que>> listeners;
         std::atomic_flag lock_;
@@ -283,10 +283,6 @@ namespace PROJECT_NAME {
             return result;
         }
 
-        ChanErr operator<<(T&& t) {
-            return store(std::forward<T>(t));
-        }
-
         ChanErr store(T&& value) {
             if (!lock()) {
                 return ChanError::closed;
@@ -297,6 +293,10 @@ namespace PROJECT_NAME {
                 }
                 return false;
             });
+            if (listeners.size() == 0) {
+                unlock();
+                return ChanError::empty;
+            }
             T copy(std::move(value));
             for (auto& p : listeners) {
                 auto tmp = copy;
@@ -306,4 +306,35 @@ namespace PROJECT_NAME {
             return true;
         }
     };
+
+    template <class T, template <class...> class Que = std::deque, template <class...> class Map = std::map>
+    struct ForkChan {
+       private:
+        std::shared_ptr<ForkChannel<T, Que, Map>> chan;
+
+       public:
+        ForkChan(std::shared_ptr<ForkChannel<T, Qye, Map>> p)
+            : chan(p) {}
+
+        ChanErr operator<<(T&& t) {
+            return chan->store(std::forward<T>(t));
+        }
+
+        ChanErr subscribe(size_t& id, const SendChan<T, Que>& sub) {
+            return chan->subscribe(id, sub);
+        }
+
+        bool remove(size_t id) {
+            return chan->remove(id);
+        }
+    };
+
+    template <class T, template <class...> class Que = std::deque, template <class...> class Map = std::map>
+    std::tuple<ForkChan<T, Que>, RecvChan<T, Que>> make_forkchan(size_t& id, size_t limit = ~0, ChanDisposeFlag dflag = ChanDisposeFlag::remove_new) {
+        auto [w, r] = make_chan(limit, dflag);
+        auto fork = std::make_shared<ForkChannel>();
+        fork->subscribe(id, w);
+        return {fork, r};
+    }
+
 }  // namespace PROJECT_NAME
