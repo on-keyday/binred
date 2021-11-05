@@ -250,7 +250,7 @@ namespace PROJECT_NAME {
 
        private:
         bool lock() {
-            if (lock_.test_and_set()) {
+            while (lock_.test_and_set()) {
                 lock_.wait(true);
             }
             return true;

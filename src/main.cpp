@@ -6,6 +6,7 @@
 #include <fstream>
 #include <channel.h>
 #include <thread>
+#include <sstream>
 using Recv = commonlib2::RecvChan<int>;
 using Send = commonlib2::ForkChan<int>;
 void test_thread(Recv r, Send w) {
@@ -13,7 +14,11 @@ void test_thread(Recv r, Send w) {
     while (true) {
         int data = 0;
         if (auto e = r >> data) {
-            std::cout << data << "\n";
+            if (data != 0) {
+                std::stringstream ss;
+                ss << std::this_thread::get_id() << ":" << data << "\n";
+                std::cout << ss.str();
+            }
             Sleep(1);
             w << std::move(data);
         }
@@ -46,19 +51,23 @@ int main(int argc, char** argv) {
         fs << ctx.buffer;
     }
     size_t id = 0;
-    auto [w, r] = commonlib2::make_forkchan<int>(id);
+    auto fork = commonlib2::make_forkchan<int>();
     for (auto i = 0; i < 12; i++) {
-        std::thread(test_thread, r, w).detach();
+        auto [w, r] = commonlib2::make_chan<int>(5, commonlib2::ChanDisposeFlag::remove_back);
+        size_t id;
+        fork.subscribe(id, w);
+        std::thread(test_thread, r, fork).detach();
     }
     size_t count = 0;
-    while (w << count) {
+    while (fork << count) {
         if (count >= 1000) {
-            w.close();
+            fork.close();
             break;
         }
         std::cout << "sleeping delta...\n";
-        Sleep(1000);
+        //Sleep(1000);
+        Sleep(1);
         count++;
     }
-    Sleep(10);
+    Sleep(1000);
 }
