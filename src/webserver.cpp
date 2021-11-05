@@ -138,17 +138,26 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
                 cout << conn->ipaddress() << ">closed\n";
                 return;
             }
-            if (frame.frame_type("text") || frame.frame_type("binary")) {
+            if (frame.frame_type("ping")) {
+                cout << conn->ipaddress() + ">ping\n";
+                conn->control(WsFType::pong, frame.get_data().c_str(), frame.get_data().size());
+                cout << conn->ipaddress() + "<pong\n";
+            }
+            else if (frame.frame_type("pong")) {
+                se.pinged = false;
+                cout << conn->ipaddress() + ">pong\n";
+            }
+            else if (frame.frame_type("text") || frame.frame_type("binary")) {
                 cout << conn->ipaddress() << ">data\n";
                 cout << frame.get_data() << "\n";
                 auto resp = parse_command(frame.get_data(), se);
                 if (resp.size()) {
                     cout << conn->ipaddress() << "<data\n";
-                    cout << resp;
+                    cout << resp << "\n";
                     conn->send_text(resp.c_str());
                     if (resp == "close") {
                         cout << conn->ipaddress() << "<close\n";
-                        conn->close();
+                        conn->control(WsFType::closing, "\x03\xe8", 2);
                         break;
                     }
                 }
@@ -158,6 +167,7 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
             se.timeoutcount++;
             if (se.pinged && se.timeoutcount > 300) {
                 cout << conn->ipaddress() + "<closed\n";
+                conn->control(WsFType::closing, "\x03\xe8", 2);
                 break;
             }
             else if (se.timeoutcount > 2000) {
