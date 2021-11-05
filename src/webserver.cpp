@@ -42,7 +42,7 @@ std::string add_to_room(size_t& id, const std::string& name, const std::string& 
     std::string msg = "not joinable to room " + name;
     if (auto found = rooms.find(name); found != rooms.end()) {
         found->second.subscribe(id, rm);
-        found->second << (const char*)u8"しすてむ>user " + user + " joined to " + name;
+        found->second << (const char*)u8"しすてむ>user " + user + "(" + std::to_string(id) + ") joined to " + name;
         msg = "joined to room " + name;
     }
     return msg;
@@ -59,7 +59,7 @@ std::string make_room(const std::string& name) {
 void leave_room(bool nocomment, size_t id, const std::string& roomname, const std::string& user) {
     if (auto found = rooms.find(roomname); found != rooms.end()) {
         if (!nocomment) {
-            found->second << (const char*)u8"しすてむ>leave " + user + " from " + roomname;
+            found->second << (const char*)u8"しすてむ>leave " + user + "(" + std::to_string(id) + ") from " + roomname;
         }
         found->second.remove(id);
         if (!found->second.size() && found->first != "default") {
@@ -172,7 +172,7 @@ std::string parse_command(const std::string& str, WsSession& se) {
     }
     else if (cmd[0] == "chname") {
         if (cmd.size() != 2) {
-            return "need change name";
+            return "need name";
         }
         if (!se.loggedin) {
             return "you are not logged in";
@@ -185,7 +185,7 @@ std::string parse_command(const std::string& str, WsSession& se) {
         }
         roomlock.lock();
         if (auto found = rooms.find(se.roomname); found != rooms.end()) {
-            found->second << (const char*)u8"しすてむ>change name from " + se.user + " to " + cmd[1];
+            found->second << (const char*)u8"しすてむ>change name from " + se.user + "(" + std::to_string(se.id) + ") to " + cmd[1];
         }
         roomlock.unlock();
         se.user = cmd[1];
