@@ -1,3 +1,4 @@
+#include <application/websocket.h>
 #include <fileio.h>
 #include "parse/parse.h"
 #include "output/cpp/cargo_to_struct.h"
@@ -5,8 +6,6 @@
 #include <coutwrapper.h>
 #include <channel.h>
 #include <thread>
-#include <application/websocket.h>
-#include <application/http.h>
 #include <filesystem>
 using namespace socklib;
 using namespace commonlib2;
@@ -71,6 +70,9 @@ void leave_room(bool nocomment, size_t id, const std::string& roomname, const st
 
 std::string parse_command(const std::string& str, WsSession& se) {
     auto cmd = commonlib2::split(str, " ");
+    if (!cmd.size()) {
+        return "need any command";
+    }
     if (cmd[0] == "movroom") {
         if (cmd.size() != 2) {
             return "need room name";
@@ -87,26 +89,50 @@ std::string parse_command(const std::string& str, WsSession& se) {
     else if (cmd[0] == "close") {
         return "close";
     }
+    else if (cmd[0] == "cast") {
+        commonlib2::Reader r(str);
+        r.expect("cast");
+        auto tosend = str.substr(r.readpos());
+        tosend = se.user + ">" + tosend;
+        roomlock.lock();
+        if (auto found = rooms.find(se.roomname); found != rooms.end()) {
+            found->second << std::move(tosend);
+            tosend = "";
+        }
+        else {
+            tosend = "can't send";
+        }
+        roomlock.unlock();
+        return tosend;
+    }
+    return "no such command:" + cmd[1];
 }
 
 void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
+    cout << conn->ipaddress() << ">connect\n";
     auto [w, r] = commonlib2::make_chan<std::string>(100);
     WsSession se(r, w);
     roomlock.lock();
     auto e = add_to_room(se.id, "default", "guest", se.w);
     roomlock.unlock();
+    cout << conn->ipaddress() << "<data\n";
     conn->send_text(e.c_str());
     while (true) {
         if (conn->recvable() || Selecter::waitone(conn->borrow(), 0, 1)) {
             WsFrame frame;
             if (!conn->recv(frame)) {
-                cout << conn->ipaddress() << ">closed";
+                cout << conn->ipaddress() << ">closed\n";
                 return;
             }
-            if (frame.frame_type("text")) {
+            if (frame.frame_type("text") || frame.frame_type("binary")) {
+                cout << conn->ipaddress() << ">data\n";
+                cout << frame.get_data() << "\n";
                 auto resp = parse_command(frame.get_data(), se);
+                cout << conn->ipaddress() << "<data\n";
+                cout << resp;
                 conn->send_text(resp.c_str());
                 if (resp == "close") {
+                    cout << conn->ipaddress() << "<close\n";
                     conn->close();
                     break;
                 }
@@ -142,7 +168,7 @@ void handle_http(Recv r) {
     r.set_block(true);
     while (true) {
         std::shared_ptr<HttpServerConn> conn;
-        if (r >> conn == commonlib2::ChanError::closed) {
+        if ((r >> conn) == commonlib2::ChanError::closed) {
             break;
         }
         if (!conn) {
@@ -167,8 +193,46 @@ void handle_http(Recv r) {
             cout << 101 << "\n";
             continue;
         }
-        conn->send(200, "OK", {{"Connection", "close"}}, "It Works", 8);
-        cout << 200 << "\n";
+        {
+            Reader r(FileReader(path.c_str()));
+            if (r.ref().is_open()) {
+                std::string data;
+                r >> data;
+                std::pair<std::string, std::string> ctype;
+                ctype.first = "Content-Type";
+                auto ext = path.extension();
+                if (ext == "html" || ext == "htm") {
+                    ctype.second = "text/html";
+                }
+                else if (ext == "js") {
+                    ctype.second = "text/javascript";
+                }
+                else if (ext == "json") {
+                    ctype.second = "application/json";
+                }
+                else if (ext == "css") {
+                    ctype.second = "text/css";
+                }
+                else if (ext == "csv") {
+                    ctype.second = "text/csv";
+                }
+                Reader<ToUTF32<std::string>> tmp(data);
+                if (tmp.ref().size()) {
+                    if (!ctype.second.size()) {
+                        ctype.second = "text/plain";
+                    }
+                    ctype.second += "; charset=UTF-8";
+                }
+                else {
+                    ctype.second = "application/octet-stream";
+                }
+                conn->send(200, "OK", {ctype, {"Connection", "close"}}, data.c_str(), data.size());
+                cout << 200 << "\n";
+                continue;
+            }
+        }
+        conn->send(404, "Not Found", {{"Content-Type", "text/html"}, {"Connection", "close"}}, "<h1>Page Not Found</h1>", 23);
+        cout << 404 << "\n";
     }
 }
 
@@ -198,6 +262,9 @@ int main(int argc, char** argv) {
         std::thread(handle_http, r).detach();
     }
     Server sv;
+    cout << "accept address:\n"
+         << sv.ipaddress_list();
+    cout << "port:8080\n";
     while (true) {
         auto accept = Http1::serve(sv, 8080);
         if (!accept) {

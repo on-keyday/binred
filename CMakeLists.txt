@@ -26,9 +26,9 @@ add_executable(binred "src/main.cpp" )
 #target_link_libraries(hcladd httpclient)
 
 if(WIN32)
-target_link_libraries(httpclient libssl libcrypto ws2_32)
+target_link_libraries(binred libssl libcrypto ws2_32)
 else()
-target_link_libraries(httpclient libssl.so libcrypto.so Threads::Threads)
+target_link_libraries(binred libssl.so libcrypto.so Threads::Threads)
 endif()
 
 

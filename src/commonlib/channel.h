@@ -276,7 +276,7 @@ namespace PROJECT_NAME {
 
         bool remove(size_t id) {
             if (!lock()) {
-                return ChanError::closed;
+                return false;
             }
             auto result = (bool)listeners.erase(id);
             unlock();
