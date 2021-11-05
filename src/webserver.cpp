@@ -96,6 +96,9 @@ std::string parse_command(const std::string& str, WsSession& se) {
         if (cmd.size() != 2) {
             return "need room name";
         }
+        if (!se.loggedin) {
+            return "you are not logged in";
+        }
         std::string msg = "not movable to room " + cmd[1];
         roomlock.lock();
         leave_room(false, se.id, se.roomname, se.user);
@@ -109,6 +112,9 @@ std::string parse_command(const std::string& str, WsSession& se) {
         return "close";
     }
     else if (cmd[0] == "cast") {
+        if (!se.loggedin) {
+            return "you are not logged in";
+        }
         commonlib2::Reader r(str);
         r.expect("cast");
         auto tosend = str.substr(r.readpos());
@@ -125,11 +131,17 @@ std::string parse_command(const std::string& str, WsSession& se) {
         return tosend;
     }
     else if (cmd[0] == "myid") {
+        if (!se.loggedin) {
+            return "you are not logged in";
+        }
         return std::to_string(se.id);
     }
     else if (cmd[0] == "chname") {
         if (cmd.size() != 2) {
             return "need change name";
+        }
+        if (!se.loggedin) {
+            return "you are not logged in";
         }
         if (cmd[1] == (const char*)u8"しすてむ") {
             return (const char*)u8"しすてむ is administrator name";
