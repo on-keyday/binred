@@ -134,7 +134,25 @@ std::string parse_command(const std::string& str, WsSession& se) {
         if (!se.loggedin) {
             return "you are not logged in";
         }
-        return std::to_string(se.id);
+        return "id:" + std::to_string(se.id);
+    }
+    else if (cmd[0] == "myname") {
+        if (!se.loggedin) {
+            return "you are not logged in";
+        }
+        return "name:" + se.user;
+    }
+    else if (cmd[0] == "membercount") {
+        if (!se.loggedin) {
+            return "you are not logged in";
+        }
+        std::string msg = "you are not joined room";
+        roomlock.lock();
+        if (auto found = rooms.find(se.roomname); found != rooms.end()) {
+            msg = "count:" + std::to_string(found->second.size());
+        }
+        roomlock.unlock();
+        return msg;
     }
     else if (cmd[0] == "chname") {
         if (cmd.size() != 2) {
