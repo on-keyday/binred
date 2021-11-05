@@ -9,11 +9,14 @@
 using Recv = commonlib2::RecvChan<int>;
 void test_thread(Recv r) {
     r.set_block(true);
+    bool block = true;
     while (true) {
         int data = 0;
         if (auto e = r >> data) {
             std::cout << data << "\n";
             Sleep(1);
+            block = !block;
+            r.set_block(block);
         }
         else if (e == commonlib2::ChanError::empty) {
             std::cout << "empty\n";
@@ -44,6 +47,8 @@ int main(int argc, char** argv) {
         fs << ctx.buffer;
     }
     auto [w, r] = commonlib2::make_chan<int>();
+    commonlib2::ForkChan<int> fork;
+    fork << 92;
     std::thread(test_thread, std::move(r)).detach();
     size_t count = 0;
     while (w << count) {
