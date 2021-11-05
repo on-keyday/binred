@@ -155,10 +155,20 @@ std::string parse_command(const std::string& str, WsSession& se) {
         std::string msg = "you are not joined room";
         roomlock.lock();
         if (auto found = rooms.find(se.roomname); found != rooms.end()) {
-            msg = "count:" + std::to_string(found->second.size());
+            msg = "member:" + std::to_string(found->second.size());
         }
         roomlock.unlock();
         return msg;
+    }
+    else if (cmd[0] == "roomcount") {
+        if (!se.loggedin) {
+            return "you are not logged in";
+        }
+        size_t count = 0;
+        roomlock.lock();
+        count = rooms.size();
+        roomlock.unlock();
+        return "roomcount:" + std::to_string(count);
     }
     else if (cmd[0] == "chname") {
         if (cmd.size() != 2) {
