@@ -118,7 +118,7 @@ std::string parse_command(const std::string& str, WsSession& se) {
         commonlib2::Reader r(str);
         r.expect("cast");
         auto tosend = str.substr(r.readpos());
-        tosend = se.user + ">" + tosend;
+        tosend = se.user + "(" + std::to_string(se.id) + ")>" + tosend;
         roomlock.lock();
         if (auto found = rooms.find(se.roomname); found != rooms.end()) {
             found->second << std::move(tosend);
