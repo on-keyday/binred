@@ -63,7 +63,9 @@ void leave_room(bool nocomment, size_t id, const std::string& roomname, const st
             found->second << "leave " + user + " from " + roomname;
         }
         found->second.remove(id);
-        if (found->second.size())
+        if (!found->second.size()) {
+            rooms.erase(found->first);
+        }
     }
 }
 
