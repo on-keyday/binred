@@ -68,9 +68,14 @@ namespace binred {
             }
             else if (type == ParamType::byte) {
                 auto lenp = get_exprlength(param);
-                if (auto got = get_const_int<size_t>(lenp->expr); got.second && got.first != 0) {
-                    tyname = "std::uint8_t";
-                    bylen = got.first;
+                if (ctx.allow_fixed()) {
+                    if (auto got = get_const_int<size_t>(lenp->expr); got.second && got.first != 0) {
+                        tyname = "std::uint8_t";
+                        bylen = got.first;
+                    }
+                    else {
+                        tyname += ctx.buffer_type();
+                    }
                 }
                 else {
                     tyname += ctx.buffer_type();

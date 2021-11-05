@@ -23,6 +23,10 @@ namespace binred {
             return "std::string";
         }
 
+        bool allow_fixed() {
+            return true;
+        }
+
         const char* error_enum() {
             return "FrameError";
         }
