@@ -77,6 +77,9 @@ std::string parse_command(const std::string& str, WsSession& se) {
         if (cmd.size() != 3) {
             return "need username and roomname";
         }
+        if (cmd[1] == (const char*)u8"しすてむ") {
+            return (const char*)u8"しすてむ is administrator name";
+        }
         if (se.loggedin) {
             return "already logged in";
         }
@@ -127,6 +130,9 @@ std::string parse_command(const std::string& str, WsSession& se) {
     else if (cmd[0] == "chname") {
         if (cmd.size() != 2) {
             return "need change name";
+        }
+        if (cmd[1] == (const char*)u8"しすてむ") {
+            return (const char*)u8"しすてむ is administrator name";
         }
         roomlock.lock();
         if (auto found = rooms.find(se.roomname); found != rooms.end()) {
