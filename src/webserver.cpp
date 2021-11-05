@@ -189,12 +189,16 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
                 auto resp = parse_command(frame.get_data(), se);
                 if (resp.size()) {
                     cout << conn->ipaddress() << "<data\n";
-                    cout << resp << "\n";
-                    conn->send_text(resp.c_str());
                     if (resp == "close") {
+                        cout << "logout\n";
+                        conn->send_text("logout");
                         cout << conn->ipaddress() << "<close\n";
                         conn->control(WsFType::closing, "\x03\xe8", 2);
                         break;
+                    }
+                    else {
+                        cout << resp << "\n";
+                        conn->send_text(resp.c_str());
                     }
                 }
             }
