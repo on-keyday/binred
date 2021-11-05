@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(Threads REQUIRED)
 
 
-add_executable(binred "src/main.cpp" )
+add_executable(binred "src/webserver.cpp" )
 
 #add_library(httpclient SHARED "src/script.cpp" "src/runhttp.cpp" "src/client_export.cpp")
 

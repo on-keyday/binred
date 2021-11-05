@@ -242,7 +242,7 @@ void handle_http(Recv r) {
 int main(int argc, char** argv) {
     IOWrapper::Init();
     auto [w, r] = commonlib2::make_chan<std::shared_ptr<HttpServerConn>>(100);
-    rooms["default"] = make_forkchan<std::string>();
+    rooms.emplace("default", make_forkchan<std::string>());
     for (auto i = 0; i < std::thread::hardware_concurrency() - 1; i++) {
         std::thread(handle_http, r).detach();
     }
