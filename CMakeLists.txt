@@ -9,7 +9,7 @@ else()
 link_directories("/lib/x86_64-linux-gnu")
 endif()
 
-include_directories("src/commonlib")
+include_directories("src/commonlib" "D:/Minitools/Socketlib/src/v1" "D:/OpenSSL/build-x64/include")
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -25,11 +25,11 @@ add_executable(binred "src/main.cpp" )
 #target_link_libraries(nhttpc httpclient)
 #target_link_libraries(hcladd httpclient)
 
-#if(WIN32)
-#target_link_libraries(httpclient libssl libcrypto ws2_32)
-#else()
-#target_link_libraries(httpclient libssl.so libcrypto.so Threads::Threads)
-#endif()
+if(WIN32)
+target_link_libraries(httpclient libssl libcrypto ws2_32)
+else()
+target_link_libraries(httpclient libssl.so libcrypto.so Threads::Threads)
+endif()
 
 
 

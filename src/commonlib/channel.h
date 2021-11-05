@@ -317,6 +317,10 @@ namespace PROJECT_NAME {
             unlock();
             return true;
         }
+
+        size_t size() const {
+            return listeners.size();
+        }
     };
 
     template <class T, template <class...> class Que = std::deque, template <class...> class Map = std::map>

@@ -2,37 +2,137 @@
 #include "parse/parse.h"
 #include "output/cpp/cargo_to_struct.h"
 #include "output/cpp/add_error_enum.h"
-#include <iostream>
-#include <fstream>
+#include <coutwrapper.h>
 #include <channel.h>
 #include <thread>
-#include <sstream>
-using Recv = commonlib2::RecvChan<int>;
-using Send = commonlib2::ForkChan<int>;
-void test_thread(Recv r, Send w) {
-    r.set_block(true);
+#include <application/websocket.h>
+#include <application/http.h>
+#include <filesystem>
+using namespace socklib;
+using namespace commonlib2;
+
+using Recv = commonlib2::RecvChan<std::shared_ptr<HttpServerConn>>;
+using Send = commonlib2::ForkChan<std::shared_ptr<HttpServerConn>>;
+auto& cout = commonlib2::cout_wrapper_s();
+
+std::filesystem::path
+normalize(const std::string& in) {
+    std::u8string path = u8".";
+    URLEncodingContext<std::u8string> enc;
+    Reader(in).readwhile(path, url_decode, &enc);
+    //cout << "debug:decoded path:" << (const char*)path.c_str() << "\n";
+    std::filesystem::path pt(path);
+    pt = pt.lexically_normal();
+    return pt;
+}
+
+std::mutex roomlock;
+std::map<std::string, ForkChan<std::string>> rooms;
+
+std::string add_to_room(size_t& id, const std::string& name, const std::string& user, SendChan<std::string> rm) {
+    const char* msg = "not joinable";
+    roomlock.lock();
+    if (auto found = rooms.find(name); found != rooms.end()) {
+        found->second.subscribe(id, rm);
+        found->second << "user " + user + " joined";
+        msg = "joined";
+    }
+    roomlock.unlock();
+    return msg;
+}
+
+std::string parse_command(const std::string& str, size_t& memberid, std::string& name, std::string& roomname) {
+    auto cmd = commonlib2::split(str, " ");
+    if (cmd[0] == "movroom") {
+        if (cmd.size() != 2) {
+            return "need room name";
+        }
+        std::string msg = "not movable to " + cmd[1];
+        roomlock.lock();
+        if (auto found = rooms.find(roomname); found != rooms.end()) {
+        }
+        roomlock.unlock();
+    }
+}
+
+void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
+    auto [w, r] = commonlib2::make_chan<std::string>(100);
+    size_t id = 0, timeoutcount = 0;
+    bool pinged = false;
+    auto e = add_to_room(id, "default", "guest", w);
+    e += " to default room";
+    std::string roomname = "default", user = "guest";
+    conn->send_text(e.c_str());
     while (true) {
-        int data = 0;
-        if (auto e = r >> data) {
-            if (data != 0) {
-                std::stringstream ss;
-                ss << std::this_thread::get_id() << ":" << data << "\n";
-                std::cout << ss.str();
+        if (conn->recvable() || Selecter::waitone(conn->borrow(), 0, 1)) {
+            WsFrame frame;
+            if (!conn->recv(frame)) {
+                cout << conn->ipaddress() << ">closed";
+                return;
             }
-            Sleep(1);
-            w << std::move(data);
+            if (frame.frame_type("text")) {
+                auto resp = parse_command(frame.get_data(), id, user, roomname);
+                conn->send_text(resp.c_str());
+            }
         }
-        else if (e == commonlib2::ChanError::empty) {
-            std::cout << "empty\n";
-        }
-        else if (e == commonlib2::ChanError::closed) {
-            std::cout << "closed\n";
-            break;
+        else {
+            timeoutcount++;
+            if (pinged && timeoutcount > 300) {
+                cout << conn->ipaddress() + "<closed\n";
+                break;
+            }
+            else if (timeoutcount > 2000) {
+                if (!conn->control(WsFType::ping)) {
+                    cout << conn->ipaddress() + "<closed\n";
+                    break;
+                }
+                cout << conn->ipaddress() + "<ping\n";
+                pinged = true;
+                timeoutcount = 0;
+            }
+            std::string data;
+            if (auto e = r >> data) {
+                conn->send_text(data.c_str());
+            }
         }
     }
 }
 
-int main(int argc, char** argv) {
+void handle_http(Recv r) {
+    r.set_block(true);
+    while (true) {
+        std::shared_ptr<HttpServerConn> conn;
+        if (r >> conn == commonlib2::ChanError::closed) {
+            break;
+        }
+        if (!conn) {
+            continue;
+        }
+        TimeoutContext timeout(60);
+        SleeperContext ctx(&timeout);
+        if (!conn->recv(&timeout)) {
+            continue;
+        }
+        cout << "from " << conn->ipaddress() << ", by method";
+        auto found = conn->request().find(":method");
+        cout << found->second << ", request path ";
+        cout << conn->path() + conn->query() << ", respond ";
+        auto path = normalize(conn->path());
+        if (path == "ws") {
+            auto wsconn = WebSocket::default_hijack_server_proc(conn);
+            if (!wsconn) {
+                continue;
+            }
+            std::thread(handle_websocket, wsconn).detach();
+            cout << 101 << "\n";
+            continue;
+        }
+        conn->send(200, "OK", {{"Connection", "close"}}, "It Works", 8);
+        cout << 200 << "\n";
+    }
+}
+
+void binred_test() {
     binred::TokenReader red;
 
     binred::ParseResult result;
@@ -50,24 +150,20 @@ int main(int argc, char** argv) {
         fs << binred::error_enum_class(ctx);
         fs << ctx.buffer;
     }
-    size_t id = 0;
-    auto fork = commonlib2::make_forkchan<int>();
-    for (auto i = 0; i < 12; i++) {
-        auto [w, r] = commonlib2::make_chan<int>(5, commonlib2::ChanDisposeFlag::remove_back);
-        size_t id;
-        fork.subscribe(id, w);
-        std::thread(test_thread, r, fork).detach();
+}
+
+int main(int argc, char** argv) {
+    auto [w, r] = commonlib2::make_chan<std::shared_ptr<HttpServerConn>>(100);
+    for (auto i = 0; i < std::thread::hardware_concurrency(); i++) {
+        std::thread(handle_http, r).detach();
     }
-    size_t count = 0;
-    while (fork << count) {
-        if (count >= 1000) {
-            fork.close();
+    Server sv;
+    while (true) {
+        auto accept = Http1::serve(sv, 8080);
+        if (!accept) {
+            w.close();
             break;
         }
-        std::cout << "sleeping delta...\n";
-        //Sleep(1000);
-        Sleep(1);
-        count++;
+        w << std::move(accept);
     }
-    Sleep(1000);
 }
