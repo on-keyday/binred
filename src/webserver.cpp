@@ -41,7 +41,7 @@ std::string add_to_room(size_t& id, const std::string& name, const std::string& 
     std::string msg = "not joinable to" + name;
     if (auto found = rooms.find(name); found != rooms.end()) {
         found->second.subscribe(id, rm);
-        found->second << "user " + user + " joined";
+        found->second << (const char*)u8"しすてむ>user " + user + " joined";
         msg = "joined to " + name;
     }
     return msg;
@@ -58,7 +58,7 @@ std::string make_room(const std::string& name) {
 void leave_room(bool nocomment, size_t id, const std::string& roomname, const std::string& user) {
     if (auto found = rooms.find(roomname); found != rooms.end()) {
         if (!nocomment) {
-            found->second << "leave " + user + " from " + roomname;
+            found->second << (const char*)u8"しすてむ>leave " + user + " from " + roomname;
         }
         found->second.remove(id);
         if (!found->second.size() && found->first != "default") {
@@ -103,6 +103,20 @@ std::string parse_command(const std::string& str, WsSession& se) {
         }
         roomlock.unlock();
         return tosend;
+    }
+    else if (cmd[0] == "myid") {
+        return std::to_string(se.id);
+    }
+    else if (cmd[0] == "chname") {
+        if (cmd.size()) {
+            return "need change name";
+        }
+        roomlock.lock();
+        if (auto found = rooms.find(se.roomname); found != rooms.end()) {
+            found->second << (const char*)u8"しすてむ>change name from " + se.user + " to " + cmd[1];
+        }
+        roomlock.unlock();
+        se.user = cmd[1];
     }
     return "no such command:" + cmd[1];
 }
