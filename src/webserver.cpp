@@ -38,11 +38,11 @@ struct WsSession {
 };
 
 std::string add_to_room(size_t& id, const std::string& name, const std::string& user, SendChan<std::string> rm) {
-    std::string msg = "not joinable to" + name;
+    std::string msg = "not joinable to room " + name;
     if (auto found = rooms.find(name); found != rooms.end()) {
         found->second.subscribe(id, rm);
-        found->second << (const char*)u8"しすてむ>user " + user + " joined";
-        msg = "joined to " + name;
+        found->second << (const char*)u8"しすてむ>user " + user + " joined to " + name;
+        msg = "joined to room " + name;
     }
     return msg;
 }
@@ -76,14 +76,14 @@ std::string parse_command(const std::string& str, WsSession& se) {
         if (cmd.size() != 2) {
             return "need room name";
         }
-        std::string msg = "not movable to " + cmd[1];
+        std::string msg = "not movable to room " + cmd[1];
         roomlock.lock();
         leave_room(false, se.id, se.roomname, se.user);
         make_room(cmd[1]);
         add_to_room(se.id, cmd[1], se.user, se.w);
         roomlock.unlock();
         se.roomname = cmd[1];
-        return "moved to " + cmd[1];
+        return "moved to room " + cmd[1];
     }
     else if (cmd[0] == "close") {
         return "close";
