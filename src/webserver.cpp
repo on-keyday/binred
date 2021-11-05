@@ -239,6 +239,7 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
                     }
                 }
             }
+            se.timeoutcount = 0;
         }
         else {
             se.timeoutcount++;
