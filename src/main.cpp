@@ -4,6 +4,12 @@
 #include "output/cpp/add_error_enum.h"
 #include <iostream>
 #include <fstream>
+#include <channel.h>
+#include <thread>
+using Recv = commonlib2::RecvChan<int>;
+void test_thread(Recv r) {
+}
+
 int main(int argc, char** argv) {
     binred::TokenReader red;
 
@@ -20,4 +26,6 @@ int main(int argc, char** argv) {
     fs << "/*license*/\n#pragma once\n#include<cstdint>\n#include<string>\n";
     fs << binred::error_enum_class(ctx);
     fs << ctx.buffer;
+    auto [w, r] = commonlib2::make_chan<int>();
+    std::thread(test_thread, r).detach();
 }
