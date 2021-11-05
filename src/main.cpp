@@ -18,6 +18,7 @@ void test_thread(Recv r, Send w) {
             Sleep(1);
             block = !block;
             r.set_block(block);
+            w << std::move(data);
         }
         else if (e == commonlib2::ChanError::empty) {
             std::cout << "empty\n";
@@ -50,7 +51,7 @@ int main(int argc, char** argv) {
     size_t id = 0;
     auto [w, r] = commonlib2::make_forkchan<int>(id);
     for (auto i = 0; i < 12; i++) {
-        std::thread(test_thread, r).detach();
+        std::thread(test_thread, r, w).detach();
     }
     size_t count = 0;
     while (w << count) {
