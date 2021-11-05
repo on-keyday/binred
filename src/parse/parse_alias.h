@@ -5,9 +5,10 @@
 #include "alias.h"
 #include "tree.h"
 #include "parse_macro.h"
+#include "record.h"
 
 namespace binred {
-    bool parse_alias(TokenReader& r, std::shared_ptr<Element>& elm, MacroExpander& mep) {
+    bool parse_alias(TokenReader& r, std::shared_ptr<Element>& elm, Record& mep) {
         auto e = r.ReadorEOF();
         if (!e) {
             return false;
@@ -65,6 +66,10 @@ namespace binred {
                 r.SetError(ErrorCode::multiple_alias);
                 return false;
             }
+        }
+        if (!mep.add_alias(name, tmp)) {
+            r.SetError(ErrorCode::multiple_alias);
+            return false;
         }
         elm = tmp;
         return true;

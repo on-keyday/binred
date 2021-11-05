@@ -14,7 +14,7 @@ namespace binred {
             return false;
         }
         red = TokenReader(gt.parser.GetParsed());
-        MacroExpander mep;
+        Record mep;
         while (!red.is_EOF()) {
             auto e = red.Read();
             if (!e) {

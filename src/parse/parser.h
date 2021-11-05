@@ -80,6 +80,7 @@ namespace binred {
         multiple_variable,
         multiple_alias,
         multiple_macro,
+        multiple_cargo,
         unexpected_EOF,
         unexpected_line,
         expect_definition_keyword,

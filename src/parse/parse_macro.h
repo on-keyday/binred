@@ -2,8 +2,9 @@
 #pragma once
 #include "parser.h"
 #include "macro.h"
+#include "record.h"
 namespace binred {
-    bool parse_macro(TokenReader& r, std::shared_ptr<Element>& elm, MacroExpander& mep) {
+    bool parse_macro(TokenReader& r, std::shared_ptr<Element>& elm, Record& mep) {
         auto e = r.ReadorEOF();
         if (!e) {
             return false;
@@ -63,7 +64,7 @@ namespace binred {
             }
             tmp->expand += e->to_string();
         }
-        if (!mep.add(tmp->name, tmp)) {
+        if (!mep.mep.add(tmp->name, tmp)) {
             r.SetError(ErrorCode::multiple_macro);
             return false;
         }

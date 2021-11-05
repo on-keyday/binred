@@ -3,6 +3,7 @@
 #include "element.h"
 #include <char_judge.h>
 #include "macro.h"
+#include "record.h"
 namespace binred {
 
     struct TreeDepth {
@@ -39,7 +40,7 @@ namespace binred {
         }
     };
 
-    std::shared_ptr<Expr> primary(TokenReader& r, Tree& t, MacroExpander& mep) {
+    std::shared_ptr<Expr> primary(TokenReader& r, Tree& t, Record& mep) {
         if (!mep.expand(r)) {
             return nullptr;
         }
@@ -114,7 +115,7 @@ namespace binred {
         return ret;
     }
 
-    std::shared_ptr<Expr> binary(TokenReader& r, Tree& t, MacroExpander& mep) {
+    std::shared_ptr<Expr> binary(TokenReader& r, Tree& t, Record& mep) {
         if (t.is_end()) {
             return primary(r, t, mep);
         }

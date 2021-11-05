@@ -4,8 +4,9 @@
 #include "cargo.h"
 #include "tree.h"
 #include <set>
+#include "record.h"
 namespace binred {
-    bool parse_length(TokenReader& r, std::shared_ptr<Length>& length, MacroExpander& mep) {
+    bool parse_length(TokenReader& r, std::shared_ptr<Length>& length, Record& mep) {
         if (!mep.expand(r)) {
             return false;
         }
@@ -20,7 +21,7 @@ namespace binred {
         return true;
     }
 
-    bool parse_condition(TokenReader& r, std::shared_ptr<Param>& param, MacroExpander& mep) {
+    bool parse_condition(TokenReader& r, std::shared_ptr<Param>& param, Record& mep) {
         while (true) {
             if (!mep.expand(r)) {
                 return false;
@@ -87,7 +88,7 @@ namespace binred {
         return true;
     }
 
-    bool parse_type(TokenReader& r, std::shared_ptr<Param>& param, MacroExpander& mep) {
+    bool parse_type(TokenReader& r, std::shared_ptr<Param>& param, Record& mep) {
         if (!mep.expand(r)) {
             return false;
         }
@@ -136,7 +137,7 @@ namespace binred {
         return true;
     }
 
-    bool parse_cargo(TokenReader& r, std::shared_ptr<Element>& elm, MacroExpander& mep) {
+    bool parse_cargo(TokenReader& r, std::shared_ptr<Element>& elm, Record& mep) {
         auto e = r.ReadorEOF();
         if (!e) {
             return false;
@@ -197,6 +198,10 @@ namespace binred {
                 r.SetError(ErrorCode::multiple_variable);
                 return false;
             }
+        }
+        if (!mep.add_cargo(name, tmp)) {
+            r.SetError(ErrorCode::multiple_cargo);
+            return false;
         }
         elm = tmp;
         return true;

@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     binred::CargoToCppStruct::convert(ctx, *c);
     std::ofstream fs("D:/MiniTools/binred/generated/test.hpp");
     std::cout << ctx.buffer;
-    fs << "#include<cstdint>\n#include<string>\n";
+    fs << "/*license*/\n#pragma once\n#include<cstdint>\n#include<string>\n";
     fs << binred::error_enum_class(ctx);
     fs << ctx.buffer;
 }
