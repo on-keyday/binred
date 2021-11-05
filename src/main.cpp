@@ -7,7 +7,7 @@
 #include <channel.h>
 #include <thread>
 using Recv = commonlib2::RecvChan<int>;
-using Send = commonlib2::SendChan<int>;
+using Send = commonlib2::ForkChan<int>;
 void test_thread(Recv r, Send w) {
     r.set_block(true);
     bool block = true;
@@ -47,11 +47,8 @@ int main(int argc, char** argv) {
         fs << binred::error_enum_class(ctx);
         fs << ctx.buffer;
     }
-    auto [w, r] = commonlib2::make_chan<int>();
-    commonlib2::ForkChan<int> fork;
     size_t id = 0;
-    fork.subscribe(id, w);
-    fork << 92;
+    auto [w, r] = commonlib2::make_forkchan<int>(id);
     for (auto i = 0; i < 12; i++) {
         std::thread(test_thread, r).detach();
     }

@@ -305,6 +305,18 @@ namespace PROJECT_NAME {
             unlock();
             return true;
         }
+
+        bool close() {
+            if (!lock()) {
+                return false;
+            }
+            for (auto& p : listeners) {
+                p.second.close();
+            }
+            listeners.clear();
+            unlock();
+            return true;
+        }
     };
 
     template <class T, template <class...> class Que = std::deque, template <class...> class Map = std::map>
@@ -313,7 +325,7 @@ namespace PROJECT_NAME {
         std::shared_ptr<ForkChannel<T, Que, Map>> chan;
 
        public:
-        ForkChan(std::shared_ptr<ForkChannel<T, Qye, Map>> p)
+        ForkChan(std::shared_ptr<ForkChannel<T, Que, Map>> p)
             : chan(p) {}
 
         ChanErr operator<<(T&& t) {
@@ -326,6 +338,10 @@ namespace PROJECT_NAME {
 
         bool remove(size_t id) {
             return chan->remove(id);
+        }
+
+        bool close() {
+            return chan->close();
         }
     };
 
