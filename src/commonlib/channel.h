@@ -270,6 +270,7 @@ namespace PROJECT_NAME {
             }
             this->id++;
             listeners.emplace(this->id, std::move(chan));
+            id = this->id;
             unlock();
             return true;
         }
