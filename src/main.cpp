@@ -10,14 +10,11 @@ using Recv = commonlib2::RecvChan<int>;
 using Send = commonlib2::ForkChan<int>;
 void test_thread(Recv r, Send w) {
     r.set_block(true);
-    bool block = true;
     while (true) {
         int data = 0;
         if (auto e = r >> data) {
             std::cout << data << "\n";
             Sleep(1);
-            block = !block;
-            r.set_block(block);
             w << std::move(data);
         }
         else if (e == commonlib2::ChanError::empty) {

@@ -346,11 +346,9 @@ namespace PROJECT_NAME {
     };
 
     template <class T, template <class...> class Que = std::deque, template <class...> class Map = std::map>
-    std::tuple<ForkChan<T, Que>, RecvChan<T, Que>> make_forkchan(size_t& id, size_t limit = ~0, ChanDisposeFlag dflag = ChanDisposeFlag::remove_new) {
-        auto [w, r] = make_chan<T>(limit, dflag);
+    ForkChan<T, Que> make_forkchan() {
         auto fork = std::make_shared<ForkChannel<T, Que, Map>>();
-        fork->subscribe(id, w);
-        return {fork, r};
+        return fork;
     }
 
 }  // namespace PROJECT_NAME
