@@ -87,6 +87,15 @@ namespace binred {
             return true;
         }
 
+        static bool set_default(OutContext& ctx, std::shared_ptr<Param>& param) {
+            if (param->default_v) {
+                ctx.write(" = {");
+                ctx.write(trace_expr(param->default_v->expr));
+                ctx.write("}");
+            }
+            return true;
+        }
+
         static bool convert(OutContext& ctx, Cargo& cargo) {
             ctx.write("\nstruct ");
             ctx.write(cargo.name);
@@ -107,6 +116,9 @@ namespace binred {
                     ctx.write("[");
                     ctx.write(std::to_string(bylen));
                     ctx.write("]");
+                }
+                if (!set_default(ctx, param)) {
+                    return false;
                 }
                 ctx.write(";\n\n");
                 ctx.write("public:\n");
