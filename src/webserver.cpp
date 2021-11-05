@@ -4,12 +4,14 @@
 #include <channel.h>
 #include <thread>
 #include <filesystem>
+#include <direct.h>
 using namespace socklib;
 using namespace commonlib2;
 
 using Recv = commonlib2::RecvChan<std::shared_ptr<HttpServerConn>>;
 using Send = commonlib2::ForkChan<std::shared_ptr<HttpServerConn>>;
 auto& cout = commonlib2::cout_wrapper_s();
+auto& cin = commonlib2::cin_wrapper();
 
 std::filesystem::path
 normalize(const std::string& in) {
@@ -241,10 +243,51 @@ int main(int argc, char** argv) {
     IOWrapper::Init();
     auto [w, r] = commonlib2::make_chan<std::shared_ptr<HttpServerConn>>(100);
     rooms["default"] = make_forkchan<std::string>();
-    for (auto i = 0; i < std::thread::hardware_concurrency(); i++) {
+    for (auto i = 0; i < std::thread::hardware_concurrency() - 1; i++) {
         std::thread(handle_http, r).detach();
     }
     Server sv;
+    std::thread([&] {
+        while (true) {
+            std::string input;
+            cin.getline(input);
+            auto cmd = commonlib2::split_cmd(input);
+            if (!cmd.size()) {
+                continue;
+            }
+            for (auto& i : cmd) {
+                if (is_string_symbol(i[0])) {
+                    i.erase(0, 1);
+                    i.pop_back();
+                }
+            }
+            if (cmd[0] == "exit" || cmd[0] == "quit") {
+                sv.set_suspend(true);
+                break;
+            }
+            else if (cmd[0] == "cd") {
+                if (cmd.size() < 2) {
+                    auto dir = _wgetcwd(NULL, 0);
+                    std::string n;
+                    Reader(dir) >> n;
+                    cout << n << "\n";
+                    ::free(dir);
+                    continue;
+                }
+                path_string path;
+                Reader(cmd[1]) >> path;
+                if (_wchdir(path.c_str()) != 0) {
+                    cout << "cd: failed to change dir\n";
+                }
+                else {
+                    cout << "cd: changed\n";
+                }
+            }
+            else {
+                cout << "no such command" << cmd[0] << "\n";
+            }
+        }
+    }).detach();
     cout << "accept address:\n"
          << sv.ipaddress_list() << "\n";
     cout << "port:8080\n";
@@ -256,4 +299,5 @@ int main(int argc, char** argv) {
         }
         w << std::move(accept);
     }
+    Sleep(1000);
 }
