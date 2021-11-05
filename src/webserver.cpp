@@ -142,6 +142,12 @@ std::string parse_command(const std::string& str, WsSession& se) {
         }
         return "name:" + se.user;
     }
+    else if (cmd[0] == "myroom") {
+        if (!se.loggedin) {
+            return "you are not logged in";
+        }
+        return "room:" + se.roomname;
+    }
     else if (cmd[0] == "membercount") {
         if (!se.loggedin) {
             return "you are not logged in";
