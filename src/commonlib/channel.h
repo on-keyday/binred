@@ -268,8 +268,8 @@ namespace PROJECT_NAME {
             if (!lock()) {
                 return ChanError::closed;
             }
-            listeners.emplace(this->id, std::move(chan));
             this->id++;
+            listeners.emplace(this->id, std::move(chan));
             unlock();
             return true;
         }
