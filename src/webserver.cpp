@@ -59,7 +59,7 @@ void leave_room(bool nocomment, size_t id, const std::string& roomname, const st
             found->second << "leave " + user + " from " + roomname;
         }
         found->second.remove(id);
-        if (!found->second.size()) {
+        if (!found->second.size() && found->first != "default") {
             rooms.erase(found->first);
         }
     }
@@ -240,6 +240,7 @@ void handle_http(Recv r) {
 int main(int argc, char** argv) {
     IOWrapper::Init();
     auto [w, r] = commonlib2::make_chan<std::shared_ptr<HttpServerConn>>(100);
+    rooms["default"] = make_forkchan<std::string>();
     for (auto i = 0; i < std::thread::hardware_concurrency(); i++) {
         std::thread(handle_http, r).detach();
     }
