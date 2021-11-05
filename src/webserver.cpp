@@ -35,6 +35,7 @@ struct WsSession {
     size_t id = 0, timeoutcount = 0;
     bool pinged = false;
     std::string roomname = "default", user = "guest";
+    bool loggedin = false;
 };
 
 std::string add_to_room(size_t& id, const std::string& name, const std::string& user, SendChan<std::string> rm) {
@@ -72,7 +73,23 @@ std::string parse_command(const std::string& str, WsSession& se) {
     if (!cmd.size()) {
         return "need any command";
     }
-    if (cmd[0] == "movroom") {
+    if (cmd[0] == "login") {
+        if (cmd.size() != 3) {
+            return "need username and roomname";
+        }
+        if (se.loggedin) {
+            return "already logged in";
+        }
+        roomlock.lock();
+        make_room(cmd[2]);
+        add_to_room(se.id, cmd[2], cmd[1], se.w);
+        roomlock.unlock();
+        se.roomname = cmd[2];
+        se.user = cmd[1];
+        se.loggedin = true;
+        return "";
+    }
+    else if (cmd[0] == "movroom") {
         if (cmd.size() != 2) {
             return "need room name";
         }
@@ -108,7 +125,7 @@ std::string parse_command(const std::string& str, WsSession& se) {
         return std::to_string(se.id);
     }
     else if (cmd[0] == "chname") {
-        if (cmd.size()) {
+        if (cmd.size() != 2) {
             return "need change name";
         }
         roomlock.lock();
@@ -117,6 +134,7 @@ std::string parse_command(const std::string& str, WsSession& se) {
         }
         roomlock.unlock();
         se.user = cmd[1];
+        return "";
     }
     return "no such command:" + cmd[1];
 }
@@ -125,12 +143,12 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
     cout << conn->ipaddress() << ">connect\n";
     auto [w, r] = commonlib2::make_chan<std::string>(100);
     WsSession se(r, w);
-    roomlock.lock();
+    /*roomlock.lock();
     auto e = add_to_room(se.id, "default", "guest", se.w);
     roomlock.unlock();
     cout << conn->ipaddress() << "<data\n";
     cout << e << "\n";
-    conn->send_text(e.c_str());
+    conn->send_text(e.c_str());*/
     while (true) {
         if (conn->recvable() || Selecter::waitone(conn->borrow(), 0, 1)) {
             WsFrame frame;
