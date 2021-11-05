@@ -347,6 +347,9 @@ namespace PROJECT_NAME {
         bool close() {
             return chan->close();
         }
+        size_t size() const {
+            return chan->size();
+        }
     };
 
     template <class T, template <class...> class Que = std::deque, template <class...> class Map = std::map>

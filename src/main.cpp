@@ -29,19 +29,45 @@ normalize(const std::string& in) {
 std::mutex roomlock;
 std::map<std::string, ForkChan<std::string>> rooms;
 
+struct WsSession {
+    RecvChan<std::string> r;
+    SendChan<std::string> w;
+    WsSession(RecvChan<std::string> r, SendChan<std::string> w)
+        : r(r), w(w) {}
+    size_t id = 0, timeoutcount = 0;
+    bool pinged = false;
+    std::string roomname = "default", user = "guest";
+};
+
 std::string add_to_room(size_t& id, const std::string& name, const std::string& user, SendChan<std::string> rm) {
-    const char* msg = "not joinable";
-    roomlock.lock();
+    std::string msg = "not joinable to" + name;
     if (auto found = rooms.find(name); found != rooms.end()) {
         found->second.subscribe(id, rm);
         found->second << "user " + user + " joined";
-        msg = "joined";
+        msg = "joined to " + name;
     }
-    roomlock.unlock();
     return msg;
 }
 
-std::string parse_command(const std::string& str, size_t& memberid, std::string& name, std::string& roomname) {
+std::string make_room(const std::string& name) {
+    auto room = make_forkchan<std::string>();
+    if (!rooms.insert({name, room}).second) {
+        return "can't make room " + name;
+    }
+    return "room " + name + " created";
+}
+
+void leave_room(bool nocomment, size_t id, const std::string& roomname, const std::string& user) {
+    if (auto found = rooms.find(roomname); found != rooms.end()) {
+        if (!nocomment) {
+            found->second << "leave " + user + " from " + roomname;
+        }
+        found->second.remove(id);
+        if (found->second.size())
+    }
+}
+
+std::string parse_command(const std::string& str, WsSession& se) {
     auto cmd = commonlib2::split(str, " ");
     if (cmd[0] == "movroom") {
         if (cmd.size() != 2) {
@@ -49,19 +75,24 @@ std::string parse_command(const std::string& str, size_t& memberid, std::string&
         }
         std::string msg = "not movable to " + cmd[1];
         roomlock.lock();
-        if (auto found = rooms.find(roomname); found != rooms.end()) {
-        }
+        leave_room(false, se.id, se.roomname, se.user);
+        make_room(cmd[1]);
+        add_to_room(se.id, cmd[1], se.user, se.w);
         roomlock.unlock();
+        se.roomname = cmd[1];
+        return "moved to " + cmd[1];
+    }
+    else if (cmd[0] == "close") {
+        return "close";
     }
 }
 
 void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
     auto [w, r] = commonlib2::make_chan<std::string>(100);
-    size_t id = 0, timeoutcount = 0;
-    bool pinged = false;
-    auto e = add_to_room(id, "default", "guest", w);
-    e += " to default room";
-    std::string roomname = "default", user = "guest";
+    WsSession se(r, w);
+    roomlock.lock();
+    auto e = add_to_room(se.id, "default", "guest", se.w);
+    roomlock.unlock();
     conn->send_text(e.c_str());
     while (true) {
         if (conn->recvable() || Selecter::waitone(conn->borrow(), 0, 1)) {
@@ -71,24 +102,28 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
                 return;
             }
             if (frame.frame_type("text")) {
-                auto resp = parse_command(frame.get_data(), id, user, roomname);
+                auto resp = parse_command(frame.get_data(), se);
                 conn->send_text(resp.c_str());
+                if (resp == "close") {
+                    conn->close();
+                    break;
+                }
             }
         }
         else {
-            timeoutcount++;
-            if (pinged && timeoutcount > 300) {
+            se.timeoutcount++;
+            if (se.pinged && se.timeoutcount > 300) {
                 cout << conn->ipaddress() + "<closed\n";
                 break;
             }
-            else if (timeoutcount > 2000) {
+            else if (se.timeoutcount > 2000) {
                 if (!conn->control(WsFType::ping)) {
                     cout << conn->ipaddress() + "<closed\n";
                     break;
                 }
                 cout << conn->ipaddress() + "<ping\n";
-                pinged = true;
-                timeoutcount = 0;
+                se.pinged = true;
+                se.timeoutcount = 0;
             }
             std::string data;
             if (auto e = r >> data) {
@@ -96,6 +131,9 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
             }
         }
     }
+    roomlock.lock();
+    leave_room(false, se.id, se.roomname, se.user);
+    roomlock.unlock();
 }
 
 void handle_http(Recv r) {
