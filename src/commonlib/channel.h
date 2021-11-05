@@ -261,14 +261,14 @@ namespace PROJECT_NAME {
         }
 
        public:
-        ChanError subscribe(size_t& id, SendChan<T, Que> que) {
-            if (que->closed()) {
+        ChanErr subscribe(size_t& id, SendChan<T, Que> chan) {
+            if (chan.closed()) {
                 return ChanError::closed;
             }
             if (!lock()) {
                 return ChanError::closed;
             }
-            listeners.emplace(this->id, que);
+            listeners.emplace(this->id, std::move(chan));
             this->id++;
             unlock();
             return true;
@@ -283,16 +283,16 @@ namespace PROJECT_NAME {
             return result;
         }
 
-        ChanError operator<<(T&& t) {
+        ChanErr operator<<(T&& t) {
             return store(std::forward<T>(t));
         }
 
-        ChanError store(T&& value) {
+        ChanErr store(T&& value) {
             if (!lock()) {
                 return ChanError::closed;
             }
             std::erase_if(listeners, [](auto& h) {
-                if (h->second.closed()) {
+                if (h.second.closed()) {
                     return true;
                 }
                 return false;
@@ -300,7 +300,7 @@ namespace PROJECT_NAME {
             T copy(std::move(value));
             for (auto& p : listeners) {
                 auto tmp = copy;
-                p->second << std::move(tmp);
+                p.second << std::move(tmp);
             }
             unlock();
             return true;

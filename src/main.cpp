@@ -48,8 +48,12 @@ int main(int argc, char** argv) {
     }
     auto [w, r] = commonlib2::make_chan<int>();
     commonlib2::ForkChan<int> fork;
+    size_t id = 0;
+    fork.subscribe(id, w);
     fork << 92;
-    std::thread(test_thread, std::move(r)).detach();
+    for (auto i = 0; i < 12; i++) {
+        std::thread(test_thread, r).detach();
+    }
     size_t count = 0;
     while (w << count) {
         if (count >= 1000) {
