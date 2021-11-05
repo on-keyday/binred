@@ -215,22 +215,22 @@ void handle_http(Recv r) {
                 std::pair<std::string, std::string> ctype;
                 ctype.first = "Content-Type";
                 auto ext = path.extension();
-                if (ext == "html" || ext == "htm") {
+                if (ext == ".html" || ext == ".htm") {
                     ctype.second = "text/html";
                 }
-                else if (ext == "js") {
+                else if (ext == ".js") {
                     ctype.second = "text/javascript";
                 }
-                else if (ext == "json") {
+                else if (ext == ".json") {
                     ctype.second = "application/json";
                 }
-                else if (ext == "css") {
+                else if (ext == ".css") {
                     ctype.second = "text/css";
                 }
-                else if (ext == "csv") {
+                else if (ext == ".csv") {
                     ctype.second = "text/csv";
                 }
-                else if (ext == "txt") {
+                else if (ext == ".txt") {
                     ctype.second = "text/plain";
                 }
                 Reader<ToUTF32<std::string>> tmp(data);
