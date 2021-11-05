@@ -90,7 +90,7 @@ std::string parse_command(const std::string& str, WsSession& se) {
         se.roomname = cmd[2];
         se.user = cmd[1];
         se.loggedin = true;
-        return "";
+        return "login succeed";
     }
     else if (cmd[0] == "movroom") {
         if (cmd.size() != 2) {
