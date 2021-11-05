@@ -129,6 +129,7 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
     auto e = add_to_room(se.id, "default", "guest", se.w);
     roomlock.unlock();
     cout << conn->ipaddress() << "<data\n";
+    cout << e << "\n";
     conn->send_text(e.c_str());
     while (true) {
         if (conn->recvable() || Selecter::waitone(conn->borrow(), 0, 1)) {
@@ -141,13 +142,15 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
                 cout << conn->ipaddress() << ">data\n";
                 cout << frame.get_data() << "\n";
                 auto resp = parse_command(frame.get_data(), se);
-                cout << conn->ipaddress() << "<data\n";
-                cout << resp;
-                conn->send_text(resp.c_str());
-                if (resp == "close") {
-                    cout << conn->ipaddress() << "<close\n";
-                    conn->close();
-                    break;
+                if (resp.size()) {
+                    cout << conn->ipaddress() << "<data\n";
+                    cout << resp;
+                    conn->send_text(resp.c_str());
+                    if (resp == "close") {
+                        cout << conn->ipaddress() << "<close\n";
+                        conn->close();
+                        break;
+                    }
                 }
             }
         }
@@ -168,6 +171,8 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
             }
             std::string data;
             if (auto e = r >> data) {
+                cout << conn->ipaddress() << "<cast data\n";
+                cout << data << "\n";
                 conn->send_text(data.c_str());
             }
         }
