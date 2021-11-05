@@ -3,7 +3,7 @@ project(binred)
 
 if(WIN32)
 include_directories("src/commonlib")
-#link_directories("D:/OpenSSL/build-x64-debug/lib")
+link_directories("D:/OpenSSL/build-x64-debug/lib")
 else()
 # find_package(OPENSSL REQUIRED)
 link_directories("/lib/x86_64-linux-gnu")
