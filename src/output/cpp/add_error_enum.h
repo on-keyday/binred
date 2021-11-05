@@ -7,7 +7,7 @@ namespace binred {
         std::string ret = "\nenum class ";
         ret += ctx.error_enum();
         ret += " {\n";
-        ret += "none,";
+        ret += "none,\n";
         for (auto& i : ctx.enum_v) {
             ret += i;
             ret += ",\n";
