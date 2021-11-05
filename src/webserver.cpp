@@ -390,7 +390,7 @@ int main(int argc, char** argv) {
                 }
             }
             else {
-                cout << "no such command" << cmd[0] << "\n";
+                cout << "no such command " << cmd[0] << "\n";
             }
         }
     }).detach();
