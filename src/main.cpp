@@ -8,11 +8,15 @@
 #include <thread>
 using Recv = commonlib2::RecvChan<int>;
 void test_thread(Recv r) {
+    r.set_block(true);
     while (true) {
         int data = 0;
         if (auto e = r >> data) {
             std::cout << data << "\n";
             Sleep(1);
+        }
+        else if (e == commonlib2::ChanError::empty) {
+            std::cout << "empty\n";
         }
         else if (e == commonlib2::ChanError::closed) {
             std::cout << "closed\n";
@@ -47,7 +51,8 @@ int main(int argc, char** argv) {
             w.close();
             break;
         }
-        Sleep(1);
+        std::cout << "sleeping delta...\n";
+        Sleep(1000);
         count++;
     }
     Sleep(10);
