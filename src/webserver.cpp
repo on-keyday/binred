@@ -170,6 +170,9 @@ std::string parse_command(const std::string& str, WsSession& se) {
         if (cmd[1] == (const char*)u8"しすてむ") {
             return (const char*)u8"しすてむ is administrator name";
         }
+        if (se.user == cmd[1]) {
+            return "";
+        }
         roomlock.lock();
         if (auto found = rooms.find(se.roomname); found != rooms.end()) {
             found->second << (const char*)u8"しすてむ>change name from " + se.user + " to " + cmd[1];
