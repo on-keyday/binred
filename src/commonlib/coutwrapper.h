@@ -151,7 +151,7 @@ namespace PROJECT_NAME {
 #endif
             Reader(ss.str()) >> tmp;
 
-            fwrite(tmp.c_str(), sizeof(tmp[0]), tmp.size(), fout);
+            fwrite(tmp.c_str(), sizeof(tmp[0]), tmp.size(), base);
             return *this;
         }
 
