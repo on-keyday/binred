@@ -43,16 +43,25 @@ namespace PROJECT_NAME {
        public:
         SendChan(std::shared_ptr<base_chan>& chan)
             : chan(chan) {}
-
+        SendChan() {}
         ChanErr operator<<(T&& value) {
+            if (!chan) {
+                return false;
+            }
             return chan->store(std::move(value));
         }
 
         bool close() {
+            if (!chan) {
+                return false;
+            }
             return chan->close();
         }
 
         bool closed() const {
+            if (!chan) {
+                return false;
+            }
             return chan->closed();
         }
     };
@@ -68,16 +77,25 @@ namespace PROJECT_NAME {
        public:
         RecvChan(std::shared_ptr<base_chan>& chan)
             : chan(chan) {}
-
+        RecvChan() {}
         ChanErr operator>>(T& value) {
+            if (!chan) {
+                return false;
+            }
             return block ? chan->block_load(value) : chan->load(value);
         }
 
         bool close() {
+            if (!chan) {
+                return false;
+            }
             return chan->close();
         }
 
         bool closed() const {
+            if (!chan) {
+                return false;
+            }
             return chan->closed();
         }
 
@@ -344,27 +362,46 @@ namespace PROJECT_NAME {
        public:
         ForkChan(std::shared_ptr<ForkChannel<T, Que, Map>> p)
             : chan(p) {}
+        ForkChan() {}
 
         ChanErr operator<<(T&& t) {
+            if (!chan) {
+                return false;
+            }
             return chan->store(std::forward<T>(t));
         }
 
         ChanErr subscribe(size_t& id, const SendChan<T, Que>& sub) {
+            if (!chan) {
+                return false;
+            }
             return chan->subscribe(id, sub);
         }
 
         bool remove(size_t id) {
+            if (!chan) {
+                return false;
+            }
             return chan->remove(id);
         }
 
         bool reset_id() {
+            if (!chan) {
+                return false;
+            }
             return chan->reset_id();
         }
 
         bool close() {
+            if (!chan) {
+                return false;
+            }
             return chan->close();
         }
         size_t size() const {
+            if (!chan) {
+                return false;
+            }
             return chan->size();
         }
     };

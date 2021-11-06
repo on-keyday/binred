@@ -63,10 +63,11 @@ std::mutex roomlock;
 std::map<std::string, ForkChan<std::string>> rooms;
 
 struct WsSession {
+    std::shared_ptr<WebSocketServerConn> conn;
     RecvChan<std::string> r;
     SendChan<std::string> w;
-    WsSession(RecvChan<std::string> r, SendChan<std::string> w)
-        : r(r), w(w) {}
+    WsSession(std::shared_ptr<WebSocketServerConn> conn, RecvChan<std::string> r, SendChan<std::string> w)
+        : r(r), w(w), conn(conn) {}
     size_t id = 0, timeoutcount = 0;
     bool pinged = false;
     std::string roomname = "default", user = "guest";
@@ -249,16 +250,19 @@ std::string parse_command(const std::string& str, WsSession& se, std::string& bi
     return "no such command:" + cmd[1];
 }
 
-void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
+void websocket_thread(RecvChan<WsSession> r) {
+    r.set_block(true);
+    while (true) {
+        WsSession se;
+        r >> se;
+    }
+}
+
+void handle_websocket(std::shared_ptr<WebSocketServerConn> conn, SendChan<WsSession> ws) {
+    auto [s, re] = commonlib2::make_chan<WsSession>(100000);
     cout << conn->ipaddress() << ">connect\n";
     auto [w, r] = commonlib2::make_chan<std::string>(100);
-    WsSession se(r, w);
-    /*roomlock.lock();
-    auto e = add_to_room(se.id, "default", "guest", se.w);
-    roomlock.unlock();
-    cout << conn->ipaddress() << "<data\n";
-    cout << e << "\n";
-    conn->send_text(e.c_str());*/
+    WsSession se(conn, r, w);
     while (true) {
         if (conn->recvable() || Selecter::waitone(conn->borrow(), 0, 1)) {
             WsFrame frame;
@@ -324,6 +328,9 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
                 conn->send_text(data.c_str());
             }
         }
+        if (conn->recvable()) {
+            continue;
+        }
     }
     roomlock.lock();
     leave_room(false, se.id, se.roomname, se.user);
@@ -356,7 +363,7 @@ void handle_http(Recv r) {
                 cout << 400 << "\n";
                 continue;
             }
-            std::thread(handle_websocket, wsconn).detach();
+            handle_websocket(wsconn);
             cout << 101 << "\n";
             continue;
         }
