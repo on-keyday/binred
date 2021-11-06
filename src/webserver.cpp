@@ -458,10 +458,10 @@ int main(int argc, char** argv) {
     OptMap option;
     option.set_option({
         {"port", {'p'}, "set portnumber", 1, true},
-        {"rootdir", {'c'}, "set root directory", 1, true},
+        {"rootdir", {'r'}, "set root directory", 1, true},
     });
     ArgChange _(argc, argv);
-    int i = 0, c = 0;
+    int i = 1, c = 0;
     OptMap<>::OptResMap result;
     auto e = option.parse_opt(i, c, argc, argv, result);
     if (!e) {
