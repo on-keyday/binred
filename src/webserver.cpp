@@ -8,8 +8,6 @@
 using namespace socklib;
 using namespace commonlib2;
 
-using Recv = commonlib2::RecvChan<std::shared_ptr<HttpServerConn>>;
-using Send = commonlib2::ForkChan<std::shared_ptr<HttpServerConn>>;
 auto& cout = commonlib2::cout_wrapper_s();
 auto& cin = commonlib2::cin_wrapper();
 
@@ -357,22 +355,39 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn, SendChan<WsSess
     ws << WsSession(conn, r, w);
 }
 
-void handle_http(Recv r, SendChan<WsSession> ws, RecvChan<WsSession> rs) {
+struct HttpSession {
+    std::shared_ptr<HttpServerConn> conn;
+    time_t actime = 0;
+};
+
+void handle_http(RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSession> ws, RecvChan<WsSession> rs) {
     r.set_block(true);
     std::thread(websocket_thread, ws, rs).detach();
     while (true) {
-        std::shared_ptr<HttpServerConn> conn;
+        HttpSession session;
         bool sent = false;
         try {
-            if ((r >> conn) == commonlib2::ChanError::closed) {
+            if ((r >> session) == commonlib2::ChanError::closed) {
                 ws.close();
                 cout << std::this_thread::get_id() << ":closed\n";
                 break;
             }
-            if (!conn) {
+            if (!session.conn) {
                 continue;
             }
-            TimeoutContext timeout(60);
+            if (session.actime != 0) {
+                if (std::time(nullptr) - session.actime >= 5) {
+                    continue;
+                }
+            }
+            auto conn = session.conn;
+            if (session.actime != 0) {
+                if (!Selecter::waitone(conn->borrow(), 0, 1)) {
+                    s << std::move(session);
+                    continue;
+                }
+            }
+            TimeoutContext timeout(10);
             SleeperContext ctx(&timeout);
             if (!conn->recv(&timeout)) {
                 continue;
@@ -382,6 +397,15 @@ void handle_http(Recv r, SendChan<WsSession> ws, RecvChan<WsSession> rs) {
             cout << found->second << ", request path ";
             cout << conn->path() + conn->query() << ", respond ";
             auto path = normalize(conn->path());
+            std::pair<std::string, std::string> connstate;
+            connstate.first = "Connection";
+            connstate.second = "close";
+            bool keepalive = false;
+            if (auto found = conn->request().find("connection"); found != conn->request().end()) {
+                if (found->second == "keep-alive" || found->second == "Keep-Alive") {
+                    connstate.second = "Keep-Alive; maxage=5";
+                }
+            }
             if (path == "ws") {
                 auto wsconn = WebSocket::default_hijack_server_proc(conn);
                 if (!wsconn) {
@@ -401,18 +425,26 @@ void handle_http(Recv r, SendChan<WsSession> ws, RecvChan<WsSession> rs) {
                     r >> data;
                     auto ctype = get_contenttype(data, path);
                     sent = true;
-                    conn->send(200, "OK", {ctype, {"Connection", "close"}}, data.c_str(), data.size());
+                    conn->send(200, "OK", {ctype, connstate}, data.c_str(), data.size());
                     cout << 200 << "\n";
+                    if (keepalive) {
+                        session.actime = std::time(nullptr);
+                        s << std::move(session);
+                    }
                     continue;
                 }
             }
             sent = true;
-            conn->send(404, "Not Found", {{"Content-Type", "text/html"}, {"Connection", "close"}}, "<h1>Page Not Found</h1>", 23);
+            conn->send(404, "Not Found", {{"Content-Type", "text/html"}, connstate}, "<h1>Page Not Found</h1>", 23);
             cout << 404 << "\n";
+            if (keepalive) {
+                session.actime = std::time(nullptr);
+                s << std::move(session);
+            }
         } catch (...) {
             cout << "exception thrown\n";
-            if (conn) {
-                conn->send(500, reason_phrase(500));
+            if (!sent && session.conn) {
+                session.conn->send(500, reason_phrase(500));
             }
         }
     }
@@ -420,8 +452,8 @@ void handle_http(Recv r, SendChan<WsSession> ws, RecvChan<WsSession> rs) {
 
 int main(int argc, char** argv) {
     IOWrapper::Init();
-    auto [w, r] = commonlib2::make_chan<std::shared_ptr<HttpServerConn>>(100);
-    auto [ws, wr] = commonlib2::make_chan<WsSession>();
+    auto [w, r] = commonlib2::make_chan<HttpSession>(500000);
+    auto [ws, wr] = commonlib2::make_chan<WsSession>(500000);
     rooms.emplace("default", make_forkchan<std::string>());
     auto hrd = std::thread::hardware_concurrency();
     for (auto i = 0; i < hrd / 2; i++) {
@@ -473,7 +505,7 @@ int main(int argc, char** argv) {
             w.close();
             break;
         }
-        w << std::move(accept);
+        w << HttpSession{accept, 0};
     }
     Sleep(1000);
 }
