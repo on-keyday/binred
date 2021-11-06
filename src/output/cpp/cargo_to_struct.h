@@ -150,6 +150,15 @@ namespace binred {
                 }
                 setter += ") {\n";
                 std::string err = cargo.name + "_" + name;
+                current = name;
+                if (param->bind_c) {
+                    ctx.set_error_enum(err + "_bind");
+                    setter += "if (!(" + trace_expr(param->bind_c->expr, formatter) +
+                              ")){\nreturn ";
+                    setter += ctx.error_enum();
+                    setter += "::" + err + "_bind;\n}\n";
+                }
+                current.clear();
                 if (param->type == ParamType::byte && bylen == 0) {
                     ctx.set_error_enum(err + "_length");
                     setter += "if ((" + ctx.length_of_byte("__v_input") + ")!=(";
@@ -161,13 +170,6 @@ namespace binred {
                     setter += "::" + err + "_length;\n}\n";
                 }
                 current = name;
-                if (param->bind_c) {
-                    ctx.set_error_enum(err + "_bind");
-                    setter += "if (!(" + trace_expr(param->bind_c->expr, formatter) +
-                              ")){\nreturn ";
-                    setter += ctx.error_enum();
-                    setter += "::" + err + "_bind;\n}\n";
-                }
                 if (param->if_c) {
                     ctx.set_error_enum(err + "_if");
                     setter += "if (!(" + trace_expr(param->if_c->expr, formatter) +
