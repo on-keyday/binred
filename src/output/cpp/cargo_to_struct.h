@@ -130,12 +130,15 @@ namespace binred {
                 }
                 ctx.write(";\n\n");
                 //ctx.write("public:\n");
-                if (bylen != 0) {
+                if (param->type == ParamType::byte || param->type == ParamType::custom) {
                     getter += "const ";
                 }
                 getter += tyname;
                 if (bylen != 0) {
                     getter += "*";
+                }
+                else if (param->type == ParamType::byte || param->type == ParamType::custom) {
+                    getter += "&";
                 }
                 getter += (" get_" + name + "() const {\nreturn " +
                            name + ";\n}\n\n");
