@@ -97,8 +97,13 @@ void leave_room(bool nocomment, size_t id, const std::string& roomname, const st
             found->second << (const char*)u8"しすてむ>leave " + user + "(" + std::to_string(id) + ") from " + roomname;
         }
         found->second.remove(id);
-        if (!found->second.size() && found->first != "default") {
-            rooms.erase(found->first);
+        if (!found->second.size()) {
+            if (found->first != "default") {
+                rooms.erase(found->first);
+            }
+            else {
+                found->second.reset_id();
+            }
         }
     }
 }
