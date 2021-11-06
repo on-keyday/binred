@@ -363,7 +363,7 @@ struct HttpSession {
     time_t actime = 0;
 };
 
-void handle_http(RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSession> ws, RecvChan<WsSession> rs) {
+void handle_http(std::string indexfile, RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSession> ws, RecvChan<WsSession> rs) {
     r.set_block(true);
     cout << std::this_thread::get_id() << ":http thread start\n";
     std::thread(websocket_thread, ws, rs).detach();
@@ -468,6 +468,7 @@ int main(int argc, char** argv) {
         {"rootdir", {'r', 'c'}, "set root directory", 1, true},
         {"logfile", {'f'}, "set logfile", 1, true},
         {"help", {'h'}, "show help"},
+        {"index", {'i'}, "set index", 1, true},
     });
     ArgChange _(argc, argv);
     OptMap<>::OptResMap result;
@@ -509,12 +510,16 @@ int main(int argc, char** argv) {
         }
         cout.get().set_multiout(true);
     }
+    std::string index;
+    if (auto v = result.has_("index")) {
+        index = (*v->arg())[0];
+    }
     auto [w, r] = commonlib2::make_chan<HttpSession>(500000);
     auto [ws, wr] = commonlib2::make_chan<WsSession>(500000);
     rooms.emplace("default", make_forkchan<std::string>());
     auto hrd = std::thread::hardware_concurrency();
     for (auto i = 0; i < hrd / 2; i++) {
-        std::thread(handle_http, r, w, ws, wr).detach();
+        std::thread(handle_http, index, r, w, ws, wr).detach();
     }
     Server sv;
     std::thread([&] {
