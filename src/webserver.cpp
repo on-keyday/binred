@@ -332,6 +332,7 @@ void websocket_thread(SendChan<WsSession> w, RecvChan<WsSession> r) {
                 }
                 w << std::move(se);
                 leave = false;
+                break;
             }
             if (leave) {
                 roomlock.lock();
@@ -423,7 +424,7 @@ int main(int argc, char** argv) {
     auto [ws, wr] = commonlib2::make_chan<WsSession>();
     rooms.emplace("default", make_forkchan<std::string>());
     auto hrd = std::thread::hardware_concurrency();
-    for (auto i = 0; i < (hrd - 1) / 2; i++) {
+    for (auto i = 0; i < hrd / 2; i++) {
         std::thread(handle_http, r, ws, wr).detach();
     }
     Server sv;
