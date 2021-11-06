@@ -35,6 +35,7 @@ namespace binred {
                         ret += ".";
                         ret += "get_" + splt[i] + "()";
                     }
+                    return true;
                 }
             }
             return false;
