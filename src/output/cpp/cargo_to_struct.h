@@ -102,7 +102,7 @@ namespace binred {
             auto formatter = format_alias_and_cargo(record, current);
             ctx.write("\nstruct ");
             ctx.write(cargo.name);
-            ctx.write(" {\nprivate:\n");
+            ctx.write(" {\nprivate:\n\n");
             std::string getter, setter;
             for (auto i = 0; i < cargo.params.size(); i++) {
                 std::string tyname;
@@ -185,7 +185,7 @@ namespace binred {
                 setter += ctx.error_enum();
                 setter += "::none;\n}\n";
             }
-            ctx.write("\npublic:\n");
+            ctx.write("\npublic:\n\n");
             ctx.write(getter);
             ctx.write(setter);
             ctx.write("};\n");
