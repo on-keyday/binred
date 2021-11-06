@@ -59,13 +59,15 @@ namespace binred {
                     minvalue = e.first;
                 }
             }
-            ctx.write("\nenum ");
+            ctx.write("\nenum class");
             ctx.write(als.name);
             ctx.write(" : ");
-            ctx.write(get_type(maxvalue, minvalue));
+            auto type = get_type(maxvalue, minvalue);
+            ctx.write(type);
             ctx.write("{\n");
             ctx.write(tmpwrite);
             ctx.write("};\n");
+            als.baseclass = type;
             return true;
         }
     };

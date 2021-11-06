@@ -5,6 +5,7 @@
 #include "../output_context.h"
 #include "../../calc/get_const.h"
 #include "../../calc/trace_expr.h"
+#include "format_alias_and_cargo.h"
 
 namespace binred {
     struct CargoToCppStruct {
@@ -87,16 +88,17 @@ namespace binred {
             return true;
         }
 
-        static bool set_default(OutContext& ctx, std::shared_ptr<Param>& param) {
+        static bool set_default(OutContext& ctx, std::shared_ptr<Param>& param, auto& formatter) {
             if (param->default_v) {
                 ctx.write(" = {");
-                ctx.write(trace_expr(param->default_v->expr));
+                ctx.write(trace_expr(param->default_v->expr, formatter));
                 ctx.write("}");
             }
             return true;
         }
 
-        static bool convert(OutContext& ctx, Cargo& cargo) {
+        static bool convert(OutContext& ctx, Cargo& cargo, Record& record) {
+            auto formatter = format_alias_and_cargo(record);
             ctx.write("\nstruct ");
             ctx.write(cargo.name);
             ctx.write(" {\n");
@@ -117,7 +119,7 @@ namespace binred {
                     ctx.write(std::to_string(bylen));
                     ctx.write("]");
                 }
-                if (!set_default(ctx, param)) {
+                if (!set_default(ctx, param, formatter)) {
                     return false;
                 }
                 ctx.write(";\n\n");
@@ -154,7 +156,7 @@ namespace binred {
                     ctx.write(")!=(");
                     auto bin = static_cast<Builtin*>(&*param);
                     auto lenp = static_cast<ExprLength*>(&*bin->length);
-                    ctx.write(trace_expr(lenp->expr));
+                    ctx.write(trace_expr(lenp->expr, formatter));
                     ctx.write(")){\nreturn ");
                     ctx.write(ctx.error_enum());
                     ctx.write("::" + err + "_length");
@@ -163,7 +165,7 @@ namespace binred {
                 if (param->bind_c) {
                     ctx.set_error_enum(err + "_bind");
                     ctx.write("if (!(");
-                    auto result = trace_expr(param->bind_c->expr);
+                    auto result = trace_expr(param->bind_c->expr, formatter);
                     result = std::regex_replace(result, std::regex(name), "__v_input");
                     ctx.write(result);
                     ctx.write(")){\nreturn ");
@@ -174,7 +176,7 @@ namespace binred {
                 if (param->if_c) {
                     ctx.set_error_enum(err + "_if");
                     ctx.write("if (!(");
-                    auto result = trace_expr(param->if_c->expr);
+                    auto result = trace_expr(param->if_c->expr, formatter);
                     result = std::regex_replace(result, std::regex(name), "__v_input");
                     ctx.write(result);
                     ctx.write(")){\nreturn ");

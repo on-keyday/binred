@@ -12,5 +12,6 @@ namespace binred {
             : Element(ElementType::alias) {}
         std::string name;
         std::map<std::string, std::shared_ptr<Value>> alias;
+        std::string baseclass;
     };
 }  // namespace binred
