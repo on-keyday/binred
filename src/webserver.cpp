@@ -362,12 +362,7 @@ int main(int argc, char** argv) {
             if (!cmd.size()) {
                 continue;
             }
-            for (auto& i : cmd) {
-                if (is_string_symbol(i[0])) {
-                    i.erase(0, 1);
-                    i.pop_back();
-                }
-            }
+            remove_strsymbol(cmd);
             if (cmd[0] == "exit" || cmd[0] == "quit") {
                 sv.set_suspend(true);
                 break;
