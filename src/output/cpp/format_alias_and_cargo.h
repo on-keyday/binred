@@ -16,17 +16,24 @@ namespace binred {
                         }
                     }
                 }
-                else if (splt.size() == 2) {
-                    auto found = rec.aliases.find(splt[0]);
-                    if (found != rec.aliases.end()) {
-                        if (found->second->baseclass.size()) {
-                            ret += found->second->baseclass;
+                else {
+                    if (splt.size() == 2) {
+                        auto found = rec.aliases.find(splt[0]);
+                        if (found != rec.aliases.end()) {
+                            if (found->second->baseclass.size()) {
+                                ret += found->second->baseclass;
+                            }
+                            else {
+                                ret += "std::uint64_t";
+                            }
+                            ret += "(" + splt[0] + "::" + splt[1] + ")";
+                            return true;
                         }
-                        else {
-                            ret += "std::uint64_t";
-                        }
-                        ret += "(" + splt[0] + "::" + splt[1] + ")";
-                        return true;
+                    }
+                    ret += splt[0];
+                    for (size_t i = 1; i < splt.size(); i++) {
+                        ret += ".";
+                        ret += "get_" + splt[i] + "()";
                     }
                 }
             }
