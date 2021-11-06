@@ -24,6 +24,41 @@ normalize(const std::string& in) {
     return pt;
 }
 
+std::pair<std::string, std::string> get_contenttype(std::string& data, std::filesystem::path& path) {
+    std::pair<std::string, std::string> ctype;
+    ctype.first = "Content-Type";
+    auto ext = path.extension();
+    if (ext == ".html" || ext == ".htm") {
+        ctype.second = "text/html";
+    }
+    else if (ext == ".js") {
+        ctype.second = "text/javascript";
+    }
+    else if (ext == ".json") {
+        ctype.second = "application/json";
+    }
+    else if (ext == ".css") {
+        ctype.second = "text/css";
+    }
+    else if (ext == ".csv") {
+        ctype.second = "text/csv";
+    }
+    else if (ext == ".txt") {
+        ctype.second = "text/plain";
+    }
+    Reader<ToUTF32<std::string>> tmp(data);
+    if (tmp.ref().size()) {
+        if (!ctype.second.size()) {
+            ctype.second = "text/plain";
+        }
+        ctype.second += "; charset=UTF-8";
+    }
+    else if (!ctype.second.size()) {
+        ctype.second = "application/octet-stream";
+    }
+    return ctype;
+}
+
 std::mutex roomlock;
 std::map<std::string, ForkChan<std::string>> rooms;
 
@@ -68,7 +103,7 @@ void leave_room(bool nocomment, size_t id, const std::string& roomname, const st
     }
 }
 
-std::string parse_command(const std::string& str, WsSession& se) {
+std::string parse_command(const std::string& str, WsSession& se, std::string& binarydata) {
     auto cmd = commonlib2::split(str, " ");
     if (!cmd.size()) {
         return "need any command";
@@ -191,6 +226,21 @@ std::string parse_command(const std::string& str, WsSession& se) {
         se.user = cmd[1];
         return "";
     }
+    else if (cmd[0] == "file") {
+        if (cmd.size() != 2) {
+            return "need file name";
+        }
+        auto path = normalize(cmd[1]);
+        path_string pathstr;
+        Reader(path.c_str()) >> pathstr;
+        Reader tmp(FileReader(pathstr.c_str()));
+        if (!tmp.ref().is_open()) {
+            return "no such file";
+        }
+        tmp >> binarydata;
+        auto ctype = get_contenttype(binarydata, path);
+        return ctype.first + ":" + ctype.second;
+    }
     return "no such command:" + cmd[1];
 }
 
@@ -220,10 +270,11 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
                 se.pinged = false;
                 cout << conn->ipaddress() + ">pong\n";
             }
-            else if (frame.frame_type("text") || frame.frame_type("binary")) {
+            else if (frame.frame_type("text")) {
                 cout << conn->ipaddress() << ">data\n";
                 cout << frame.get_data() << "\n";
-                auto resp = parse_command(frame.get_data(), se);
+                std::string data;
+                auto resp = parse_command(frame.get_data(), se, data);
                 if (resp.size()) {
                     cout << conn->ipaddress() << "<data\n";
                     if (resp == "close") {
@@ -237,6 +288,10 @@ void handle_websocket(std::shared_ptr<WebSocketServerConn> conn) {
                         cout << resp << "\n";
                         conn->send_text(resp.c_str());
                     }
+                }
+                if (data.size()) {
+                    conn->send(data.c_str(), data.size());
+                    cout << conn->ipaddress() << "<binary data\n";
                 }
             }
             se.timeoutcount = 0;
@@ -301,41 +356,13 @@ void handle_http(Recv r) {
             continue;
         }
         {
-            Reader r(FileReader(path.c_str()));
+            path_string pathstr;
+            Reader(path.c_str()) >> pathstr;
+            Reader r(FileReader(pathstr.c_str()));
             if (r.ref().is_open()) {
                 std::string data;
                 r >> data;
-                std::pair<std::string, std::string> ctype;
-                ctype.first = "Content-Type";
-                auto ext = path.extension();
-                if (ext == ".html" || ext == ".htm") {
-                    ctype.second = "text/html";
-                }
-                else if (ext == ".js") {
-                    ctype.second = "text/javascript";
-                }
-                else if (ext == ".json") {
-                    ctype.second = "application/json";
-                }
-                else if (ext == ".css") {
-                    ctype.second = "text/css";
-                }
-                else if (ext == ".csv") {
-                    ctype.second = "text/csv";
-                }
-                else if (ext == ".txt") {
-                    ctype.second = "text/plain";
-                }
-                Reader<ToUTF32<std::string>> tmp(data);
-                if (tmp.ref().size()) {
-                    if (!ctype.second.size()) {
-                        ctype.second = "text/plain";
-                    }
-                    ctype.second += "; charset=UTF-8";
-                }
-                else {
-                    ctype.second = "application/octet-stream";
-                }
+                auto ctype = get_contenttype(data, path);
                 conn->send(200, "OK", {ctype, {"Connection", "close"}}, data.c_str(), data.size());
                 cout << 200 << "\n";
                 continue;
