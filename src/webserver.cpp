@@ -508,8 +508,8 @@ int main(int argc, char** argv) {
                  << "\n";
             return -1;
         }
-        cout << "log file:" << (*v->arg())[0] << "\n";
         cout.get().set_multiout(true);
+        cout << "log file:" << (*v->arg())[0] << "\n";
     }
     std::string index;
     if (auto v = result.has_("index")) {
