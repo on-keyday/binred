@@ -98,7 +98,8 @@ namespace binred {
         }
 
         static bool convert(OutContext& ctx, Cargo& cargo, Record& record) {
-            auto formatter = format_alias_and_cargo(record);
+            std::string current;
+            auto formatter = format_alias_and_cargo(record, current);
             ctx.write("\nstruct ");
             ctx.write(cargo.name);
             ctx.write(" {\n");
@@ -166,7 +167,6 @@ namespace binred {
                     ctx.set_error_enum(err + "_bind");
                     ctx.write("if (!(");
                     auto result = trace_expr(param->bind_c->expr, formatter);
-                    result = std::regex_replace(result, std::regex(name), "__v_input");
                     ctx.write(result);
                     ctx.write(")){\nreturn ");
                     ctx.write(ctx.error_enum());
@@ -177,7 +177,6 @@ namespace binred {
                     ctx.set_error_enum(err + "_if");
                     ctx.write("if (!(");
                     auto result = trace_expr(param->if_c->expr, formatter);
-                    result = std::regex_replace(result, std::regex(name), "__v_input");
                     ctx.write(result);
                     ctx.write(")){\nreturn ");
                     ctx.write(ctx.error_enum());
