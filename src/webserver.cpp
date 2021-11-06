@@ -458,12 +458,13 @@ int main(int argc, char** argv) {
     OptMap option;
     option.set_option({
         {"port", {'p'}, "set portnumber", 1, true},
-        {"rootdir", {'r'}, "set root directory", 1, true},
+        {"rootdir", {'r', 'c'}, "set root directory", 1, true},
+        {"help", {'h'}, "show help"},
     });
     ArgChange _(argc, argv);
-    int i = 1, c = 0;
     OptMap<>::OptResMap result;
-    auto e = option.parse_opt(i, c, argc, argv, result);
+    option.set_usage(argv[0] + std::string(" <options>"));
+    auto e = option.parse_opt(argc, argv, result);
     if (!e) {
         cout << "webserver: " << error_message(e) << "\n";
         return -1;
@@ -478,6 +479,10 @@ int main(int argc, char** argv) {
             cout << "cd: changed\n";
         }
     };
+    if (result.has_("help")) {
+        cout << option.help();
+        return 0;
+    }
     std::uint16_t port = 8080;
     if (auto v = result.has_("port")) {
         Reader((*v->arg())[0]) >> port;
