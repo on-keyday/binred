@@ -466,6 +466,7 @@ int main(int argc, char** argv) {
     option.set_option({
         {"port", {'p'}, "set portnumber", 1, true},
         {"rootdir", {'r', 'c'}, "set root directory", 1, true},
+        {"logfile", {'f'}, "set logfile", 1, true},
         {"help", {'h'}, "show help"},
     });
     ArgChange _(argc, argv);
@@ -499,6 +500,13 @@ int main(int argc, char** argv) {
     }
     if (auto v = result.has_("rootdir")) {
         change_dir((*v->arg())[0]);
+    }
+    if (auto v = result.has_("logfile")) {
+        if (!cout.get().open((*v->arg())[0])) {
+            cout << "webserver: can't open file" << (*v->arg())[0]
+                 << "\n";
+            return -1;
+        }
     }
     auto [w, r] = commonlib2::make_chan<HttpSession>(500000);
     auto [ws, wr] = commonlib2::make_chan<WsSession>(500000);
