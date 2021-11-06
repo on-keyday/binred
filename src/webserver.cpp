@@ -508,6 +508,7 @@ int main(int argc, char** argv) {
                  << "\n";
             return -1;
         }
+        cout << "log file:" << (*v->arg())[0] << "\n";
         cout.get().set_multiout(true);
     }
     if (auto v = result.has_("rootdir")) {
@@ -558,8 +559,8 @@ int main(int argc, char** argv) {
     Sleep(500);
     cout << "accept address:\n"
          << sv.ipaddress_list() << "\n";
-    cout << "port:\n"
-         << port;
+    cout << "port:"
+         << port << "\n";
     while (true) {
         auto accept = Http1::serve(sv, port);
         if (!accept) {
