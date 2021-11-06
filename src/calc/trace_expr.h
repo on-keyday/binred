@@ -12,7 +12,7 @@ namespace binred {
         std::string ret;
         if (e->left) {
             ret += " ";
-            ret += trace_expr(e->left);
+            ret += trace_expr(e->left, std::forward<Translate>(translate));
             ret += " ";
         }
         if (!commonlib2::Invoker<Translate, bool, false>::invoke(std::forward<Translate>(translate), ret, e)) {
@@ -20,7 +20,7 @@ namespace binred {
         }
         if (e->right) {
             ret += " ";
-            ret += trace_expr(e->right);
+            ret += trace_expr(e->right, std::forward<Translate>(translate));
         }
         return ret;
     }
