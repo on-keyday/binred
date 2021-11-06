@@ -15,7 +15,7 @@ namespace binred {
             ret += trace_expr(e->left);
             ret += " ";
         }
-        if (!commonlib2::Invoker<Translate, bool, false>::invoke(std::move(translate), ret, e)) {
+        if (!commonlib2::Invoker<Translate, bool, false>::invoke(std::forward<Translate>(translate), ret, e)) {
             ret += e->v;
         }
         if (e->right) {

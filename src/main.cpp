@@ -8,7 +8,6 @@
 
 void binred_test() {
     binred::TokenReader red;
-
     binred::ParseResult result;
     binred::Record record;
     {
@@ -32,4 +31,5 @@ void binred_test() {
 }
 
 int main(int argc, char** argv) {
+    binred_test();
 }
