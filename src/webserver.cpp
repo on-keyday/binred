@@ -404,6 +404,7 @@ void handle_http(RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSe
             if (auto found = conn->request().find("connection"); found != conn->request().end()) {
                 if (found->second == "keep-alive" || found->second == "Keep-Alive") {
                     connstate.second = "keep-alive; maxage=5";
+                    keepalive = true;
                 }
             }
             if (path == "ws") {
