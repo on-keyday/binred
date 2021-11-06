@@ -379,6 +379,7 @@ void handle_http(RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSe
             }
             if (session.actime != 0) {
                 if (std::time(nullptr) - session.actime >= 5) {
+                    cout << session.conn->ipaddress() << " end keep-alive\n";
                     continue;
                 }
             }
