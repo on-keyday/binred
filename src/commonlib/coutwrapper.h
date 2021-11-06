@@ -346,7 +346,7 @@ namespace PROJECT_NAME {
             }
             if (file.is_open()) {
                 file << in;
-                if (multiout) {
+                if (!multiout) {
                     return *this;
                 }
             }
