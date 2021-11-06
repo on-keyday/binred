@@ -102,7 +102,8 @@ namespace binred {
             auto formatter = format_alias_and_cargo(record, current);
             ctx.write("\nstruct ");
             ctx.write(cargo.name);
-            ctx.write(" {\n");
+            ctx.write(" {\nprivate:\n");
+            std::string getter, setter;
             for (auto i = 0; i < cargo.params.size(); i++) {
                 std::string tyname;
                 auto& param = cargo.params[i];
@@ -111,7 +112,7 @@ namespace binred {
                     return false;
                 }
                 auto& name = param->name;
-                ctx.write("private:\n");
+                current.clear();
                 ctx.write(tyname);
                 ctx.write(" ");
                 ctx.write(name);
@@ -124,82 +125,69 @@ namespace binred {
                     return false;
                 }
                 ctx.write(";\n\n");
-                ctx.write("public:\n");
+                //ctx.write("public:\n");
                 if (bylen != 0) {
-                    ctx.write("const ");
+                    getter += "const ";
                 }
-                ctx.write(tyname);
+                getter += tyname;
                 if (bylen != 0) {
-                    ctx.write("*");
+                    getter += "*";
                 }
-                ctx.write(" get_");
-                ctx.write(name);
-                ctx.write("() const {\nreturn ");
-                ctx.write(name);
-                ctx.write(";\n}\n\n");
-                ctx.write(ctx.error_enum());
-                ctx.write(" set_");
-                ctx.write(name);
-                ctx.write("(const ");
-                ctx.write(tyname);
+                getter += (" get_" + name + "() const {\nreturn " +
+                           name + ";\n}\n\n");
+                setter += "\n";
+                setter += ctx.error_enum();
+                setter += " set_" + name + "(const " + tyname;
                 if (bylen != 0) {
-                    ctx.write("* __v_input");
+                    setter += "* __v_input";
                 }
                 else {
-                    ctx.write("& __v_input");
+                    setter += "& __v_input";
                 }
-                ctx.write(") {\n");
+                setter += ") {\n";
                 std::string err = cargo.name + "_" + name;
                 if (param->type == ParamType::byte && bylen == 0) {
                     ctx.set_error_enum(err + "_length");
-                    ctx.write("if ((");
-                    ctx.write(ctx.length_of_byte("__v_input"));
-                    ctx.write(")!=(");
+                    setter += "if ((" + ctx.length_of_byte("__v_input") + ")!=(";
                     auto bin = static_cast<Builtin*>(&*param);
                     auto lenp = static_cast<ExprLength*>(&*bin->length);
-                    ctx.write(trace_expr(lenp->expr, formatter));
-                    ctx.write(")){\nreturn ");
-                    ctx.write(ctx.error_enum());
-                    ctx.write("::" + err + "_length");
-                    ctx.write(";\n}\n");
+                    setter += trace_expr(lenp->expr, formatter) +
+                              ")){\nreturn ";
+                    setter += ctx.error_enum();
+                    setter += "::" + err + "_length;\n}\n";
                 }
+                current = name;
                 if (param->bind_c) {
                     ctx.set_error_enum(err + "_bind");
-                    ctx.write("if (!(");
-                    auto result = trace_expr(param->bind_c->expr, formatter);
-                    ctx.write(result);
-                    ctx.write(")){\nreturn ");
-                    ctx.write(ctx.error_enum());
-                    ctx.write("::" + err + "_bind");
-                    ctx.write(";\n}\n");
+                    setter += "if (!(" + trace_expr(param->bind_c->expr, formatter) +
+                              ")){\nreturn ";
+                    setter += ctx.error_enum();
+                    setter += "::" + err + "_bind;\n}\n";
                 }
                 if (param->if_c) {
                     ctx.set_error_enum(err + "_if");
-                    ctx.write("if (!(");
-                    auto result = trace_expr(param->if_c->expr, formatter);
-                    ctx.write(result);
-                    ctx.write(")){\nreturn ");
-                    ctx.write(ctx.error_enum());
-                    ctx.write("::" + err + "_if");
-                    ctx.write(";\n}\n");
+                    setter += "if (!(" + trace_expr(param->if_c->expr, formatter) +
+                              ")){\nreturn ";
+                    setter += ctx.error_enum();
+                    setter += "::" + err + "_if;\n}\n";
                 }
                 if (bylen != 0) {
-                    ctx.write("::memcpy(this->");
-                    ctx.write(name);
-                    ctx.write(",__v_input,");
-                    ctx.write(std::to_string(bylen));
-                    ctx.write(");\n");
+                    setter += "::memcpy(this->" +
+                              name + ",__v_input," +
+                              std::to_string(bylen) +
+                              ");\n";
                 }
                 else {
-                    ctx.write("this->");
-                    ctx.write(name);
-                    ctx.write("=__v_input;\n");
+                    setter += "this->" + name +
+                              "=__v_input;\n";
                 }
-                ctx.write("return ");
-                ctx.write(ctx.error_enum());
-                ctx.write("::none;\n");
-                ctx.write("}\n");
+                setter += "return ";
+                setter += ctx.error_enum();
+                setter += "::none;\n}\n";
             }
+            ctx.write("\npublic:\n");
+            ctx.write(getter);
+            ctx.write(setter);
             ctx.write("};\n");
             return true;
         }
