@@ -412,6 +412,9 @@ void handle_http(std::string indexfile, RecvChan<HttpSession> r, SendChan<HttpSe
                     keepalive = true;
                 }
             }
+            if (path == "." && indexfile.size()) {
+                path = indexfile;
+            }
             if (path == "ws") {
                 auto wsconn = WebSocket::default_hijack_server_proc(conn);
                 if (!wsconn) {
