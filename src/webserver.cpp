@@ -403,7 +403,7 @@ void handle_http(RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSe
             bool keepalive = false;
             if (auto found = conn->request().find("connection"); found != conn->request().end()) {
                 if (found->second == "keep-alive" || found->second == "Keep-Alive") {
-                    connstate.second = "Keep-Alive; maxage=5";
+                    connstate.second = "keep-alive; maxage=5";
                 }
             }
             if (path == "ws") {
@@ -457,7 +457,7 @@ int main(int argc, char** argv) {
     rooms.emplace("default", make_forkchan<std::string>());
     auto hrd = std::thread::hardware_concurrency();
     for (auto i = 0; i < hrd / 2; i++) {
-        std::thread(handle_http, r, ws, wr).detach();
+        std::thread(handle_http, r, w, ws, wr).detach();
     }
     Server sv;
     std::thread([&] {
