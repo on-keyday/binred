@@ -68,6 +68,7 @@ struct WsSession {
     SendChan<std::string> w;
     WsSession(std::shared_ptr<WebSocketServerConn> conn, RecvChan<std::string> r, SendChan<std::string> w)
         : r(r), w(w), conn(conn) {}
+    WsSession() {}
     size_t id = 0, timeoutcount = 0;
     bool pinged = false;
     std::string roomname = "default", user = "guest";
@@ -250,147 +251,179 @@ std::string parse_command(const std::string& str, WsSession& se, std::string& bi
     return "no such command:" + cmd[1];
 }
 
-void websocket_thread(RecvChan<WsSession> r) {
+void websocket_thread(SendChan<WsSession> w, RecvChan<WsSession> r) {
     r.set_block(true);
     while (true) {
         WsSession se;
-        r >> se;
+        try {
+            if ((r >> se) == ChanError::closed) {
+                cout << std::this_thread::get_id() << ":closed\n";
+                return;
+            }
+            auto conn = se.conn;
+            bool leave = true;
+            while (true) {
+                if (conn->recvable() || Selecter::waitone(conn->borrow(), 0, 1)) {
+                    WsFrame frame;
+                    if (!conn->recv(frame)) {
+                        cout << conn->ipaddress() << ">closed\n";
+                        return;
+                    }
+                    if (frame.frame_type("ping")) {
+                        cout << conn->ipaddress() + ">ping\n";
+                        conn->control(WsFType::pong, frame.get_data().c_str(), frame.get_data().size());
+                        cout << conn->ipaddress() + "<pong\n";
+                    }
+                    else if (frame.frame_type("pong")) {
+                        se.pinged = false;
+                        cout << conn->ipaddress() + ">pong\n";
+                    }
+                    else if (frame.frame_type("text")) {
+                        cout << conn->ipaddress() << ">data\n";
+                        cout << frame.get_data() << "\n";
+                        std::string data;
+                        auto resp = parse_command(frame.get_data(), se, data);
+                        if (resp.size()) {
+                            cout << conn->ipaddress() << "<data\n";
+                            if (resp == "close") {
+                                cout << "logout\n";
+                                conn->send_text("logout");
+                                cout << conn->ipaddress() << "<close\n";
+                                conn->control(WsFType::closing, "\x03\xe8", 2);
+                                break;
+                            }
+                            else {
+                                cout << resp << "\n";
+                                conn->send_text(resp.c_str());
+                            }
+                        }
+                        if (data.size()) {
+                            conn->send(data.c_str(), data.size());
+                            cout << conn->ipaddress() << "<binary data\n";
+                        }
+                    }
+                    se.timeoutcount = 0;
+                }
+                else {
+                    se.timeoutcount++;
+                    if (se.pinged && se.timeoutcount > 300) {
+                        cout << conn->ipaddress() + "<closed\n";
+                        conn->control(WsFType::closing, "\x03\xe8", 2);
+                        break;
+                    }
+                    else if (se.timeoutcount > 2000) {
+                        if (!conn->control(WsFType::ping)) {
+                            cout << conn->ipaddress() + "<closed\n";
+                            break;
+                        }
+                        cout << conn->ipaddress() + "<ping\n";
+                        se.pinged = true;
+                        se.timeoutcount = 0;
+                    }
+                    std::string data;
+                    if (auto e = se.r >> data) {
+                        cout << conn->ipaddress() << "<cast data\n";
+                        cout << data << "\n";
+                        conn->send_text(data.c_str());
+                    }
+                }
+                if (conn->recvable()) {
+                    continue;
+                }
+                w << std::move(se);
+                leave = false;
+            }
+            if (leave) {
+                roomlock.lock();
+                leave_room(false, se.id, se.roomname, se.user);
+                roomlock.unlock();
+            }
+        } catch (...) {
+            cout << "exception thrown\n";
+            if (se.conn) {
+                cout << "conn to " << se.conn->ipaddress() << " lost\n";
+                roomlock.lock();
+                leave_room(false, se.id, se.roomname, se.user);
+                roomlock.unlock();
+            }
+        }
     }
 }
 
 void handle_websocket(std::shared_ptr<WebSocketServerConn> conn, SendChan<WsSession> ws) {
-    auto [s, re] = commonlib2::make_chan<WsSession>(100000);
     cout << conn->ipaddress() << ">connect\n";
     auto [w, r] = commonlib2::make_chan<std::string>(100);
-    WsSession se(conn, r, w);
-    while (true) {
-        if (conn->recvable() || Selecter::waitone(conn->borrow(), 0, 1)) {
-            WsFrame frame;
-            if (!conn->recv(frame)) {
-                cout << conn->ipaddress() << ">closed\n";
-                return;
-            }
-            if (frame.frame_type("ping")) {
-                cout << conn->ipaddress() + ">ping\n";
-                conn->control(WsFType::pong, frame.get_data().c_str(), frame.get_data().size());
-                cout << conn->ipaddress() + "<pong\n";
-            }
-            else if (frame.frame_type("pong")) {
-                se.pinged = false;
-                cout << conn->ipaddress() + ">pong\n";
-            }
-            else if (frame.frame_type("text")) {
-                cout << conn->ipaddress() << ">data\n";
-                cout << frame.get_data() << "\n";
-                std::string data;
-                auto resp = parse_command(frame.get_data(), se, data);
-                if (resp.size()) {
-                    cout << conn->ipaddress() << "<data\n";
-                    if (resp == "close") {
-                        cout << "logout\n";
-                        conn->send_text("logout");
-                        cout << conn->ipaddress() << "<close\n";
-                        conn->control(WsFType::closing, "\x03\xe8", 2);
-                        break;
-                    }
-                    else {
-                        cout << resp << "\n";
-                        conn->send_text(resp.c_str());
-                    }
-                }
-                if (data.size()) {
-                    conn->send(data.c_str(), data.size());
-                    cout << conn->ipaddress() << "<binary data\n";
-                }
-            }
-            se.timeoutcount = 0;
-        }
-        else {
-            se.timeoutcount++;
-            if (se.pinged && se.timeoutcount > 300) {
-                cout << conn->ipaddress() + "<closed\n";
-                conn->control(WsFType::closing, "\x03\xe8", 2);
-                break;
-            }
-            else if (se.timeoutcount > 2000) {
-                if (!conn->control(WsFType::ping)) {
-                    cout << conn->ipaddress() + "<closed\n";
-                    break;
-                }
-                cout << conn->ipaddress() + "<ping\n";
-                se.pinged = true;
-                se.timeoutcount = 0;
-            }
-            std::string data;
-            if (auto e = r >> data) {
-                cout << conn->ipaddress() << "<cast data\n";
-                cout << data << "\n";
-                conn->send_text(data.c_str());
-            }
-        }
-        if (conn->recvable()) {
-            continue;
-        }
-    }
-    roomlock.lock();
-    leave_room(false, se.id, se.roomname, se.user);
-    roomlock.unlock();
+    ws << WsSession(conn, r, w);
 }
 
-void handle_http(Recv r) {
+void handle_http(Recv r, SendChan<WsSession> ws, RecvChan<WsSession> rs) {
     r.set_block(true);
+    std::thread(websocket_thread, ws, rs).detach();
     while (true) {
         std::shared_ptr<HttpServerConn> conn;
-        if ((r >> conn) == commonlib2::ChanError::closed) {
-            break;
-        }
-        if (!conn) {
-            continue;
-        }
-        TimeoutContext timeout(60);
-        SleeperContext ctx(&timeout);
-        if (!conn->recv(&timeout)) {
-            continue;
-        }
-        cout << "from " << conn->ipaddress() << ", with method ";
-        auto found = conn->request().find(":method");
-        cout << found->second << ", request path ";
-        cout << conn->path() + conn->query() << ", respond ";
-        auto path = normalize(conn->path());
-        if (path == "ws") {
-            auto wsconn = WebSocket::default_hijack_server_proc(conn);
-            if (!wsconn) {
-                cout << 400 << "\n";
+        bool sent = false;
+        try {
+            if ((r >> conn) == commonlib2::ChanError::closed) {
+                ws.close();
+                cout << std::this_thread::get_id() << ":closed\n";
+                break;
+            }
+            if (!conn) {
                 continue;
             }
-            handle_websocket(wsconn);
-            cout << 101 << "\n";
-            continue;
-        }
-        {
-            path_string pathstr;
-            Reader(path.c_str()) >> pathstr;
-            Reader r(FileReader(pathstr.c_str()));
-            if (r.ref().is_open()) {
-                std::string data;
-                r >> data;
-                auto ctype = get_contenttype(data, path);
-                conn->send(200, "OK", {ctype, {"Connection", "close"}}, data.c_str(), data.size());
-                cout << 200 << "\n";
+            TimeoutContext timeout(60);
+            SleeperContext ctx(&timeout);
+            if (!conn->recv(&timeout)) {
                 continue;
             }
+            cout << "from " << conn->ipaddress() << ", with method ";
+            auto found = conn->request().find(":method");
+            cout << found->second << ", request path ";
+            cout << conn->path() + conn->query() << ", respond ";
+            auto path = normalize(conn->path());
+            if (path == "ws") {
+                auto wsconn = WebSocket::default_hijack_server_proc(conn);
+                if (!wsconn) {
+                    cout << 400 << "\n";
+                    continue;
+                }
+                cout << 101 << "\n";
+                handle_websocket(wsconn, ws);
+                continue;
+            }
+            {
+                path_string pathstr;
+                Reader(path.c_str()) >> pathstr;
+                Reader r(FileReader(pathstr.c_str()));
+                if (r.ref().is_open()) {
+                    std::string data;
+                    r >> data;
+                    auto ctype = get_contenttype(data, path);
+                    sent = true;
+                    conn->send(200, "OK", {ctype, {"Connection", "close"}}, data.c_str(), data.size());
+                    cout << 200 << "\n";
+                    continue;
+                }
+            }
+            sent = true;
+            conn->send(404, "Not Found", {{"Content-Type", "text/html"}, {"Connection", "close"}}, "<h1>Page Not Found</h1>", 23);
+            cout << 404 << "\n";
+        } catch (...) {
+            cout << "exception thrown\n";
+            if (conn) {
+                conn->send(500, reason_phrase(500));
+            }
         }
-        conn->send(404, "Not Found", {{"Content-Type", "text/html"}, {"Connection", "close"}}, "<h1>Page Not Found</h1>", 23);
-        cout << 404 << "\n";
     }
 }
 
 int main(int argc, char** argv) {
     IOWrapper::Init();
     auto [w, r] = commonlib2::make_chan<std::shared_ptr<HttpServerConn>>(100);
+    auto [ws, wr] = commonlib2::make_chan<WsSession>();
     rooms.emplace("default", make_forkchan<std::string>());
-    for (auto i = 0; i < std::thread::hardware_concurrency() - 1; i++) {
-        std::thread(handle_http, r).detach();
+    for (auto i = 0; i < (std::thread::hardware_concurrency() - 1) / 2; i++) {
+        std::thread(handle_http, r, ws, wr).detach();
     }
     Server sv;
     std::thread([&] {
