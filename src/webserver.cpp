@@ -551,6 +551,18 @@ int main(int argc, char** argv) {
                 }
                 change_dir(cmd[1]);
             }
+            else if (cmd[0] == "comment") {
+                if (cmd.size() != 2) {
+                    cout << "need comment\n";
+                    continue;
+                }
+                roomlock.lock();
+                for (auto& p : rooms) {
+                    auto cp = cmd[1];
+                    p.second << (const char*)u8"しすてむ>" + std::move(cp);
+                }
+                roomlock.unlock();
+            }
             else {
                 cout << "no such command " << cmd[0] << "\n";
             }
