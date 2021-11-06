@@ -253,11 +253,12 @@ std::string parse_command(const std::string& str, WsSession& se, std::string& bi
 
 void websocket_thread(SendChan<WsSession> w, RecvChan<WsSession> r) {
     r.set_block(true);
+    cout << std::this_thread::get_id() << ":websocket thread start\n";
     while (true) {
         WsSession se;
         try {
             if ((r >> se) == ChanError::closed) {
-                cout << std::this_thread::get_id() << ":closed\n";
+                cout << std::this_thread::get_id() << ":websocket thread closed\n";
                 return;
             }
             auto conn = se.conn;
@@ -364,6 +365,7 @@ struct HttpSession {
 
 void handle_http(RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSession> ws, RecvChan<WsSession> rs) {
     r.set_block(true);
+    cout << std::this_thread::get_id() << ":http thread start\n";
     std::thread(websocket_thread, ws, rs).detach();
     while (true) {
         HttpSession session;
@@ -371,7 +373,7 @@ void handle_http(RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSe
         try {
             if ((r >> session) == commonlib2::ChanError::closed) {
                 ws.close();
-                cout << std::this_thread::get_id() << ":closed\n";
+                cout << std::this_thread::get_id() << ":http thread closed\n";
                 break;
             }
             if (!session.conn) {
