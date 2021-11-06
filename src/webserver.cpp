@@ -1,5 +1,6 @@
 #include <application/websocket.h>
 #include <fileio.h>
+#define COMMONLIB_IOWRAP_IN_CHARMODE _O_U16TEXT
 #include <coutwrapper.h>
 #include <channel.h>
 #include <thread>
