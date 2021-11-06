@@ -511,13 +511,13 @@ int main(int argc, char** argv) {
         cout << "log file:" << (*v->arg())[0] << "\n";
         cout.get().set_multiout(true);
     }
-    if (auto v = result.has_("rootdir")) {
-        change_dir((*v->arg())[0]);
-    }
     std::string index;
     if (auto v = result.has_("index")) {
         index = (*v->arg())[0];
         cout << "index file:" << index << "\n";
+    }
+    if (auto v = result.has_("rootdir")) {
+        change_dir((*v->arg())[0]);
     }
     auto [w, r] = commonlib2::make_chan<HttpSession>(500000);
     auto [ws, wr] = commonlib2::make_chan<WsSession>(500000);
