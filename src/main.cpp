@@ -18,8 +18,11 @@ void binred_test() {
     for (auto& a : record.aliases) {
         binred::AliasToCppEnum::convert(ctx, *a.second);
     }
-    for (auto& c : record.cargos) {
-        binred::CargoToCppStruct::convert(ctx, *c.second, record);
+    for (auto& c : result) {
+        if (c->type == binred::ElementType::cargo) {
+            auto cg = static_cast<binred::Cargo*>(&*c);
+            binred::CargoToCppStruct::convert(ctx, *cg, record);
+        }
     }
     {
         std::ofstream fs("D:/MiniTools/binred/generated/test.hpp");
