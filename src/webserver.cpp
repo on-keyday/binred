@@ -431,7 +431,7 @@ void handle_http(RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSe
                     conn->send(200, "OK", {ctype, connstate}, data.c_str(), data.size());
                     cout << 200;
                     if (keepalive) {
-                        cout << "keep-alive";
+                        cout << " keep-alive";
                         session.actime = std::time(nullptr);
                         s << std::move(session);
                     }
