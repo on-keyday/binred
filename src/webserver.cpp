@@ -10,7 +10,7 @@
 using namespace socklib;
 using namespace commonlib2;
 
-auto& cout = commonlib2::cout_wrapper_s();
+auto& cout = commonlib2::stdout_wrapper_s();
 auto& cin = commonlib2::cin_wrapper();
 
 std::filesystem::path
