@@ -5,6 +5,8 @@
 #include <thread>
 #include <filesystem>
 #include <direct.h>
+#include <optmap.h>
+#include <argvlib.h>
 using namespace socklib;
 using namespace commonlib2;
 
@@ -453,6 +455,39 @@ void handle_http(RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSe
 
 int main(int argc, char** argv) {
     IOWrapper::Init();
+    OptMap option;
+    option.set_option({
+        {"port", {'p'}, "set portnumber", 1, true},
+        {"rootdir", {'c'}, "set root directory", 1, true},
+    });
+    ArgChange _(argc, argv);
+    int i = 0, c = 0;
+    OptMap<>::OptResMap result;
+    auto e = option.parse_opt(i, c, argc, argv, result);
+    if (!e) {
+        cout << "webserver: " << error_message(e) << "\n";
+        return -1;
+    }
+    auto change_dir = [](auto& dir) {
+        path_string path;
+        Reader(dir) >> path;
+        if (_wchdir(path.c_str()) != 0) {
+            cout << "cd: failed to change dir\n";
+        }
+        else {
+            cout << "cd: changed\n";
+        }
+    };
+    std::uint16_t port = 8080;
+    if (auto v = result.has_("port")) {
+        Reader((*v->arg())[0]) >> port;
+        if (port == 0) {
+            port = 8080;
+        }
+    }
+    if (auto v = result.has_("rootdir")) {
+        change_dir((*v->arg())[0]);
+    }
     auto [w, r] = commonlib2::make_chan<HttpSession>(500000);
     auto [ws, wr] = commonlib2::make_chan<WsSession>(500000);
     rooms.emplace("default", make_forkchan<std::string>());
@@ -483,14 +518,7 @@ int main(int argc, char** argv) {
                     ::free(dir);
                     continue;
                 }
-                path_string path;
-                Reader(cmd[1]) >> path;
-                if (_wchdir(path.c_str()) != 0) {
-                    cout << "cd: failed to change dir\n";
-                }
-                else {
-                    cout << "cd: changed\n";
-                }
+                change_dir(cmd[1]);
             }
             else {
                 cout << "no such command " << cmd[0] << "\n";
@@ -508,5 +536,5 @@ int main(int argc, char** argv) {
         }
         w << HttpSession{accept, 0};
     }
-    Sleep(1000);
+    Sleep(2000);
 }
