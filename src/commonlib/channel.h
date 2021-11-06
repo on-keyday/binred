@@ -284,6 +284,18 @@ namespace PROJECT_NAME {
             return result;
         }
 
+        bool reset_id() {
+            if (!lock()) {
+                return false;
+            }
+            if (listeners.size()) {
+                return false;
+            }
+            this->id = 0;
+            unlock();
+            return true;
+        }
+
         ChanErr store(T&& value) {
             if (!lock()) {
                 return ChanError::closed;
@@ -343,6 +355,10 @@ namespace PROJECT_NAME {
 
         bool remove(size_t id) {
             return chan->remove(id);
+        }
+
+        bool reset_id() {
+            return chan->reset_id();
         }
 
         bool close() {
