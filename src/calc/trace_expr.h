@@ -11,18 +11,16 @@ namespace binred {
         }
         std::string ret;
         if (e->left) {
+            ret += " ";
             ret += trace_expr(e->left);
             ret += " ";
         }
-        if (!commonlib2::invoke_cb<Translate, bool>::invoke(std::move(translate), ret, e)) {
-        }
-        else {
+        if (!commonlib2::Invoker<Translate, bool, false>::invoke(std::move(translate), ret, e)) {
             ret += e->v;
         }
-        ret += " ";
         if (e->right) {
-            ret += trace_expr(e->right);
             ret += " ";
+            ret += trace_expr(e->right);
         }
         return ret;
     }
