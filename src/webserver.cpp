@@ -422,7 +422,8 @@ int main(int argc, char** argv) {
     auto [w, r] = commonlib2::make_chan<std::shared_ptr<HttpServerConn>>(100);
     auto [ws, wr] = commonlib2::make_chan<WsSession>();
     rooms.emplace("default", make_forkchan<std::string>());
-    for (auto i = 0; i < (std::thread::hardware_concurrency() - 1) / 2; i++) {
+    auto hrd = std::thread::hardware_concurrency();
+    for (auto i = 0; i < (hrd - 1) / 2; i++) {
         std::thread(handle_http, r, ws, wr).detach();
     }
     Server sv;
