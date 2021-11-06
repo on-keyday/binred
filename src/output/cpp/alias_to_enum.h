@@ -59,7 +59,7 @@ namespace binred {
                     minvalue = e.first;
                 }
             }
-            ctx.write("\nenum class");
+            ctx.write("\nenum class ");
             ctx.write(als.name);
             ctx.write(" : ");
             auto type = get_type(maxvalue, minvalue);
