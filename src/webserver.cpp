@@ -429,21 +429,25 @@ void handle_http(RecvChan<HttpSession> r, SendChan<HttpSession> s, SendChan<WsSe
                     auto ctype = get_contenttype(data, path);
                     sent = true;
                     conn->send(200, "OK", {ctype, connstate}, data.c_str(), data.size());
-                    cout << 200 << "\n";
+                    cout << 200;
                     if (keepalive) {
+                        cout << "keep-alive";
                         session.actime = std::time(nullptr);
                         s << std::move(session);
                     }
+                    cout << "\n";
                     continue;
                 }
             }
             sent = true;
             conn->send(404, "Not Found", {{"Content-Type", "text/html"}, connstate}, "<h1>Page Not Found</h1>", 23);
-            cout << 404 << "\n";
+            cout << 404;
             if (keepalive) {
+                cout << " keep-alive";
                 session.actime = std::time(nullptr);
                 s << std::move(session);
             }
+            cout << "\n";
         } catch (...) {
             cout << "exception thrown\n";
             if (!sent && session.conn) {
