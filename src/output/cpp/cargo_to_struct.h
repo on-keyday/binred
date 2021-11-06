@@ -84,7 +84,7 @@ namespace binred {
             }
             else if (type == ParamType::custom) {
                 auto cus = static_cast<Custom*>(&*param);
-                tyname = cus->cargoname
+                tyname = cus->cargoname;
             }
             else {
                 return false;
