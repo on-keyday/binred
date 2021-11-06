@@ -94,7 +94,7 @@ std::string make_room(const std::string& name) {
 void leave_room(bool nocomment, size_t id, const std::string& roomname, const std::string& user) {
     if (auto found = rooms.find(roomname); found != rooms.end()) {
         if (!nocomment) {
-            found->second << (const char*)u8"しすてむ>leave " + user + "(" + std::to_string(id) + ") from " + roomname;
+            found->second << (const char*)u8"しすてむ>" + user + "(" + std::to_string(id) + ") left from " + roomname;
         }
         found->second.remove(id);
         if (!found->second.size()) {
