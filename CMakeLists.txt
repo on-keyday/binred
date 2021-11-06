@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(Threads REQUIRED)
 
 
-add_executable(binred "src/webserver.cpp" )
+add_executable(wsserver "src/webserver.cpp" )
 
 #add_library(httpclient SHARED "src/script.cpp" "src/runhttp.cpp" "src/client_export.cpp")
 
@@ -26,9 +26,9 @@ add_executable(binred "src/webserver.cpp" )
 #target_link_libraries(hcladd httpclient)
 
 if(WIN32)
-target_link_libraries(binred libssl libcrypto ws2_32)
+target_link_libraries(wsserver libssl libcrypto ws2_32)
 else()
-target_link_libraries(binred libssl.so libcrypto.so Threads::Threads)
+target_link_libraries(wsserver libssl.so libcrypto.so Threads::Threads)
 endif()
 
 
