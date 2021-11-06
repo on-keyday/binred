@@ -7,14 +7,13 @@
 namespace binred {
     using ParseResult = std::vector<std::shared_ptr<Element>>;
     template <class Buf>
-    bool parse_binred(commonlib2::Reader<Buf>& r, TokenReader& red, ParseResult& result) {
+    bool parse_binred(commonlib2::Reader<Buf>& r, TokenReader& red, Record& mep, ParseResult& result) {
         TokenGetter gt;
         if (!gt.parse(r)) {
             red.SetError(ErrorCode::invalid_comment);
             return false;
         }
         red = TokenReader(gt.parser.GetParsed());
-        Record mep;
         while (!red.is_EOF()) {
             auto e = red.Read();
             if (!e) {

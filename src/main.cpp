@@ -9,9 +9,10 @@ void binred_test() {
     binred::TokenReader red;
 
     binred::ParseResult result;
+    binred::Record record;
     {
         commonlib2::Reader fin(commonlib2::FileReader("D:/MiniTools/binred/http2_frame.brd"));
-        binred::parse_binred(fin, red, result);
+        binred::parse_binred(fin, red, record, result);
     }
     binred::OutContext ctx;
     auto c = static_cast<binred::Cargo*>(&*result[0]);
