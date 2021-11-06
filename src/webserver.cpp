@@ -502,9 +502,6 @@ int main(int argc, char** argv) {
             port = 8080;
         }
     }
-    if (auto v = result.has_("rootdir")) {
-        change_dir((*v->arg())[0]);
-    }
     if (auto v = result.has_("logfile")) {
         if (!cout.get().open((*v->arg())[0])) {
             cout << "webserver: can't open file" << (*v->arg())[0]
@@ -513,9 +510,13 @@ int main(int argc, char** argv) {
         }
         cout.get().set_multiout(true);
     }
+    if (auto v = result.has_("rootdir")) {
+        change_dir((*v->arg())[0]);
+    }
     std::string index;
     if (auto v = result.has_("index")) {
         index = (*v->arg())[0];
+        cout << "index file:" << index << "\n";
     }
     auto [w, r] = commonlib2::make_chan<HttpSession>(500000);
     auto [ws, wr] = commonlib2::make_chan<WsSession>(500000);
@@ -557,9 +558,10 @@ int main(int argc, char** argv) {
     Sleep(500);
     cout << "accept address:\n"
          << sv.ipaddress_list() << "\n";
-    cout << "port:8080\n";
+    cout << "port:\n"
+         << port;
     while (true) {
-        auto accept = Http1::serve(sv, 8080);
+        auto accept = Http1::serve(sv, port);
         if (!accept) {
             w.close();
             break;
