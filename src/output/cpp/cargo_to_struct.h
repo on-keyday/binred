@@ -82,6 +82,10 @@ namespace binred {
                     tyname += ctx.buffer_type();
                 }
             }
+            else if (type == ParamType::custom) {
+                auto cus = static_cast<Custom*>(&*param);
+                tyname = cus->cargoname
+            }
             else {
                 return false;
             }
