@@ -505,7 +505,7 @@ int main(int argc, char** argv) {
     }
     if (auto v = result.has_("logfile")) {
         if (!cout.get().open((*v->arg())[0])) {
-            cout << "webserver: can't open file" << (*v->arg())[0]
+            cout << "webserver: can't open file " << (*v->arg())[0]
                  << "\n";
             return -1;
         }
