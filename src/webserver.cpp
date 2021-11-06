@@ -507,6 +507,7 @@ int main(int argc, char** argv) {
                  << "\n";
             return -1;
         }
+        cout.get().set_multiout(true);
     }
     auto [w, r] = commonlib2::make_chan<HttpSession>(500000);
     auto [ws, wr] = commonlib2::make_chan<WsSession>(500000);
