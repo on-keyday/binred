@@ -537,7 +537,7 @@ int main(int argc, char** argv) {
             }
         }
     }).detach();
-    Sleep(1000);
+    Sleep(500);
     cout << "accept address:\n"
          << sv.ipaddress_list() << "\n";
     cout << "port:8080\n";
