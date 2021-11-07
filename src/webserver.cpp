@@ -512,7 +512,7 @@ int main(int argc, char** argv) {
         }
         cout.get().set_multiout(true);
         cout << "log file:" << (*v->arg())[0] << "\n";
-        if (!result.has_("no-stdout")) {
+        if (result.has_("no-stdout")) {
             cout.get().set_multiout(false);
         }
     }
