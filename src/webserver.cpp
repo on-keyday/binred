@@ -473,6 +473,7 @@ int main(int argc, char** argv) {
         {"logfile", {'f'}, "set logfile", 1, true},
         {"help", {'h'}, "show help"},
         {"index", {'i'}, "set index", 1, true},
+        {"no-stdout", {'n'}, "not output stdout if logfile exists"},
     });
     ArgChange _(argc, argv);
     OptMap<>::OptResMap result;
@@ -509,7 +510,9 @@ int main(int argc, char** argv) {
                  << "\n";
             return -1;
         }
-        cout.get().set_multiout(true);
+        if (!result.has_("no-stdout")) {
+            cout.get().set_multiout(true);
+        }
         cout << "log file:" << (*v->arg())[0] << "\n";
     }
     std::string index;
