@@ -510,10 +510,11 @@ int main(int argc, char** argv) {
                  << "\n";
             return -1;
         }
-        if (!result.has_("no-stdout")) {
-            cout.get().set_multiout(true);
-        }
+        cout.get().set_multiout(true);
         cout << "log file:" << (*v->arg())[0] << "\n";
+        if (!result.has_("no-stdout")) {
+            cout.get().set_multiout(false);
+        }
     }
     std::string index;
     if (auto v = result.has_("index")) {
