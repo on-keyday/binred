@@ -30,14 +30,18 @@ namespace binred {
                             return true;
                         }
                     }
+                    bool self = false;
                     if (splt[0] == cargo.base.selfname) {
-                        ret += "(*this)";
+                        ret += cargo.base.basename + "::";
+                        self = true;
                     }
                     else {
                         ret += splt[0];
                     }
                     for (size_t i = 1; i < splt.size(); i++) {
-                        ret += ".";
+                        if (i != 1 || self != false) {
+                            ret += ".";
+                        }
                         ret += "get_" + splt[i] + "()";
                     }
                     return true;
