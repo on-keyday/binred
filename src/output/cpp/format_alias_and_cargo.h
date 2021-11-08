@@ -4,7 +4,7 @@
 #include <extutil.h>
 
 namespace binred {
-    auto format_alias_and_cargo(Record& rec, std::string& current) {
+    auto format_alias_and_cargo(Record& rec, std::string& current, Cargo& cargo) {
         return [&](std::string& ret, std::shared_ptr<Expr> p) {
             if (p->kind == ExprKind::ref) {
                 auto splt = commonlib2::split(p->v, ".");
@@ -30,7 +30,12 @@ namespace binred {
                             return true;
                         }
                     }
-                    ret += splt[0];
+                    if (splt[0] == cargo.base.selfname) {
+                        ret += "(*this)";
+                    }
+                    else {
+                        ret += splt[0];
+                    }
                     for (size_t i = 1; i < splt.size(); i++) {
                         ret += ".";
                         ret += "get_" + splt[i] + "()";

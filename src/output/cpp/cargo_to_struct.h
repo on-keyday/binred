@@ -103,7 +103,7 @@ namespace binred {
 
         static bool convert(OutContext& ctx, Cargo& cargo, Record& record) {
             std::string current;
-            auto formatter = format_alias_and_cargo(record, current);
+            auto formatter = format_alias_and_cargo(record, current, cargo);
             ctx.write("\nstruct ");
             ctx.write(cargo.name);
             ctx.write(" {\nprivate:\n\n");

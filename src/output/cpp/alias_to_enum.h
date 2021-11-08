@@ -1,41 +1,29 @@
+/*license*/
 #pragma once
 
 #include "../../parse/parse.h"
 #include "../output_context.h"
 #include "../../calc/get_const.h"
 #include "../../calc/trace_expr.h"
+#include "../common/get_alias_type.h"
 
 namespace binred {
     struct AliasToCppEnum {
         static std::string get_type(std::int64_t maxvalue, std::int64_t minvalue) {
-            if (minvalue >= 0) {
-                if (maxvalue <= 0xff) {
-                    return "std::uint8_t";
+            return get_alias_type(maxvalue, minvalue, [](int by, bool unsig) {
+                switch (by) {
+                    case 1:
+                        return unsig ? "std::uint8_t" : "std::int8_t";
+                    case 2:
+                        return unsig ? "std::uint16_t" : "std::int16_t";
+                    case 4:
+                        return unsig ? "std::uint32_t" : "std::int32_t";
+                    case 8:
+                        return unsig ? "std::uint64_t" : "std::int64_t";
+                    default:
+                        return "";
                 }
-                else if (maxvalue <= 0xffff) {
-                    return "std::uint16_t";
-                }
-                else if (maxvalue <= 0xffffffff) {
-                    return "std::uint32_t";
-                }
-                else {
-                    return "std::uint64_t";
-                }
-            }
-            else {
-                if (maxvalue <= 127 && minvalue >= -128) {
-                    return "std::int8_t";
-                }
-                else if (maxvalue <= 32767 && minvalue >= -32767) {
-                    return "std::int16_t";
-                }
-                else if (maxvalue <= 2147483647 && minvalue >= -2147483648) {
-                    return "std::int32_t";
-                }
-                else {
-                    return "std::int64_t";
-                }
-            }
+            });
         }
 
         static bool convert(OutContext& ctx, Alias& als) {
