@@ -39,7 +39,7 @@ namespace binred {
                         ret += splt[0];
                     }
                     for (size_t i = 1; i < splt.size(); i++) {
-                        if (i != 1 || self != false) {
+                        if (!(self && i == 1)) {
                             ret += ".";
                         }
                         ret += "get_" + splt[i] + "()";
