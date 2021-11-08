@@ -5,6 +5,7 @@
 #include "tree.h"
 #include <set>
 #include "record.h"
+
 namespace binred {
     bool parse_length(TokenReader& r, std::shared_ptr<Length>& length, Record& mep) {
         if (!mep.expand(r)) {
@@ -137,6 +138,35 @@ namespace binred {
         return true;
     }
 
+    bool parse_baseinfo(TokenReader& r, BaseInfo& info, Record& mep) {
+        if (!mep.expand(r)) {
+            return false;
+        }
+        auto e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->is_(TokenKind::identifiers)) {
+            r.SetError(ErrorCode::expect_id);
+            return false;
+        }
+        info.selfname = e->to_string();
+        if (!mep.expand(r)) {
+            return false;
+        }
+        e = r.ConsumeReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->is_(TokenKind::identifiers)) {
+            r.SetError(ErrorCode::expect_id);
+            return false;
+        }
+        info.basename = e->to_string();
+        r.Consume();
+        return true;
+    }
+
     bool parse_cargo(TokenReader& r, std::shared_ptr<Element>& elm, Record& mep) {
         auto e = r.ReadorEOF();
         if (!e) {
@@ -156,9 +186,23 @@ namespace binred {
         }
         auto id = e->identifier();
         std::string name = id->get_identifier();
+        if (!mep.expand(r)) {
+            return false;
+        }
         e = r.ConsumeReadorEOF();
         if (!e) {
             return false;
+        }
+        BaseInfo base;
+        if (e->has_(":")) {
+            r.Consume();
+            if (!parse_baseinfo(r, base, mep)) {
+                return false;
+            }
+            e = r.ReadorEOF();
+            if (!e) {
+                return false;
+            }
         }
         if (!mep.expand(r)) {
             return false;
@@ -171,6 +215,9 @@ namespace binred {
         tmp->name = name;
         r.Consume();
         std::set<std::string> already_set;
+        if (base.selfname.size()) {
+            already_set.emplace(base.selfname);
+        }
         while (true) {
             if (!mep.expand(r)) {
                 return false;

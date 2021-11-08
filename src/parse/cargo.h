@@ -24,11 +24,17 @@ namespace binred {
         std::shared_ptr<token> token;
     };
 
+    struct BaseInfo {
+        std::string selfname;
+        std::string basename;
+    };
+
     struct Cargo : Element {
         Cargo()
             : Element(ElementType::cargo) {}
         std::string name;
         std::vector<std::shared_ptr<Param>> params;
+        BaseInfo base;
     };
 
     enum class LengthType {
