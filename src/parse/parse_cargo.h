@@ -213,6 +213,7 @@ namespace binred {
         }
         auto tmp = std::make_shared<Cargo>();
         tmp->name = name;
+        tmp->base = std::move(base);
         r.Consume();
         std::set<std::string> already_set;
         if (base.selfname.size()) {

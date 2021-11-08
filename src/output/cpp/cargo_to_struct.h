@@ -106,6 +106,10 @@ namespace binred {
             auto formatter = format_alias_and_cargo(record, current, cargo);
             ctx.write("\nstruct ");
             ctx.write(cargo.name);
+            if (cargo.base.basename.size()) {
+                ctx.write(" : ");
+                ctx.write(cargo.base.basename);
+            }
             ctx.write(" {\nprivate:\n\n");
             std::string getter, setter;
             for (auto i = 0; i < cargo.params.size(); i++) {
