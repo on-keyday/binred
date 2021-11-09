@@ -43,7 +43,18 @@ namespace binred {
         std::string id;
     };
 
+    struct PushCommand : Command {
+        PushCommand()
+            : Command(CommandKind::push) {}
+        std::shared_ptr<Expr> numpop;
+        std::string id;
+    };
+
     struct Read : Element {
+        Read()
+            : Element(ElementType::read) {}
+        std::string name;
+        std::vector<std::string> args;
         std::vector<std::shared_ptr<Command>> cmds;
     };
 }  // namespace binred
