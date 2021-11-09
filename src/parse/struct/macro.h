@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include "parser.h"
+#include "../parser/parser.h"
 #include <regex>
 
 namespace binred {

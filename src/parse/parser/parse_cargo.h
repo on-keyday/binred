@@ -1,10 +1,10 @@
 /*license*/
 #pragma once
 #include "parser.h"
-#include "cargo.h"
+#include "../struct/cargo.h"
 #include "tree.h"
 #include <set>
-#include "record.h"
+#include "../struct/record.h"
 
 namespace binred {
     bool parse_length(TokenReader& r, std::shared_ptr<Length>& length, Record& mep) {

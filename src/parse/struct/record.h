@@ -3,12 +3,14 @@
 #include "macro.h"
 #include "cargo.h"
 #include "alias.h"
+#include "complex.h"
 
 namespace binred {
     struct Record {
         MacroExpander mep;
         std::map<std::string, std::shared_ptr<Cargo>> cargos;
         std::map<std::string, std::shared_ptr<Alias>> aliases;
+        std::map<std::string, std::shared_ptr<Complex>> complexes;
         bool expand(TokenReader& r) {
             return mep.expand(r);
         }

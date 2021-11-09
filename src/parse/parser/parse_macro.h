@@ -1,8 +1,8 @@
 /*license*/
 #pragma once
 #include "parser.h"
-#include "macro.h"
-#include "record.h"
+#include "../struct/macro.h"
+#include "../struct/record.h"
 namespace binred {
     bool parse_macro(TokenReader& r, std::shared_ptr<Element>& elm, Record& mep) {
         auto e = r.ReadorEOF();

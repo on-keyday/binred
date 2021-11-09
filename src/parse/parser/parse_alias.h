@@ -2,10 +2,10 @@
 #pragma once
 
 #include "parser.h"
-#include "alias.h"
+#include "../struct/alias.h"
 #include "tree.h"
 #include "parse_macro.h"
-#include "record.h"
+#include "../struct/record.h"
 
 namespace binred {
     bool parse_alias(TokenReader& r, std::shared_ptr<Element>& elm, Record& mep) {

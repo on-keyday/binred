@@ -1,5 +1,5 @@
 #include <fileio.h>
-#include "parse/parse.h"
+#include "parse/parser/parse.h"
 #include "output/cpp/cargo_to_struct.h"
 #include "output/cpp/alias_to_enum.h"
 #include "output/cpp/add_error_enum.h"

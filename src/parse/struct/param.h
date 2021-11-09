@@ -1,9 +1,7 @@
-/*license*/
 #pragma once
 #include "element.h"
-#include <vector>
 #include <memory>
-#include <string>
+
 namespace binred {
     enum class ParamType {
         integer,
@@ -24,19 +22,6 @@ namespace binred {
         std::shared_ptr<token> token;
     };
 
-    struct BaseInfo {
-        std::string selfname;
-        std::string basename;
-    };
-
-    struct Cargo : Element {
-        Cargo()
-            : Element(ElementType::cargo) {}
-        std::string name;
-        std::vector<std::shared_ptr<Param>> params;
-        BaseInfo base;
-    };
-
     enum class LengthType {
         number,
         referemce,
@@ -48,15 +33,6 @@ namespace binred {
             : type(t) {}
         LengthType type;
     };
-
-    /* struct NumLength : Length {
-        int length = 0;
-    };
-
-    struct RefLength : Length {
-        std::shared_ptr<Cargo> cargo;
-        std::string name;
-    };*/
 
     struct ExprLength : Length {
         ExprLength()
@@ -94,6 +70,6 @@ namespace binred {
         Custom()
             : Param(ParamType::custom) {}
         std::string cargoname;
-        std::shared_ptr<Cargo> base;
+        //std::shared_ptr<Cargo> base;
     };
 }  // namespace binred

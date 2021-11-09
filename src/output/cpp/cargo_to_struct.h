@@ -1,7 +1,7 @@
 /*license*/
 #pragma once
 
-#include "../../parse/parse.h"
+#include "../../parse/parser/parse.h"
 #include "../output_context.h"
 #include "../../calc/get_const.h"
 #include "../../calc/trace_expr.h"
@@ -14,7 +14,7 @@ namespace binred {
             return static_cast<ExprLength*>(&*bin->length);
         }
 
-        static bool get_typename(std::string& tyname, OutContext& ctx, std::shared_ptr<Param>& param, size_t& bylen) {
+        static bool get_typename(std::string& tyname, OutContext& ctx, std::shared_ptr<Param>& param, size_t& bylen, Record& record) {
             auto type = param->type;
             if (type == ParamType::integer || type == ParamType::uint || type == ParamType::bit) {
                 auto lenp = get_exprlength(param);
@@ -84,7 +84,18 @@ namespace binred {
             }
             else if (type == ParamType::custom) {
                 auto cus = static_cast<Custom*>(&*param);
-                tyname = cus->cargoname;
+                if (record.cargos.count(cus->cargoname)) {
+                    tyname = cus->cargoname;
+                }
+                else if (auto found = record.complexes.find(cus->cargoname); found != record.complexes.end()) {
+                    auto& pat = found->second->pattern;
+                    if (auto cpp = pat.find("cpp"); cpp != pat.end()) {
+                        tyname = cpp->second.pattern;
+                    }
+                    else {
+                        return false;
+                    }
+                }
             }
             else {
                 return false;
@@ -116,7 +127,7 @@ namespace binred {
                 std::string tyname;
                 auto& param = cargo.params[i];
                 size_t bylen = 0;
-                if (!get_typename(tyname, ctx, param, bylen)) {
+                if (!get_typename(tyname, ctx, param, bylen, record)) {
                     return false;
                 }
                 auto& name = param->name;

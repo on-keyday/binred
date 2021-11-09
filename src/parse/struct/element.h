@@ -2,7 +2,7 @@
 #pragma once
 
 #include <tokenparser/tokendef.h>
-
+#include <string>
 namespace binred {
     using token = commonlib2::tokenparser::Token<std::string>;
     enum class ElementType {
@@ -11,6 +11,7 @@ namespace binred {
         read,
         write,
         macro,
+        complex,
     };
 
     struct Element {

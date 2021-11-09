@@ -3,7 +3,7 @@
 #include <tokenparser/tokenparser.h>
 #include <vector>
 #include <string>
-#include "element.h"
+#include "../struct/element.h"
 namespace binred {
     using namespace commonlib2::tokenparser;
 
@@ -34,7 +34,11 @@ namespace binred {
                     ",",
                     "(",
                     ")",
+                    "!=",
                     "!",
+                    "=",
+                    "[",
+                    "]",
                 },
                 {
                     "cargo",
@@ -53,6 +57,14 @@ namespace binred {
                     "uint",
                     "bit",
                     "byte",
+                    "string",
+                    "call",
+                    "if",
+                    "elif",
+                    "else",
+                    "def",
+                    "extern",
+                    "complex",
                 });
         }
 

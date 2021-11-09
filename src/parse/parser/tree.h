@@ -1,9 +1,8 @@
 #pragma once
 #include "parser.h"
-#include "element.h"
+#include "../struct/element.h"
 #include <char_judge.h>
-#include "macro.h"
-#include "record.h"
+#include "../struct/record.h"
 namespace binred {
 
     struct TreeDepth {
@@ -40,6 +39,35 @@ namespace binred {
         }
     };
 
+    bool read_idlist(TokenReader& r, std::string& idname) {
+        auto e = r.ReadorEOF();
+        if (!e) return false;
+        if (!e->is_(TokenKind::identifiers)) {
+            r.SetError(ErrorCode::expect_id);
+            return false;
+        }
+        idname = e->to_string();
+        r.Consume();
+        while (auto next = e->get_next()) {
+            if (next->is_(TokenKind::symbols) && next->has_(".")) {
+                e = r.ConsumeReadorEOF();
+                if (!e) {
+                    return false;
+                }
+                if (!e->is_(TokenKind::identifiers)) {
+                    r.SetError(ErrorCode::expect_id);
+                    return false;
+                }
+                idname += ".";
+                idname += e->to_string();
+                r.Consume();
+                continue;
+            }
+            break;
+        }
+        return true;
+    }
+
     std::shared_ptr<Expr> primary(TokenReader& r, Tree& t, Record& mep) {
         if (!mep.expand(r)) {
             return nullptr;
@@ -51,32 +79,11 @@ namespace binred {
         auto ret = std::make_shared<Expr>();
         ret->token = e;
         if (e->is_(TokenKind::symbols) && e->has_("$")) {
-            std::string idname;
-            ExprKind kind = ExprKind::ref;
-            e = r.ConsumeReadorEOF();
-            if (!e) return nullptr;
-            if (!e->is_(TokenKind::identifiers)) {
-                r.SetError(ErrorCode::expect_id);
-                return nullptr;
-            }
-            idname = e->to_string();
             r.Consume();
-            while (auto next = e->get_next()) {
-                if (next->is_(TokenKind::symbols) && next->has_(".")) {
-                    e = r.ConsumeReadorEOF();
-                    if (!e) {
-                        return nullptr;
-                    }
-                    if (!e->is_(TokenKind::identifiers)) {
-                        r.SetError(ErrorCode::expect_id);
-                        return nullptr;
-                    }
-                    idname += ".";
-                    idname += e->to_string();
-                    r.Consume();
-                    continue;
-                }
-                break;
+            ExprKind kind = ExprKind::ref;
+            std::string idname;
+            if (!read_idlist(r, idname)) {
+                return nullptr;
             }
             ret->kind = kind;
             ret->v = idname;

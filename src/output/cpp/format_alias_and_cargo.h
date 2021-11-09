@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../parse/parse.h"
+#include "../../parse/parser/parse.h"
 #include <extutil.h>
 
 namespace binred {
