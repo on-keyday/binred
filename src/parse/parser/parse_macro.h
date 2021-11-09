@@ -9,7 +9,7 @@ namespace binred {
         if (!e) {
             return false;
         }
-        if (!e->is_(TokenKind::keyword) && !e->has_("macro")) {
+        if (!e->is_(TokenKind::keyword) || !e->has_("macro")) {
             r.SetError(ErrorCode::expect_keyword, "macro");
             return false;
         }

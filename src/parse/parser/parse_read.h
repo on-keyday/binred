@@ -34,7 +34,7 @@ namespace binred {
         if (!e) {
             return false;
         }
-        if (!e->is_(TokenKind::keyword) && !e->has_("read")) {
+        if (!e->is_(TokenKind::keyword) || !e->has_("read")) {
             r.SetError(ErrorCode::expect_keyword, "read");
             return false;
         }

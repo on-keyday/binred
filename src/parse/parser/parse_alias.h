@@ -3,7 +3,7 @@
 
 #include "parser.h"
 #include "../struct/alias.h"
-#include "tree.h"
+#include "parse_tree.h"
 #include "parse_macro.h"
 #include "../struct/record.h"
 
@@ -13,7 +13,7 @@ namespace binred {
         if (!e) {
             return false;
         }
-        if (!e->is_(TokenKind::keyword) && !e->has_("alias")) {
+        if (!e->is_(TokenKind::keyword) || !e->has_("alias")) {
             r.SetError(ErrorCode::expect_keyword, "alias");
             return false;
         }
@@ -38,7 +38,7 @@ namespace binred {
         auto tmp = std::make_shared<Alias>();
         tmp->name = name;
         r.Consume();
-        auto tree = get_tree();
+        auto& tree = mep.get_tree();
         while (true) {
             if (!mep.expand(r)) {
                 return false;

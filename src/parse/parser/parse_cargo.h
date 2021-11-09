@@ -2,7 +2,7 @@
 #pragma once
 #include "parser.h"
 #include "../struct/cargo.h"
-#include "tree.h"
+#include "parse_tree.h"
 #include <set>
 #include "../struct/record.h"
 #include "parse_types.h"
@@ -43,7 +43,7 @@ namespace binred {
         if (!e) {
             return false;
         }
-        if (!e->is_(TokenKind::keyword) && !e->has_("cargo")) {
+        if (!e->is_(TokenKind::keyword) || !e->has_("cargo")) {
             r.SetError(ErrorCode::expect_keyword, "cargo");
             return false;
         }

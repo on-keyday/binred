@@ -1,14 +1,15 @@
 /*license*/
 #pragma once
 #include "../struct/record.h"
-#include "tree.h"
+#include "parse_tree.h"
+
 namespace binred {
     bool parse_length(TokenReader& r, std::shared_ptr<Length>& length, Record& mep) {
         if (!mep.expand(r)) {
             return false;
         }
-        auto tree = get_tree();
-        auto res = binary(r, tree, mep);
+        //auto tree = get_tree();
+        auto res = binary(r, mep.get_tree(), mep);
         if (!res) {
             return false;
         }
@@ -37,8 +38,8 @@ namespace binred {
                     if (!e) {
                         return nullptr;
                     }
-                    auto tree = get_tree();
-                    auto res = binary(r, tree, mep);
+                    //auto tree = get_tree();
+                    auto res = binary(r, mep.get_tree(), mep);
                     if (!res) {
                         return nullptr;
                     }

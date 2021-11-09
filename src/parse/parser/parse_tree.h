@@ -5,40 +5,6 @@
 #include "../struct/record.h"
 namespace binred {
 
-    struct TreeDepth {
-        std::vector<std::string> expected;
-        TreeDepth(std::initializer_list<std::string> list)
-            : expected(list.begin(), list.end()) {}
-    };
-
-    struct Tree {
-        std::vector<TreeDepth> depth;
-        size_t index = 0;
-
-        Tree(std::initializer_list<TreeDepth> list)
-            : depth(list.begin(), list.end()) {}
-        bool expect(std::shared_ptr<token>& r, std::string& expected) {
-            if (!r) return false;
-            for (auto& s : depth[index % depth.size()].expected) {
-                if (r->is_(TokenKind::symbols) && r->has_(s)) {
-                    expected = s;
-                    return true;
-                }
-            }
-            return false;
-        }
-        void increment() {
-            index++;
-        }
-        void decrement() {
-            index--;
-        }
-
-        bool is_end() {
-            return index != 0 && (index % depth.size() == 0);
-        }
-    };
-
     bool read_idlist(TokenReader& r, std::string& idname) {
         auto e = r.ReadorEOF();
         if (!e) return false;
@@ -161,12 +127,4 @@ namespace binred {
         return ret;
     }
 
-    Tree get_tree() {
-        Tree ret{
-            {"==", ">", "<"},
-            {"+", "-", "&", "|"},
-            {"*", "/", "%"},
-        };
-        return ret;
-    }
 }  // namespace binred

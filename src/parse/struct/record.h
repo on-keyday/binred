@@ -4,6 +4,7 @@
 #include "cargo.h"
 #include "alias.h"
 #include "complex.h"
+#include "tree.h"
 
 namespace binred {
     struct Record {
@@ -11,6 +12,11 @@ namespace binred {
         std::map<std::string, std::shared_ptr<Cargo>> cargos;
         std::map<std::string, std::shared_ptr<Alias>> aliases;
         std::map<std::string, std::shared_ptr<Complex>> complexes;
+        Tree tree = {
+            {"==", ">", "<"},
+            {"+", "-", "&", "|"},
+            {"*", "/", "%"},
+        };
         bool expand(TokenReader& r) {
             return mep.expand(r);
         }
@@ -21,6 +27,10 @@ namespace binred {
 
         bool add_alias(const std::string& name, std::shared_ptr<Alias>& c) {
             return aliases.insert({name, c}).second;
+        }
+
+        Tree& get_tree() {
+            return tree;
         }
     };
 }  // namespace binred
