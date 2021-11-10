@@ -5,7 +5,7 @@
 #include "../struct/record.h"
 namespace binred {
 
-    bool read_idlist(TokenReader& r, std::string& idname) {
+    bool read_idname(TokenReader& r, std::string& idname) {
         auto e = r.ReadorEOF();
         if (!e) return false;
         if (!e->is_(TokenKind::identifiers)) {
@@ -48,7 +48,7 @@ namespace binred {
             r.Consume();
             ExprKind kind = ExprKind::ref;
             std::string idname;
-            if (!read_idlist(r, idname)) {
+            if (!read_idname(r, idname)) {
                 return nullptr;
             }
             ret->kind = kind;

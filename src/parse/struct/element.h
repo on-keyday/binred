@@ -22,9 +22,9 @@ namespace binred {
 
     enum class ExprKind {
         number,
-        macro,
         ref,
         op,
+        call,
     };
 
     struct Expr {
