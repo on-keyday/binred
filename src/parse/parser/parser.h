@@ -95,10 +95,11 @@ namespace binred {
         multiple_cargo,
         unexpected_EOF,
         unexpected_line,
+        unexpected_keyword,
+        unexpected_symbol,
         expect_definition_keyword,
         expect_condition_keyword,
         undefined_macro,
-        unexpected_symbol,
         unimplemented,
     };
 

@@ -5,6 +5,7 @@
 #include "../struct/read.h"
 #include "../struct/record.h"
 #include "parse_types.h"
+#include "parse_command.h"
 
 namespace binred {
     bool parse_arglist(TokenReader& r, std::shared_ptr<Read>& red, Record& record) {
@@ -66,5 +67,6 @@ namespace binred {
             r.SetError(ErrorCode::expect_symbol, "{");
             return false;
         }
+        return true;
     }
 }  // namespace binred

@@ -2,11 +2,36 @@
 
 #include "../../parse/parser/parse.h"
 #include <extutil.h>
+#include "../../calc/trace_expr.h"
 
 namespace binred {
+
+    template <typename F>
+    struct make_lambda {
+        F f;
+        template <typename... Args>
+        decltype(auto) operator()(Args&&... args) const& {
+            return f(std::ref(*this), std::forward<Args>(args)...);
+        }
+    };
+
+    template <typename F>
+    make_lambda(F) -> make_lambda<F>;
+
     auto format_alias_and_cargo(Record& rec, std::string& current, Cargo& cargo) {
-        return [&](std::string& ret, std::shared_ptr<Expr> p) {
-            if (p->kind == ExprKind::ref) {
+        auto f = [&](auto self, std::string& ret, std::shared_ptr<Expr> p, TraceMode m) {
+            if (p->kind == ExprKind::call) {
+                auto c = static_cast<CallExpr*>(&*p);
+                ret += c->v;
+                ret += "(";
+                for (size_t i = 0; i < c->args.size(); i++) {
+                    if (i != 0) {
+                        ret += ",";
+                    }
+                    ret += trace_expr(c->args[i], self, m);
+                }
+            }
+            else if (p->kind == ExprKind::ref) {
                 auto splt = commonlib2::split(p->v, ".");
                 if (splt.size() == 1) {
                     if (current.size()) {
@@ -49,5 +74,6 @@ namespace binred {
             }
             return false;
         };
+        return make_lambda{f};
     }
 }  // namespace binred

@@ -52,13 +52,7 @@ namespace binred {
         std::string refid;
     };
 
-    struct CallExpr : Expr {
-        CallExpr()
-            : Expr{.kind = ExprKind::call} {}
-        std::vector<std::shared_ptr<Expr>> args;
-    };
-
-    struct CallCommand : Command {
+     struct CallCommand : Command {
         CallCommand()
             : Command(CommandKind::call) {}
         std::shared_ptr<CallExpr> call;

@@ -37,21 +37,60 @@ namespace binred {
         return true;
     }
 
-    bool parse_call(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
+    std::shared_ptr<CallExpr> parse_callexpr(TokenReader& r, Record& rec) {
         auto e = r.ReadorEOF();
         if (!e) {
-            return false;
-        }
-        auto e = r.ReadorEOF();
-        if (!e) {
-            return false;
+            return nullptr;
         }
         if (!e->is_(TokenKind::keyword) || !e->has_("call")) {
             r.SetError(ErrorCode::expect_keyword, "call");
-            return false;
+            return nullptr;
         }
         r.Consume();
+        auto expr = std::make_shared<CallExpr>();
+        expr->token = e;
+        std::string name;
+        if (!read_idname(r, name)) {
+            return nullptr;
+        }
+        expr->v = name;
+        e = r.ReadorEOF();
+        if (!e) {
+            return nullptr;
+        }
+        if (!e->has_("(")) {
+            r.SetError(ErrorCode::expect_symbol, "(");
+            return nullptr;
+        }
+        r.Consume();
+        while (true) {
+            e = r.ReadorEOF();
+            if (e->has_(")")) {
+                r.Consume();
+                break;
+            }
+            auto tmp = binary(r, rec.get_tree(), rec);
+            if (!tmp) {
+                return nullptr;
+            }
+            expr->args.push_back(tmp);
+            e = r.ReadorEOF();
+            if (!e) {
+                return nullptr;
+            }
+            if (e->has_(",")) {
+                r.Consume();
+            }
+        }
+        return expr;
+    }
+
+    bool parse_callcommand(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
         auto tmp = std::make_shared<CallCommand>();
+        if (tmp->call = parse_callexpr(r, rec); !tmp->call) {
+            return false;
+        }
+        return true;
     }
 
     bool parse_command(TokenReader& r, std::vector<std::shared_ptr<Command>>& cmds, Record& rec) {
@@ -73,6 +112,9 @@ namespace binred {
                     }
                 }
                 else if (e->has_("call")) {
+                    if (!parse_callcommand(r, cmd, rec)) {
+                        return false;
+                    }
                 }
             }
         }

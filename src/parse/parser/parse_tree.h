@@ -5,6 +5,8 @@
 #include "../struct/record.h"
 namespace binred {
 
+    std::shared_ptr<CallExpr> parse_callexpr(TokenReader& r, Record& rec);
+
     bool read_idname(TokenReader& r, std::string& idname) {
         auto e = r.ReadorEOF();
         if (!e) return false;
@@ -63,15 +65,16 @@ namespace binred {
                 t.set_index(0);
                 ret = binary(r, t, mep);
                 if (!ret) {
-                    return false;
+                    return nullptr;
                 }
                 e = r.ReadorEOF();
                 if (!e) {
-                    return false;
+                    return nullptr;
                 }
                 if (!e->has_(")")) {
                     r.SetError(ErrorCode::expect_symbol, ")");
                 }
+                t.set_index(tmp);
                 r.Consume();
             }
             else {
@@ -105,6 +108,21 @@ namespace binred {
             }
             ret->v = idv;
             ret->kind = ExprKind::number;
+        }
+        else if (e->is_(TokenKind::keyword)) {
+            if (e->has_("call")) {
+                auto tmp = t.get_index();
+                t.set_index(0);
+                ret = parse_callexpr(r, mep);
+                if (!ret) {
+                    return nullptr;
+                }
+                t.set_index(tmp);
+            }
+            else {
+                r.SetError(ErrorCode::unexpected_keyword);
+                return nullptr;
+            }
         }
         else {
             r.SetError(ErrorCode::expect_primary);

@@ -3,6 +3,7 @@
 #include "parse_alias.h"
 #include "parse_cargo.h"
 #include "parse_macro.h"
+#include "parse_read.h"
 
 namespace binred {
     using ParseResult = std::vector<std::shared_ptr<Element>>;

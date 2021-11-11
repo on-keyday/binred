@@ -35,6 +35,12 @@ namespace binred {
         std::shared_ptr<token> token;
     };
 
+    struct CallExpr : Expr {
+        CallExpr()
+            : Expr{.kind = ExprKind::call} {}
+        std::vector<std::shared_ptr<Expr>> args;
+    };
+
     struct Value {
         std::shared_ptr<Expr> expr;
         std::shared_ptr<token> token;
