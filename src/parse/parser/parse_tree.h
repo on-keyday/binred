@@ -34,6 +34,8 @@ namespace binred {
         return true;
     }
 
+    std::shared_ptr<Expr> binary(TokenReader& r, Tree& t, Record& mep);
+
     std::shared_ptr<Expr> primary(TokenReader& r, Tree& t, Record& mep) {
         if (!mep.expand(r)) {
             return nullptr;
@@ -44,15 +46,38 @@ namespace binred {
         }
         auto ret = std::make_shared<Expr>();
         ret->token = e;
-        if (e->is_(TokenKind::symbols) && e->has_("$")) {
-            r.Consume();
-            ExprKind kind = ExprKind::ref;
-            std::string idname;
-            if (!read_idname(r, idname)) {
+        if (e->is_(TokenKind::symbols)) {
+            if (e->has_("$")) {
+                r.Consume();
+                ExprKind kind = ExprKind::ref;
+                std::string idname;
+                if (!read_idname(r, idname)) {
+                    return nullptr;
+                }
+                ret->kind = kind;
+                ret->v = idname;
+            }
+            else if (e->has_("(")) {
+                r.Consume();
+                auto tmp = t.get_index();
+                t.set_index(0);
+                ret = binary(r, t, mep);
+                if (!ret) {
+                    return false;
+                }
+                e = r.ReadorEOF();
+                if (!e) {
+                    return false;
+                }
+                if (!e->has_(")")) {
+                    r.SetError(ErrorCode::expect_symbol, ")");
+                }
+                r.Consume();
+            }
+            else {
+                r.SetError(ErrorCode::unexpected_symbol);
                 return nullptr;
             }
-            ret->kind = kind;
-            ret->v = idname;
         }
         else if (e->is_(TokenKind::identifiers)) {
             r.Consume();

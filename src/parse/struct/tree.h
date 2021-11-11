@@ -35,6 +35,14 @@ namespace binred {
             index--;
         }
 
+        void set_index(size_t idx) {
+            index = idx;
+        }
+
+        size_t get_index() const {
+            return index;
+        }
+
         bool is_end() {
             return index != 0 && (index % depth.size() == 0);
         }
