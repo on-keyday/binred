@@ -30,6 +30,7 @@ namespace binred {
                     }
                     ret += trace_expr(c->args[i], self, m);
                 }
+                ret += ")";
             }
             else if (p->kind == ExprKind::ref) {
                 auto splt = commonlib2::split(p->v, ".");
@@ -74,6 +75,6 @@ namespace binred {
             }
             return false;
         };
-        return make_lambda{f};
+        return make_lambda(f);
     }
 }  // namespace binred
