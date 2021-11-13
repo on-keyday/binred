@@ -40,6 +40,11 @@ namespace binred {
                     return false;
                 }
             }
+            else if (e->has_("read")) {
+                if (!parse_read(red, elm, mep)) {
+                    return false;
+                }
+            }
             else {
                 red.SetError(ErrorCode::expect_definition_keyword);
                 return false;

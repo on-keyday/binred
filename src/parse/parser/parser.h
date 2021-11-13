@@ -54,6 +54,7 @@ namespace binred {
                     "pop",
                     "push",
                     "transfer",
+                    "switch",
                     "default",
                     "int",
                     "uint",
@@ -67,6 +68,7 @@ namespace binred {
                     "def",
                     "extern",
                     "complex",
+                    "case",
                 });
         }
 

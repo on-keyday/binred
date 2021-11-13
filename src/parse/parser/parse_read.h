@@ -67,6 +67,23 @@ namespace binred {
             r.SetError(ErrorCode::expect_symbol, "{");
             return false;
         }
+        r.Consume();
+        while (true) {
+            e = r.ReadorEOF();
+            if (!e) {
+                return false;
+            }
+            if (e->has_("}")) {
+                r.Consume();
+                break;
+            }
+            std::shared_ptr<Command> cmd;
+            if (!parse_command(r, cmd, rec)) {
+                return false;
+            }
+            redelm->cmds.push_back(std::move(cmd));
+        }
+        elm = redelm;
         return true;
     }
 }  // namespace binred

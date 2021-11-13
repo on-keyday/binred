@@ -17,17 +17,15 @@ namespace binred {
             r.SetError(ErrorCode::expect_keyword, poppush);
             return false;
         }
-        e = r.ConsumeReadorEOF();
-        if (!e) {
-            return false;
-        }
+        r.Consume();
         auto tmp = std::make_shared<CmdType>();
         //auto tree = get_tree();
         tmp->numpop = binary(r, rec.get_tree(), rec);
         if (!tmp->numpop) {
             return false;
         }
-        if (e->has_("$")) {
+        e = r.Read();
+        if (e && e->has_("$")) {
             r.Consume();
             if (!read_idname(r, tmp->refid)) {
                 return false;
@@ -143,7 +141,7 @@ namespace binred {
                     r.SetError(ErrorCode::expect_symbol, ":");
                     return false;
                 }
-                e = r.ReadorEOF();
+                e = r.ConsumeReadorEOF();
                 if (!e) {
                     return false;
                 }
@@ -163,7 +161,7 @@ namespace binred {
                     r.SetError(ErrorCode::expect_symbol, ":");
                     return false;
                 }
-                e = r.ReadorEOF();
+                e = r.ConsumeReadorEOF();
                 if (!e) {
                     return false;
                 }
@@ -274,51 +272,56 @@ namespace binred {
         return true;
     }
 
-    bool parse_command(TokenReader& r, std::vector<std::shared_ptr<Command>>& cmds, Record& rec) {
-        while (true) {
-            auto e = r.ReadorEOF();
-            if (!e) {
-                return false;
-            }
-            std::shared_ptr<Command> cmd;
-            if (e->is_(TokenKind::keyword)) {
-                if (e->has_("push")) {
-                    if (!parse_push_or_pop<PushCommand>(r, cmd, rec, "push")) {
-                        return false;
-                    }
-                }
-                else if (e->has_("pop")) {
-                    if (!parse_push_or_pop<PopCommand>(r, cmd, rec, "pop")) {
-                        return false;
-                    }
-                }
-                else if (e->has_("call")) {
-                    if (!parse_callcommand(r, cmd, rec)) {
-                        return false;
-                    }
-                }
-                else if (e->has_("transfer")) {
-                    if (!parse_transfer(r, cmd, rec)) {
-                        return false;
-                    }
-                }
-                else if (e->has_("bind")) {
-                    if (!parse_bind_or_test<BindCommand>(r, cmd, rec, "bind")) {
-                        return false;
-                    }
-                }
-                else if (e->has_("test")) {
-                    if (!parse_bind_or_test<TestCommand>(r, cmd, rec, "test")) {
-                        return false;
-                    }
-                }
-                else {
-                    r.SetError(ErrorCode::unexpected_keyword);
+    bool parse_command(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
+        auto e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (e->is_(TokenKind::keyword)) {
+            if (e->has_("push")) {
+                if (!parse_push_or_pop<PushCommand>(r, cmd, rec, "push")) {
                     return false;
                 }
             }
-            else if (e->is_(TokenKind::identifiers)) {
+            else if (e->has_("pop")) {
+                if (!parse_push_or_pop<PopCommand>(r, cmd, rec, "pop")) {
+                    return false;
+                }
+            }
+            else if (e->has_("call")) {
+                if (!parse_callcommand(r, cmd, rec)) {
+                    return false;
+                }
+            }
+            else if (e->has_("transfer")) {
+                if (!parse_transfer(r, cmd, rec)) {
+                    return false;
+                }
+            }
+            else if (e->has_("bind")) {
+                if (!parse_bind_or_test<BindCommand>(r, cmd, rec, "bind")) {
+                    return false;
+                }
+            }
+            else if (e->has_("test")) {
+                if (!parse_bind_or_test<TestCommand>(r, cmd, rec, "test")) {
+                    return false;
+                }
+            }
+            else {
+                r.SetError(ErrorCode::unexpected_keyword);
+                return false;
             }
         }
+        else if (e->is_(TokenKind::identifiers)) {
+            if (!parse_assign(r, cmd, rec)) {
+                return false;
+            }
+        }
+        else {
+            r.SetError(ErrorCode::expect_keyword);
+            return false;
+        }
+        return true;
     }
 }  // namespace binred
