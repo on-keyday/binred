@@ -258,7 +258,7 @@ namespace PROJECT_NAME {
             return (unsigned char)~utf8bits(i);
         };
         if (len == 0) {
-            return buf[offset];
+            return (char32_t)buf[offset];
         }
         char32_t ret = 0;
         for (int i = 0; i < len; i++) {
