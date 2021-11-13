@@ -231,6 +231,17 @@ namespace binred {
         return true;
     }
 
+    bool parse_bind_or_test(TokenReader& r, std::vector<std::shared_ptr<Command>>& cmds, Record& rec, const char* bindtest) {
+        auto e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->is_(TokenKind::keyword) || !e->has_(bindtest)) {
+            r.SetError(ErrorCode::expect_keyword, bindtest);
+            return false;
+        }
+    }
+
     bool parse_command(TokenReader& r, std::vector<std::shared_ptr<Command>>& cmds, Record& rec) {
         while (true) {
             auto e = r.ReadorEOF();

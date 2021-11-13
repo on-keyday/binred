@@ -16,6 +16,8 @@ namespace binred {
         transfer_direct,
         transfer_if,
         transfer_switch,
+        bind,
+        test,
     };
 
     struct Command {
@@ -80,6 +82,18 @@ namespace binred {
         std::shared_ptr<Expr> cond;
         std::vector<std::pair<std::shared_ptr<Expr>, std::string>> to;
         std::string defaults;
+    };
+
+    struct BindCommand : Command {
+        BindCommand()
+            : Command(CommandKind::bind) {}
+        std::shared_ptr<Expr> expr;
+    };
+
+    struct TestCommand : Command {
+        TestCommand()
+            : Command(CommandKind::test) {}
+        std::shared_ptr<Expr> expr;
     };
 
 }  // namespace binred

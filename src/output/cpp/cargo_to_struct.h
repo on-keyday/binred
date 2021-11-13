@@ -189,6 +189,7 @@ namespace binred {
             setter += "return ";
             setter += ctx.error_enum();
             setter += "::none;\n}\n";
+            return true;
         }
 
         static bool convert(OutContext& ctx, Cargo& cargo, Record& record) {

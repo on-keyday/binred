@@ -17,20 +17,13 @@ find_package(Threads REQUIRED)
 
 add_executable(binred "src/main.cpp")
 
-add_executable(wsserver "src/webserver.cpp" )
 
-#add_library(httpclient SHARED "src/script.cpp" "src/runhttp.cpp" "src/client_export.cpp")
 
-#add_library(hcladd SHARED "src/additional_command.cpp")
-
-#target_link_libraries(nhttpc httpclient)
-#target_link_libraries(hcladd httpclient)
-
-if(WIN32)
-target_link_libraries(wsserver libssl libcrypto ws2_32)
-else()
-target_link_libraries(wsserver libssl.so libcrypto.so Threads::Threads)
-endif()
+#if(WIN32)
+#target_link_libraries(wsserver libssl libcrypto ws2_32)
+#else()
+#target_link_libraries(wsserver libssl.so libcrypto.so Threads::Threads)
+#endif()
 
 
 
