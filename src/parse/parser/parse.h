@@ -3,7 +3,7 @@
 #include "parse_alias.h"
 #include "parse_cargo.h"
 #include "parse_macro.h"
-#include "parse_read.h"
+#include "parse_io.h"
 
 namespace binred {
     using ParseResult = std::vector<std::shared_ptr<Element>>;
@@ -41,7 +41,12 @@ namespace binred {
                 }
             }
             else if (e->has_("read")) {
-                if (!parse_read(red, elm, mep)) {
+                if (!parse_io<true>(red, elm, mep)) {
+                    return false;
+                }
+            }
+            else if (e->has_("write")) {
+                if (!parse_io<false>(red, elm, mep)) {
                     return false;
                 }
             }

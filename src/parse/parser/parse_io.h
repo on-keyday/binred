@@ -30,13 +30,15 @@ namespace binred {
         return true;
     }
 
-    bool parse_read(TokenReader& r, std::shared_ptr<Element>& elm, Record& rec) {
+    template <bool is_read>
+    bool parse_io(TokenReader& r, std::shared_ptr<Element>& elm, Record& rec) {
         auto e = r.ReadorEOF();
         if (!e) {
             return false;
         }
-        if (!e->is_(TokenKind::keyword) || !e->has_("read")) {
-            r.SetError(ErrorCode::expect_keyword, "read");
+        constexpr auto io = is_read ? "read" : "write";
+        if (!e->is_(TokenKind::keyword) || !e->has_(io)) {
+            r.SetError(ErrorCode::expect_keyword, io);
             return false;
         }
         e = r.ConsumeReadorEOF();
