@@ -2,7 +2,15 @@
 #pragma once
 #include "../parse/parser/parse.h"
 #include <extension_operator.h>
+#include <enumext.h>
 namespace binred {
+    enum class ConstError {
+        none,
+        not_constant,
+        divsion_by_zero,
+    };
+
+    using ConstErr = commonlib2::EnumWrap<ConstError, ConstError::none, ConstError::not_constant>;
 
     template <class Int>
     std::pair<Int, bool> get_const_int(std::shared_ptr<Expr>& expr) {
@@ -35,13 +43,13 @@ namespace binred {
             }
             else if (expr->v == "/") {
                 if (rv == 0) {
-                    return {0, false};
+                    return {0, ConstError::divsion_by_zero};
                 }
                 return {lv / rv, true};
             }
             else if (expr->v == "%") {
                 if (rv == 0) {
-                    return {0, false};
+                    return {0, ConstError::divsion_by_zero};
                 }
                 return {lv % rv, true};
             }
