@@ -294,6 +294,7 @@ namespace binred {
             if (!e->has_("{")) {
                 return false;
             }
+            r.Consume();
             while (true) {
                 e = r.ReadorEOF();
                 if (!e) {

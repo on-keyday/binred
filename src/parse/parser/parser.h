@@ -69,6 +69,7 @@ namespace binred {
                     "extern",
                     "complex",
                     "case",
+                    "test",
                 });
         }
 
