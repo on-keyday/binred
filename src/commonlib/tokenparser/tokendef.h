@@ -74,7 +74,7 @@ namespace PROJECT_NAME {
             }
 
             template <class String>
-            bool Include(String& expects) {
+            bool Include(String& expects) const {
                 for (auto& e : reg) {
                     if (e == expects) {
                         return true;
