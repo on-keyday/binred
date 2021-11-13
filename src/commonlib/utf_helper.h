@@ -35,7 +35,7 @@ namespace PROJECT_NAME {
             return pos;
         }
 
-        constexpr unsigned char operator[](size_t p) {
+        constexpr unsigned char operator[](size_t p) const {
             if (p >= 4) return char();
             return minbuf[p];
         }
@@ -90,7 +90,7 @@ namespace PROJECT_NAME {
             return pos;
         }
 
-        constexpr char16_t operator[](size_t p) {
+        constexpr char16_t operator[](size_t p) const {
             if (p >= 2) return char();
             return minbuf[p];
         }
