@@ -198,6 +198,7 @@ namespace binred {
                 return parse_switch(r, cmd, rec);
             }
             else if (e->has_("if")) {
+                r.Consume();
                 auto tmp = std::make_shared<TransferIf>();
                 tmp->cond = binary(r, rec.get_tree(), rec);
                 if (!tmp->cond) {
