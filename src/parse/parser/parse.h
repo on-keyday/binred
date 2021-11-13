@@ -41,12 +41,12 @@ namespace binred {
                 }
             }
             else if (e->has_("read")) {
-                if (!parse_io<true>(red, elm, mep)) {
+                if (!parse_io<Read, true>(red, elm, mep)) {
                     return false;
                 }
             }
             else if (e->has_("write")) {
-                if (!parse_io<false>(red, elm, mep)) {
+                if (!parse_io<Write, false>(red, elm, mep)) {
                     return false;
                 }
             }

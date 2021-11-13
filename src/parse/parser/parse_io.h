@@ -2,13 +2,14 @@
 #pragma once
 
 #include "parser.h"
-#include "../struct/read.h"
+#include "../struct/io.h"
 #include "../struct/record.h"
 #include "parse_types.h"
 #include "parse_command.h"
 
 namespace binred {
-    bool parse_arglist(TokenReader& r, std::shared_ptr<Read>& red, Record& record) {
+    template <class Vec>
+    bool parse_arglist(Vec& vec, TokenReader& r, Record& record) {
         while (true) {
             auto e = r.ReadorEOF();
             if (!e) {
@@ -26,11 +27,12 @@ namespace binred {
                 return false;
             }
             param->name = e->to_string();
+            vec.push_back(std::move(param));
         }
         return true;
     }
 
-    template <bool is_read>
+    template <class IOType, bool is_read>
     bool parse_io(TokenReader& r, std::shared_ptr<Element>& elm, Record& rec) {
         auto e = r.ReadorEOF();
         if (!e) {
@@ -49,7 +51,7 @@ namespace binred {
             r.SetError(ErrorCode::expect_id);
             return false;
         }
-        auto redelm = std::make_shared<Read>();
+        auto redelm = std::make_shared<IOType>();
         redelm->name = e->to_string();
         e = r.ConsumeReadorEOF();
         if (!e) {
@@ -57,7 +59,7 @@ namespace binred {
         }
         if (e->has_("(")) {
             r.Consume();
-            if (!parse_arglist(r, redelm, rec)) {
+            if (!parse_arglist(redelm->args, r, rec)) {
                 return false;
             }
             e = r.ReadorEOF();
