@@ -63,6 +63,15 @@ namespace binred {
             else if (expr->v == "==") {
                 return {lv == rv, true};
             }
+            else if (expr->v == "!=") {
+                return {lv != rv, true};
+            }
+            else if (expr->v == ">=") {
+                return {lv >= rv, true};
+            }
+            else if (expr->v == "<=") {
+                return {lv >= rv, true};
+            }
             else {
                 return {0, false};
             }
