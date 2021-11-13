@@ -199,30 +199,33 @@ namespace binred {
             if (e->has_("switch")) {
                 return parse_switch(r, cmd, rec);
             }
+            else if (e->has_("if")) {
+                auto tmp = std::make_shared<TransferIf>();
+                tmp->cond = binary(r, rec.get_tree(), rec);
+                if (!tmp->cond) {
+                    return false;
+                }
+                e = r.ReadorEOF();
+                if (!e) {
+                    return false;
+                }
+                if (!e->is_(TokenKind::identifiers)) {
+                    r.SetError(ErrorCode::expect_id);
+                    return false;
+                }
+                tmp->cargoname = e->to_string();
+                r.Consume();
+            }
             else {
                 r.SetError(ErrorCode::unexpected_keyword);
                 return false;
             }
         }
         else if (e->is_(TokenKind::identifiers)) {
-            std::string cargoname = e->to_string();
+            auto tmp = std::make_shared<TransferDirect>();
+            tmp->cargoname = e->to_string();
+            cmd = tmp;
             r.Consume();
-            e = r.Read();
-            if (e && e->is_(TokenKind::keyword) && e->has_("if")) {
-                r.Consume();
-                auto tmp = std::make_shared<TransferIf>();
-                tmp->cond = binary(r, rec.get_tree(), rec);
-                if (!tmp->cond) {
-                    return false;
-                }
-                tmp->cargoname = cargoname;
-                cmd = tmp;
-            }
-            else {
-                auto tmp = std::make_shared<TransferDirect>();
-                tmp->cargoname = cargoname;
-                cmd = tmp;
-            }
         }
         else {
             r.SetError(ErrorCode::expect_id);
@@ -240,6 +243,7 @@ namespace binred {
             r.SetError(ErrorCode::expect_keyword, bindtest);
             return false;
         }
+        r.Consume();
     }
 
     bool parse_command(TokenReader& r, std::vector<std::shared_ptr<Command>>& cmds, Record& rec) {
