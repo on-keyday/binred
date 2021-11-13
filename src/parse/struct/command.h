@@ -13,6 +13,9 @@ namespace binred {
         if_,
         def,
         assign,
+        transfer_direct,
+        transfer_if,
+        transfer_switch,
     };
 
     struct Command {
@@ -52,10 +55,31 @@ namespace binred {
         std::string refid;
     };
 
-     struct CallCommand : Command {
+    struct CallCommand : Command {
         CallCommand()
             : Command(CommandKind::call) {}
         std::shared_ptr<CallExpr> call;
+    };
+
+    struct TransferDirect : Command {
+        TransferDirect()
+            : Command(CommandKind::transfer_direct) {}
+        std::string cargoname;
+    };
+
+    struct TransferIf : Command {
+        TransferIf()
+            : Command(CommandKind::transfer_if) {}
+        std::string cargoname;
+        std::shared_ptr<Expr> cond;
+    };
+
+    struct TransferSwitch : Command {
+        TransferSwitch()
+            : Command(CommandKind::transfer_switch) {}
+        std::shared_ptr<Expr> cond;
+        std::vector<std::pair<std::shared_ptr<Expr>, std::string>> to;
+        std::string defaults;
     };
 
 }  // namespace binred

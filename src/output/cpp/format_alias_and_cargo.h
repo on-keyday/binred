@@ -3,25 +3,15 @@
 #include "../../parse/parser/parse.h"
 #include <extutil.h>
 #include "../../calc/trace_expr.h"
+#include "../../calc/cast_ptr.h"
+#include "../common/make_lambda.h"
 
 namespace binred {
-
-    template <typename F>
-    struct make_lambda {
-        F f;
-        template <typename... Args>
-        decltype(auto) operator()(Args&&... args) const& {
-            return f(std::ref(*this), std::forward<Args>(args)...);
-        }
-    };
-
-    template <typename F>
-    make_lambda(F) -> make_lambda<F>;
 
     auto format_alias_and_cargo(Record& rec, std::string& current, Cargo& cargo) {
         auto f = [&](auto self, std::string& ret, std::shared_ptr<Expr> p, TraceMode m) {
             if (p->kind == ExprKind::call) {
-                auto c = static_cast<CallExpr*>(&*p);
+                auto c = castptr<CallExpr>(p);
                 ret += c->v;
                 ret += "(";
                 for (size_t i = 0; i < c->args.size(); i++) {

@@ -93,6 +93,137 @@ namespace binred {
         return true;
     }
 
+    bool parse_switch(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
+        auto e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->is_(TokenKind::keyword) || !e->has_("switch")) {
+            r.SetError(ErrorCode::expect_keyword, "switch");
+            return false;
+        }
+        r.Consume();
+        auto tmp = std::make_shared<TransferSwitch>();
+        tmp->cond = binary(r, rec.get_tree(), rec);
+        if (!tmp->cond) {
+            return false;
+        }
+        e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->has_("{")) {
+            return false;
+        }
+        r.Consume();
+        while (true) {
+            e = r.ReadorEOF();
+            if (!e) {
+                return false;
+            }
+            if (e->has_("}")) {
+                r.Consume();
+                break;
+            }
+            if (!e->is_(TokenKind::keyword)) {
+                r.SetError(ErrorCode::expect_keyword, "case or default");
+                return false;
+            }
+            if (e->has_("case")) {
+                r.Consume();
+                auto expr = binary(r, rec.get_tree(), rec);
+                if (!expr) {
+                    return false;
+                }
+                e = r.ReadorEOF();
+                if (!e) {
+                    return false;
+                }
+                if (!e->has_(":")) {
+                    r.SetError(ErrorCode::expect_symbol, ":");
+                    return false;
+                }
+                e = r.ReadorEOF();
+                if (!e) {
+                    return false;
+                }
+                if (!e->is_(TokenKind::identifiers)) {
+                    return false;
+                }
+                tmp->to.push_back({expr, e->to_string()});
+                r.Consume();
+            }
+            else if (e->has_("default")) {
+                if (tmp->defaults.size()) {
+                    r.SetError(ErrorCode::multiple_default);
+                    return false;
+                }
+                r.Consume();
+                if (!e->has_(":")) {
+                    r.SetError(ErrorCode::expect_symbol, ":");
+                    return false;
+                }
+                e = r.ReadorEOF();
+                if (!e) {
+                    return false;
+                }
+                if (!e->is_(TokenKind::identifiers)) {
+                    return false;
+                }
+                tmp->defaults = e->to_string();
+                r.Consume();
+            }
+            else {
+                r.SetError(ErrorCode::unexpected_keyword);
+                return false;
+            }
+        }
+        cmd = tmp;
+        return true;
+    }
+
+    bool parse_transfer(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
+        auto e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->is_(TokenKind::keyword) || !e->has_("transfer")) {
+            r.SetError(ErrorCode::expect_keyword, "transfer");
+            return false;
+        }
+        e = r.ConsumeReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (e->is_(TokenKind::keyword)) {
+            if (e->has_("switch")) {
+                return parse_switch(r, cmd, rec);
+            }
+            else {
+                r.SetError(ErrorCode::unexpected_keyword);
+                return false;
+            }
+        }
+        else if (e->is_(TokenKind::identifiers)) {
+            std::string cargoname = e->to_string();
+            r.Consume();
+            e = r.Read();
+            if (e && e->is_(TokenKind::keyword) && e->has_("if")) {
+                r.Consume();
+            }
+            else {
+                auto tmp = std::make_shared<TransferDirect>();
+                tmp->cargoname = cargoname;
+                cmd = tmp;
+            }
+        }
+        else {
+            r.SetError(ErrorCode::expect_id);
+            return false;
+        }
+        return true;
+    }
+
     bool parse_command(TokenReader& r, std::vector<std::shared_ptr<Command>>& cmds, Record& rec) {
         while (true) {
             auto e = r.ReadorEOF();

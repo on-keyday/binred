@@ -13,7 +13,7 @@ namespace binred {
         std::map<std::string, std::shared_ptr<Alias>> aliases;
         std::map<std::string, std::shared_ptr<Complex>> complexes;
         Tree tree = {
-            {"==", ">", "<"},
+            {"==", ">", "<", ">=", "<="},
             {"+", "-", "&", "|"},
             {"*", "/", "%"},
         };
