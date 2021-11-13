@@ -210,6 +210,13 @@ namespace binred {
             e = r.Read();
             if (e && e->is_(TokenKind::keyword) && e->has_("if")) {
                 r.Consume();
+                auto tmp = std::make_shared<TransferIf>();
+                tmp->cond = binary(r, rec.get_tree(), rec);
+                if (!tmp->cond) {
+                    return false;
+                }
+                tmp->cargoname = cargoname;
+                cmd = tmp;
             }
             else {
                 auto tmp = std::make_shared<TransferDirect>();
@@ -244,6 +251,11 @@ namespace binred {
                 }
                 else if (e->has_("call")) {
                     if (!parse_callcommand(r, cmd, rec)) {
+                        return false;
+                    }
+                }
+                else if (e->has_("transfer")) {
+                    if (!parse_transfer(r, cmd, rec)) {
                         return false;
                     }
                 }
