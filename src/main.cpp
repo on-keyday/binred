@@ -35,21 +35,29 @@ void binred_test() {
 
 constexpr auto testf(char32_t c) {
     commonlib2::U8MiniBuffer minbuf;
-    commonlib2::make_utf8_from_utf32(c + 1, minbuf);
+    commonlib2::make_utf8_from_utf32(c, minbuf);
     return minbuf;
 }
 
 constexpr auto testvalue(char32_t c) {
     auto result = testf(c);
     auto a = result[0] + result[1] + result[2] + result[3];
-    if (a >= 1000) {
-        throw "boo";
+    return std::pair{result, a};
+}
+
+constexpr auto testvalues(size_t begin, size_t end = 0) {
+    if (end == 0) {
+        end = end + 10000;
     }
-    return std::tuple{result, a};
+    for (auto i = begin; i < end; i++) {
+        auto res = testvalue(i);
+        if (res.second >= 900) {
+            return res;
+        }
+    }
+    return testvalue(0);
 }
 
 int main(int argc, char** argv) {
     binred_test();
-    constexpr auto str = u8"\x21";
-    constexpr auto e = testvalue(commonlib2::make_utf32_from_utf8(str, sizeof(str) - 1));
 }

@@ -234,7 +234,8 @@ namespace binred {
         return true;
     }
 
-    bool parse_bind_or_test(TokenReader& r, std::vector<std::shared_ptr<Command>>& cmds, Record& rec, const char* bindtest) {
+    template <class CmdType>
+    bool parse_bind_or_test(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec, const char* bindtest) {
         auto e = r.ReadorEOF();
         if (!e) {
             return false;
@@ -244,6 +245,33 @@ namespace binred {
             return false;
         }
         r.Consume();
+        auto tmp = std::make_shared<CmdType>();
+        tmp->expr = binary(r, rec.get_tree(), rec);
+        if (!tmp->expr) {
+            return false;
+        }
+        cmd = tmp;
+        return true;
+    }
+
+    bool parse_assign(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
+        auto tmp = std::make_shared<AssignCommand>();
+        if (!read_idname(r, tmp->target)) {
+            return false;
+        }
+        auto e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->has_("=")) {
+            return false;
+        }
+        r.Consume();
+        tmp->expr = binary(r, rec.get_tree(), rec);
+        if (!tmp->expr) {
+            return false;
+        }
+        return true;
     }
 
     bool parse_command(TokenReader& r, std::vector<std::shared_ptr<Command>>& cmds, Record& rec) {
@@ -273,6 +301,20 @@ namespace binred {
                     if (!parse_transfer(r, cmd, rec)) {
                         return false;
                     }
+                }
+                else if (e->has_("bind")) {
+                    if (!parse_bind_or_test<BindCommand>(r, cmd, rec, "bind")) {
+                        return false;
+                    }
+                }
+                else if (e->has_("test")) {
+                    if (!parse_bind_or_test<TestCommand>(r, cmd, rec, "test")) {
+                        return false;
+                    }
+                }
+                else {
+                    r.SetError(ErrorCode::unexpected_keyword);
+                    return false;
                 }
             }
             else if (e->is_(TokenKind::identifiers)) {

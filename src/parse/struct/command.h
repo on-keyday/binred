@@ -96,4 +96,11 @@ namespace binred {
         std::shared_ptr<Expr> expr;
     };
 
+    struct AssignCommand : Command {
+        AssignCommand()
+            : Command(CommandKind::assign) {}
+        std::string target;
+        std::shared_ptr<Expr> expr;
+    };
+
 }  // namespace binred
