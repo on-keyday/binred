@@ -34,13 +34,14 @@ namespace binred {
     struct IfCommand : Command {
         IfCommand()
             : Command(CommandKind::if_) {}
-        std::vector<IfCondition> ifs;
+        std::vector<std::shared_ptr<IfCondition>> ifs;
     };
 
     struct DefCommand : Command {
         DefCommand()
             : Command(CommandKind::def) {}
         std::shared_ptr<Param> param;
+        std::shared_ptr<Value> default_value;
     };
 
     struct PopCommand : Command {

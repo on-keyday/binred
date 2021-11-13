@@ -273,6 +273,75 @@ namespace binred {
         return true;
     }
 
+    bool parse_command(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec);
+
+    bool parse_if(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
+        auto e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->is_(TokenKind::keyword) || !e->has_("if")) {
+            r.SetError(ErrorCode::expect_keyword, "if");
+            return false;
+        }
+        r.Consume();
+        auto tmp = std::make_shared<IfCommand>();
+        auto read_block = [&](auto& cond) {
+            e = r.ReadorEOF();
+            if (!e) {
+                return false;
+            }
+            if (!e->has_("{")) {
+                return false;
+            }
+            while (true) {
+                e = r.ReadorEOF();
+                if (!e) {
+                    return false;
+                }
+                if (e->has_("}")) {
+                    r.Consume();
+                    break;
+                }
+                std::shared_ptr<Command> tcmd;
+                if (!parse_command(r, tcmd, rec)) {
+                    return false;
+                }
+                cond->cmds.push_back(std::move(tcmd));
+            }
+            return true;
+        };
+        while (true) {
+            auto cond = std::make_shared<IfCondition>();
+            cond->expr = binary(r, rec.get_tree(), rec);
+            if (!cond->expr) {
+                return false;
+            }
+            if (!read_block(cond)) {
+                return false;
+            }
+            tmp->ifs.push_back(std::move(cond));
+            e = r.Read();
+            if (e && e->is_(TokenKind::keyword)) {
+                if (e->has_("elif")) {
+                    r.Consume();
+                    continue;
+                }
+                else if (e->has_("else")) {
+                    r.Consume();
+                    cond = std::make_shared<IfCondition>();
+                    if (!read_block(cond)) {
+                        return false;
+                    }
+                    tmp->ifs.push_back(std::move(cond));
+                }
+            }
+            break;
+        }
+        cmd = tmp;
+        return true;
+    }
+
     bool parse_command(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
         auto e = r.ReadorEOF();
         if (!e) {
@@ -306,6 +375,11 @@ namespace binred {
             }
             else if (e->has_("test")) {
                 if (!parse_bind_or_test<TestCommand>(r, cmd, rec, "test")) {
+                    return false;
+                }
+            }
+            else if (e->has_("if")) {
+                if (!parse_if(r, cmd, rec)) {
                     return false;
                 }
             }
