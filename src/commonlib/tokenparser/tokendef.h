@@ -145,6 +145,14 @@ namespace PROJECT_NAME {
                 return kind == TokenKind::unknown || kind == TokenKind::spaces || kind == TokenKind::line || kind == TokenKind::root;
             }
 
+            bool is_identifier() const {
+                return kind == TokenKind::identifiers || kind == TokenKind::weak_keyword;
+            }
+
+            bool is_keyword() const {
+                return kind == TokenKind::keyword || kind == TokenKind::weak_keyword;
+            }
+
             virtual bool has_(const String&) const {
                 return false;
             }

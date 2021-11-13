@@ -275,6 +275,8 @@ namespace binred {
                     }
                 }
             }
+            else if (e->is_(TokenKind::identifiers)) {
+            }
         }
     }
 }  // namespace binred
