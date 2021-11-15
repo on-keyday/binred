@@ -103,6 +103,7 @@ namespace binred {
             }
             param->name = id->get_identifier();
             tmp->params.push_back(param);
+            tmp->expanded = tmp->expanded || param->expand;
             if (!already_set.insert(param->name).second) {
                 r.SetError(ErrorCode::multiple_variable);
                 return false;

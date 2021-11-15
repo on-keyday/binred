@@ -18,6 +18,7 @@ namespace binred {
         std::string name;
         std::vector<std::shared_ptr<Param>> params;
         BaseInfo base;
+        bool expanded = false;
     };
 
 }  // namespace binred
