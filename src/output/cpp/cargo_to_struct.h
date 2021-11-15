@@ -177,15 +177,13 @@ namespace binred {
                 write_endblock(setter);
             }
             if (bylen != 0) {
-                write_call(setter, "::memcpy", "this->" + name, "__v_input", std::to_string(bylen));
+                write_call(setter, "::memcpy", "this->" + name, "__v_input", std::to_string(bylen)) += ";\n";
             }
             else {
                 setter += "this->" + name +
                           "=__v_input;\n";
             }
-            setter += "return ";
-            setter += ctx.error_enum();
-            setter += "::none;\n}\n";
+            write_return(setter, ctx.error_enum() + "::none");
             return true;
         }
 
