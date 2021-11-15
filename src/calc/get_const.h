@@ -13,7 +13,7 @@ namespace binred {
     using ConstErr = commonlib2::EnumWrap<ConstError, ConstError::none, ConstError::not_constant>;
 
     template <class Int>
-    std::pair<Int, bool> get_const_int(std::shared_ptr<Expr>& expr) {
+    std::pair<Int, ConstErr> get_const_int(std::shared_ptr<Expr>& expr) {
         if (!expr) {
             return {0, false};
         }

@@ -276,6 +276,7 @@ namespace binred {
     bool parse_command(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec);
 
     bool parse_if(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
+        EXPAND_MACRO(rec)
         auto e = r.ReadorEOF();
         if (!e) {
             return false;
@@ -285,8 +286,10 @@ namespace binred {
             return false;
         }
         r.Consume();
+        EXPAND_MACRO(rec)
         auto tmp = std::make_shared<IfCommand>();
-        auto read_block = [&](auto& cond) {
+        auto read_block = [&](auto& cond) -> bool {
+            EXPAND_MACRO(rec)
             e = r.ReadorEOF();
             if (!e) {
                 return false;
@@ -314,6 +317,7 @@ namespace binred {
         };
         while (true) {
             auto cond = std::make_shared<IfCondition>();
+            EXPAND_MACRO(rec)
             cond->expr = binary(r, rec.get_tree(), rec);
             if (!cond->expr) {
                 return false;
@@ -344,6 +348,7 @@ namespace binred {
     }
 
     bool parse_command(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
+        EXPAND_MACRO(rec)
         auto e = r.ReadorEOF();
         if (!e) {
             return false;

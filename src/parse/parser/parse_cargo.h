@@ -10,9 +10,7 @@
 namespace binred {
 
     bool parse_baseinfo(TokenReader& r, BaseInfo& info, Record& mep) {
-        if (!mep.expand(r)) {
-            return false;
-        }
+        EXPAND_MACRO(mep)
         auto e = r.ReadorEOF();
         if (!e) {
             return false;
@@ -22,9 +20,7 @@ namespace binred {
             return false;
         }
         info.selfname = e->to_string();
-        if (!mep.expand(r)) {
-            return false;
-        }
+        EXPAND_MACRO(mep)
         e = r.ConsumeReadorEOF();
         if (!e) {
             return false;
@@ -57,9 +53,7 @@ namespace binred {
         }
         auto id = e->identifier();
         std::string name = id->get_identifier();
-        if (!mep.expand(r)) {
-            return false;
-        }
+        EXPAND_MACRO(mep)
         e = r.ConsumeReadorEOF();
         if (!e) {
             return false;
@@ -75,9 +69,7 @@ namespace binred {
                 return false;
             }
         }
-        if (!mep.expand(r)) {
-            return false;
-        }
+        EXPAND_MACRO(mep)
         if (!e->has_("{")) {
             r.SetError(ErrorCode::expect_symbol, "{");
             return false;
@@ -91,9 +83,7 @@ namespace binred {
             already_set.emplace(base.selfname);
         }
         while (true) {
-            if (!mep.expand(r)) {
-                return false;
-            }
+            EXPAND_MACRO(mep)
             e = r.ReadorEOF();
             if (!e) {
                 return false;

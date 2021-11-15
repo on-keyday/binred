@@ -1,6 +1,6 @@
 /*license*/
 #pragma once
-#include "../output_context.h"
+#include "output_context.h"
 
 namespace binred {
     std::string error_enum_class(OutContext& ctx) {

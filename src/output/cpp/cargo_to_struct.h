@@ -2,10 +2,11 @@
 #pragma once
 
 #include "../../parse/parser/parse.h"
-#include "../output_context.h"
+#include "output_context.h"
 #include "../../calc/get_const.h"
 #include "../../calc/trace_expr.h"
 #include "format_alias_and_cargo.h"
+#include "code_element.h"
 
 namespace binred {
     struct CargoToCppStruct {
@@ -153,34 +154,30 @@ namespace binred {
             current = name;
             if (param->bind_c) {
                 ctx.set_error_enum(err + "_bind");
-                setter += "if (!(" + trace_expr(param->bind_c->expr, formatter) +
-                          ")){\nreturn ";
-                setter += ctx.error_enum();
-                setter += "::" + err + "_bind;\n}\n";
+                write_if(setter, write_not(trace_expr(param->bind_c->expr, formatter)));
+                write_beginblock(setter);
+                write_return(setter, ctx.error_enum() + "::" + err + "_bind");
+                write_endblock(setter);
             }
             current.clear();
             if (param->type == ParamType::byte && bylen == 0) {
                 ctx.set_error_enum(err + "_length");
-                setter += "if ((" + ctx.length_of_byte("__v_input") + ")!=(";
                 auto lenp = get_exprlength(param);
-                setter += trace_expr(lenp->expr, formatter) +
-                          ")){\nreturn ";
-                setter += ctx.error_enum();
-                setter += "::" + err + "_length;\n}\n";
+                write_if(setter, write_noteq(ctx.length_of_byte("__v_input"), trace_expr(lenp->expr, formatter)));
+                write_beginblock(setter);
+                write_return(setter, ctx.error_enum() + "::" + err + "_length");
+                write_endblock(setter);
             }
             current = name;
             if (param->if_c) {
                 ctx.set_error_enum(err + "_if");
-                setter += "if (!(" + trace_expr(param->if_c->expr, formatter) +
-                          ")){\nreturn ";
-                setter += ctx.error_enum();
-                setter += "::" + err + "_if;\n}\n";
+                write_if(setter, write_not(trace_expr(param->if_c->expr, formatter)));
+                write_beginblock(setter);
+                write_return(setter, ctx.error_enum() + "::" + err + "_if");
+                write_endblock(setter);
             }
             if (bylen != 0) {
-                setter += "::memcpy(this->" +
-                          name + ",__v_input," +
-                          std::to_string(bylen) +
-                          ");\n";
+                write_call(setter, "::memcpy", "this->" + name, "__v_input", std::to_string(bylen));
             }
             else {
                 setter += "this->" + name +

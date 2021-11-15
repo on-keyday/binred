@@ -39,9 +39,7 @@ namespace binred {
     std::shared_ptr<Expr> binary(TokenReader& r, Tree& t, Record& mep);
 
     std::shared_ptr<Expr> primary(TokenReader& r, Tree& t, Record& mep) {
-        if (!mep.expand(r)) {
-            return nullptr;
-        }
+        EXPAND_MACRO(mep)
         auto e = r.ReadorEOF();
         if (!e) {
             return nullptr;

@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "../struct/element.h"
+
 namespace binred {
     using namespace commonlib2::tokenparser;
 

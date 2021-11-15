@@ -5,9 +5,7 @@
 
 namespace binred {
     bool parse_length(TokenReader& r, std::shared_ptr<Length>& length, Record& mep) {
-        if (!mep.expand(r)) {
-            return false;
-        }
+        EXPAND_MACRO(mep)
         //auto tree = get_tree();
         auto res = binary(r, mep.get_tree(), mep);
         if (!res) {
@@ -21,9 +19,7 @@ namespace binred {
 
     bool parse_condition(TokenReader& r, std::shared_ptr<Param>& param, Record& mep) {
         while (true) {
-            if (!mep.expand(r)) {
-                return false;
-            }
+            EXPAND_MACRO(mep)
             auto e = r.Read();
             if (!e) {
                 break;
@@ -87,9 +83,7 @@ namespace binred {
     }
 
     bool parse_type(TokenReader& r, std::shared_ptr<Param>& param, Record& mep) {
-        if (!mep.expand(r)) {
-            return false;
-        }
+        EXPAND_MACRO(mep)
         auto e = r.ReadorEOF();
         if (!e) {
             return false;

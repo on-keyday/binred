@@ -2,7 +2,7 @@
 #pragma once
 
 #include "../../parse/parser/parse.h"
-#include "../output_context.h"
+#include "output_context.h"
 #include "../../calc/get_const.h"
 #include "../../calc/trace_expr.h"
 #include "../common/get_alias_type.h"

@@ -5,6 +5,7 @@
 #include "output/cpp/add_error_enum.h"
 #include <iostream>
 #include <fstream>
+#include <learnstd.h>
 
 void binred_test() {
     binred::TokenReader red;

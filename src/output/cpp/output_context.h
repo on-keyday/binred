@@ -27,7 +27,7 @@ namespace binred {
             return true;
         }
 
-        const char* error_enum() {
+        std::string error_enum() {
             return "FrameError";
         }
     };

@@ -40,9 +40,7 @@ namespace binred {
         r.Consume();
         auto& tree = mep.get_tree();
         while (true) {
-            if (!mep.expand(r)) {
-                return false;
-            }
+            EXPAND_MACRO(mep)
             auto e = r.ReadorEOF();
             if (!e) {
                 return false;

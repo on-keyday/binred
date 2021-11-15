@@ -56,7 +56,7 @@ namespace binred {
                             break;
                         }
                         else if (a->has_(",") || a->has_("!")) {
-                            r.SetError(ErrorCode::unexpected_symbol, ",");
+                            r.SetError(ErrorCode::unexpected_symbol, ", or !");
                             return false;
                         }
                     }
@@ -66,7 +66,7 @@ namespace binred {
                             break;
                         }
                         else if (a->has_(")") || a->has_("!")) {
-                            r.SetError(ErrorCode::unexpected_symbol, ")");
+                            r.SetError(ErrorCode::unexpected_symbol, ") or !");
                             return false;
                         }
                     }
@@ -143,4 +143,8 @@ namespace binred {
             return true;
         }
     };
+#define EXPAND_MACRO(mep) \
+    if (!mep.expand(r)) { \
+        return 0;         \
+    }
 }  // namespace binred
