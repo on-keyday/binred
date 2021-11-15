@@ -71,6 +71,7 @@ namespace binred {
                     "complex",
                     "case",
                     "test",
+                    "expand",
                 });
         }
 

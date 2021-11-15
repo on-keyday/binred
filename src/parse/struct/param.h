@@ -20,6 +20,7 @@ namespace binred {
         std::shared_ptr<Condition> bind_c;
         std::shared_ptr<Value> default_v;
         std::shared_ptr<token> token;
+        bool expand = false;
     };
 
     enum class LengthType {

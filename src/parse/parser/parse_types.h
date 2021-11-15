@@ -71,6 +71,14 @@ namespace binred {
                     param->default_v->expr = res;
                     param->default_v->token = e;
                 }
+                else if (e->has_("expand")) {
+                    if (param->expand) {
+                        r.SetError(ErrorCode::double_decoration, "expand");
+                        return false;
+                    }
+                    r.Consume();
+                    param->expand = true;
+                }
                 else {
                     r.SetError(ErrorCode::expect_condition_keyword);
                     return false;
