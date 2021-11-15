@@ -184,6 +184,7 @@ namespace binred {
                           "=__v_input;\n";
             }
             write_return(setter, ctx.error_enum() + "::none");
+            write_endblock(setter);
             return true;
         }
 
