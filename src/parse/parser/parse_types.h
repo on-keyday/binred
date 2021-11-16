@@ -80,8 +80,9 @@ namespace binred {
                     param->expand = true;
                 }
                 else {
-                    r.SetError(ErrorCode::expect_condition_keyword);
-                    return false;
+                    /*r.SetError(ErrorCode::expect_condition_keyword);
+                    return false;*/
+                    break;
                 }
                 continue;
             }
