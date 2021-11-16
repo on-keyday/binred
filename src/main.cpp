@@ -15,21 +15,21 @@ void binred_test() {
         commonlib2::Reader fin(commonlib2::FileReader("D:/MiniTools/binred/http2_frame.brd"));
         binred::parse_binred(fin, red, record, result);
     }
-    binred::OutContext ctx;
+    binred::cpp::CppOutContext ctx;
     for (auto& a : record.aliases) {
-        binred::AliasToCppEnum::convert(ctx, *a.second);
+        binred::cpp::AliasToCppEnum::convert(ctx, *a.second);
     }
     for (auto& c : result) {
         if (c->type == binred::ElementType::cargo) {
             auto cg = static_cast<binred::Cargo*>(&*c);
-            binred::CargoToCppStruct::convert(ctx, *cg, record);
+            binred::cpp::CargoToCppStruct::convert(ctx, *cg, record);
         }
     }
     {
         std::ofstream fs("D:/MiniTools/binred/generated/test.hpp");
         std::cout << ctx.buffer;
         fs << "/*license*/\n#pragma once\n#include<cstdint>\n#include<string>\n";
-        fs << binred::error_enum_class(ctx);
+        fs << binred::cpp::error_enum_class(ctx);
         fs << ctx.buffer;
     }
 }

@@ -3,32 +3,34 @@
 #include <string>
 #include <vector>
 namespace binred {
-    struct OutContext {
-        std::string buffer;
-        std::vector<std::string> enum_v;
+    namespace cpp {
+        struct CppOutContext {
+            std::string buffer;
+            std::vector<std::string> enum_v;
 
-        void write(const std::string& w) {
-            buffer += w;
-        }
+            void write(const std::string& w) {
+                buffer += w;
+            }
 
-        void set_error_enum(const std::string& v) {
-            enum_v.push_back(v);
-        }
+            void set_error_enum(const std::string& v) {
+                enum_v.push_back(v);
+            }
 
-        std::string length_of_byte(const std::string& var) {
-            return "std::size(" + var + ")";
-        }
+            std::string length_of_byte(const std::string& var) {
+                return "std::size(" + var + ")";
+            }
 
-        const char* buffer_type() {
-            return "std::string";
-        }
+            const char* buffer_type() {
+                return "std::string";
+            }
 
-        bool allow_fixed() {
-            return true;
-        }
+            bool allow_fixed() {
+                return true;
+            }
 
-        std::string error_enum() {
-            return "FrameError";
-        }
-    };
+            std::string error_enum() {
+                return "FrameError";
+            }
+        };
+    }  // namespace cpp
 }  // namespace binred
