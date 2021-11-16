@@ -36,10 +36,10 @@ namespace binred {
         if (e->has_("=")) {
             r.Consume();
             auto tmp = std::make_shared<TypeAlias>();
-            tmp->type->name = name;
             if (!parse_type(r, tmp->type, mep)) {
                 return false;
             }
+            tmp->type->name = name;
             if (!mep.add_types(name, tmp)) {
                 r.SetError(ErrorCode::multiple_alias);
                 return false;
