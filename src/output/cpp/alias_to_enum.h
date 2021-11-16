@@ -26,7 +26,7 @@ namespace binred {
             });
         }
 
-        static bool convert(OutContext& ctx, Alias& als) {
+        static bool convert(OutContext& ctx, NumberAlias& als) {
             std::int64_t maxvalue = 0;
             std::int64_t minvalue = 0;
             std::string tmpwrite;

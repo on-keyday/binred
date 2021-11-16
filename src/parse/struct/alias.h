@@ -7,11 +7,17 @@
 #include <memory>
 namespace binred {
 
-    struct Alias : Element {
-        Alias()
-            : Element(ElementType::alias) {}
+    struct NumberAlias : Element {
+        NumberAlias()
+            : Element(ElementType::numalias) {}
         std::string name;
         std::map<std::string, std::shared_ptr<Value>> alias;
         std::string baseclass;
+    };
+
+    struct TypeAlias : Element {
+        TypeAlias()
+            : Element(ElementType::tyalias) {}
+        std::shared_ptr<Param> type;
     };
 }  // namespace binred

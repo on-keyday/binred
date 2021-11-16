@@ -7,11 +7,13 @@ namespace binred {
     using token = commonlib2::tokenparser::Token<std::string>;
     enum class ElementType {
         cargo,
-        alias,
+        numalias,
+        tyalias,
         read,
         write,
         macro,
         complex,
+        func,
     };
 
     struct Element {

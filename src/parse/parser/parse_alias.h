@@ -8,6 +8,7 @@
 #include "../struct/record.h"
 
 namespace binred {
+
     bool parse_alias(TokenReader& r, std::shared_ptr<Element>& elm, Record& mep) {
         auto e = r.ReadorEOF();
         if (!e) {
@@ -31,11 +32,20 @@ namespace binred {
         if (!e) {
             return false;
         }
+        if (e->has_("=")) {
+            r.Consume();
+            auto tmp = std::make_shared<TypeAlias>();
+            if (!parse_type(r, tmp->type, mep)) {
+                return false;
+            }
+            elm = tmp;
+            return true;
+        }
         if (!e->has_("{")) {
             r.SetError(ErrorCode::expect_symbol, "{");
             return false;
         }
-        auto tmp = std::make_shared<Alias>();
+        auto tmp = std::make_shared<NumberAlias>();
         tmp->name = name;
         r.Consume();
         auto& tree = mep.get_tree();
