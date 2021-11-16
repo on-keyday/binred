@@ -117,6 +117,18 @@ namespace binred {
                 }
                 t.set_index(tmp);
             }
+            else if (e->has_("nil")) {
+                ret = std::make_shared<Expr>();
+                ret->kind = ExprKind::nil;
+                ret->v = "nil";
+                r.Consume();
+            }
+            else if (e->has_("true") || e->has_("false")) {
+                ret = std::make_shared<Expr>();
+                ret->kind = ExprKind::boolean;
+                ret->v = e->to_string();
+                r.Consume();
+            }
             else {
                 r.SetError(ErrorCode::unexpected_keyword);
                 return nullptr;

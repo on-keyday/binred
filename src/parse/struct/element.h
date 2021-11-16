@@ -28,6 +28,8 @@ namespace binred {
         ref,
         op,
         call,
+        nil,
+        boolean,
     };
 
     struct Expr {

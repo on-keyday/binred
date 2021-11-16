@@ -46,7 +46,6 @@ namespace binred {
                 {
                     "cargo",
                     "alias",
-                    "endian",
                     "if",
                     "macro",
                     "bind",
@@ -72,6 +71,10 @@ namespace binred {
                     "case",
                     "test",
                     "expand",
+                    "nilable",
+                    "nil",
+                    "true",
+                    "false",
                 });
         }
 
