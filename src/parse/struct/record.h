@@ -10,7 +10,8 @@ namespace binred {
     struct Record {
         MacroExpander mep;
         std::map<std::string, std::shared_ptr<Cargo>> cargos;
-        std::map<std::string, std::shared_ptr<Alias>> aliases;
+        std::map<std::string, std::shared_ptr<NumberAlias>> aliases;
+        std::map<std::string, std::shared_ptr<TypeAlias>> types;
         std::map<std::string, std::shared_ptr<Complex>> complexes;
         Tree tree = {
             {"==", ">", "<", ">=", "<="},
@@ -25,8 +26,12 @@ namespace binred {
             return cargos.insert({name, c}).second;
         }
 
-        bool add_alias(const std::string& name, std::shared_ptr<Alias>& c) {
+        bool add_alias(const std::string& name, std::shared_ptr<NumberAlias>& c) {
             return aliases.insert({name, c}).second;
+        }
+
+        bool add_types(const std::string& name, std::shared_ptr<TypeAlias>& c) {
+            return types.insert({name, c}).second;
         }
 
         Tree& get_tree() {

@@ -39,6 +39,10 @@ namespace binred {
             if (!parse_type(r, tmp->type, mep)) {
                 return false;
             }
+            if (!mep.add_types(name, tmp)) {
+                r.SetError(ErrorCode::multiple_alias);
+                return false;
+            }
             elm = tmp;
             return true;
         }
