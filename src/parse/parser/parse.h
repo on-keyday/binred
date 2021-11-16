@@ -15,8 +15,17 @@ namespace binred {
             return false;
         }
         red = TokenReader(gt.parser.GetParsed());
+        auto e = red.Read();
+        if (e && e->is(TokenKind::keyword) && e->has_("libname")) {
+            e = red.ConsumeReadorEOF();
+            if (!e) {
+                return false;
+            }
+            mep.libname = e->to_string();
+            red.Consume();
+        }
         while (!red.is_EOF()) {
-            auto e = red.Read();
+            e = red.Read();
             if (!e) {
                 break;
             }

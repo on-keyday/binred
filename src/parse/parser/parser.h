@@ -75,6 +75,7 @@ namespace binred {
                     "nil",
                     "true",
                     "false",
+                    "libname",
                 });
         }
 

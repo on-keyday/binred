@@ -8,6 +8,7 @@
 
 namespace binred {
     struct Record {
+        std::string libname;
         MacroExpander mep;
         std::map<std::string, std::shared_ptr<Cargo>> cargos;
         std::map<std::string, std::shared_ptr<NumberAlias>> aliases;
