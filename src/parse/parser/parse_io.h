@@ -38,6 +38,7 @@ namespace binred {
         if (!e) {
             return false;
         }
+        auto start = e;
         constexpr auto io = is_read ? "read" : "write";
         if (!e->is_(TokenKind::keyword) || !e->has_(io)) {
             r.SetError(ErrorCode::expect_keyword, io);
@@ -51,7 +52,7 @@ namespace binred {
             r.SetError(ErrorCode::expect_id);
             return false;
         }
-        auto redelm = std::make_shared<IOType>();
+        auto redelm = std::make_shared<IOType>(std::move(start));
         redelm->name = e->to_string();
         e = r.ConsumeReadorEOF();
         if (!e) {

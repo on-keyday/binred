@@ -15,12 +15,12 @@ namespace binred {
     };
 
     struct Read : IOElement {
-        Read()
-            : IOElement(ElementType::read) {}
+        Read(std::shared_ptr<token_t>&& tok)
+            : IOElement(std::move(tok), ElementType::read) {}
     };
 
     struct Write : IOElement {
-        Write()
-            : IOElement(ElementType::write) {}
+        Write(std::shared_ptr<token_t>&& tok)
+            : IOElement(std::move(tok), ElementType::write) {}
     };
 }  // namespace binred

@@ -18,7 +18,7 @@ namespace binred {
 
         Tree(std::initializer_list<TreeDepth> list)
             : depth(list.begin(), list.end()) {}
-        bool expect(std::shared_ptr<token>& r, std::string& expected) {
+        bool expect(std::shared_ptr<token_t>& r, std::string& expected) {
             if (!r) return false;
             for (auto& s : depth[index % depth.size()].expected) {
                 if (r->is_(TokenKind::symbols) && r->has_(s)) {

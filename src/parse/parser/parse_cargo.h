@@ -39,6 +39,7 @@ namespace binred {
         if (!e) {
             return false;
         }
+        auto start = e;
         if (!e->is_(TokenKind::keyword) || !e->has_("cargo")) {
             r.SetError(ErrorCode::expect_keyword, "cargo");
             return false;
@@ -74,7 +75,7 @@ namespace binred {
             r.SetError(ErrorCode::expect_symbol, "{");
             return false;
         }
-        auto tmp = std::make_shared<Cargo>();
+        auto tmp = std::make_shared<Cargo>(std::move(start));
         tmp->name = name;
         tmp->base = std::move(base);
         r.Consume();

@@ -15,6 +15,7 @@ namespace binred {
         if (!e) {
             return false;
         }
+        auto start = e;
         if (!e->is_(TokenKind::keyword) || !e->has_("alias")) {
             r.SetError(ErrorCode::expect_keyword, "alias");
             return false;
@@ -35,7 +36,7 @@ namespace binred {
         }
         if (e->has_("=")) {
             r.Consume();
-            auto tmp = std::make_shared<TypeAlias>();
+            auto tmp = std::make_shared<TypeAlias>(std::move(start));
             if (!parse_type(r, tmp->type, mep)) {
                 return false;
             }
@@ -51,7 +52,7 @@ namespace binred {
             r.SetError(ErrorCode::expect_symbol, "{");
             return false;
         }
-        auto tmp = std::make_shared<NumberAlias>();
+        auto tmp = std::make_shared<NumberAlias>(std::move(start));
         tmp->name = name;
         r.Consume();
         auto& tree = mep.get_tree();

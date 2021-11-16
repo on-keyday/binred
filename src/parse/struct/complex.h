@@ -17,8 +17,8 @@ namespace binred {
     };
 
     struct Complex : Element {
-        Complex()
-            : Element(ElementType::complex) {}
+        Complex(std::shared_ptr<token_t>&& tok)
+            : Element(std::move(tok), ElementType::complex) {}
         std::map<std::string, Function> func;
         std::map<std::string, LangPattern> pattern;
     };

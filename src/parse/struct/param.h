@@ -19,7 +19,7 @@ namespace binred {
         std::shared_ptr<Condition> if_c;
         std::shared_ptr<Condition> bind_c;
         std::shared_ptr<Value> default_v;
-        std::shared_ptr<token> token;
+        std::shared_ptr<token_t> token;
         bool expand = false;
     };
 

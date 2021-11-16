@@ -9,16 +9,16 @@
 namespace binred {
 
     struct NumberAlias : Element {
-        NumberAlias()
-            : Element(ElementType::numalias) {}
+        NumberAlias(std::shared_ptr<token_t>&& tok)
+            : Element(std::move(tok), ElementType::numalias) {}
         std::string name;
         std::map<std::string, std::shared_ptr<Value>> alias;
         std::string baseclass;
     };
 
     struct TypeAlias : Element {
-        TypeAlias()
-            : Element(ElementType::tyalias) {}
+        TypeAlias(std::shared_ptr<token_t>&& tok)
+            : Element(std::move(tok), ElementType::tyalias) {}
         std::shared_ptr<Param> type;
     };
 }  // namespace binred

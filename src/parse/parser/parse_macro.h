@@ -9,6 +9,7 @@ namespace binred {
         if (!e) {
             return false;
         }
+        auto start = e;
         if (!e->is_(TokenKind::keyword) || !e->has_("macro")) {
             r.SetError(ErrorCode::expect_keyword, "macro");
             return false;
@@ -22,7 +23,7 @@ namespace binred {
             return false;
         }
         auto id = e->identifier();
-        auto tmp = std::make_shared<Macro>();
+        auto tmp = std::make_shared<Macro>(std::move(start));
         tmp->name = id->get_identifier();
         while (true) {
             e = r.ConsumeReadorEOF();

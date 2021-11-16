@@ -112,14 +112,14 @@ namespace binred {
     };
 
     struct TokenReader {
-        std::shared_ptr<token> root;
-        std::shared_ptr<token> current;
+        std::shared_ptr<token_t> root;
+        std::shared_ptr<token_t> current;
         ErrorCode code = ErrorCode::none;
         const char* additional = nullptr;
 
         TokenReader() {}
 
-        TokenReader(std::shared_ptr<token> tok)
+        TokenReader(std::shared_ptr<token_t> tok)
             : root(tok), current(tok) {}
 
         bool is_EOF() {
@@ -135,7 +135,7 @@ namespace binred {
             this->additional = addtional;
         }
 
-        std::shared_ptr<token> Read() {
+        std::shared_ptr<token_t> Read() {
             while (current &&
                    (current->is_nodisplay() ||
                     current->has_("/*") || current->has_("*/") || current->has_("//") ||
@@ -145,7 +145,7 @@ namespace binred {
             return current;
         }
 
-        std::shared_ptr<token> ReadorEOF() {
+        std::shared_ptr<token_t> ReadorEOF() {
             auto ret = Read();
             if (!ret) {
                 SetError(ErrorCode::unexpected_EOF);
@@ -161,7 +161,7 @@ namespace binred {
             return false;
         }
 
-        std::shared_ptr<token> ConsumeReadorEOF() {
+        std::shared_ptr<token_t> ConsumeReadorEOF() {
             if (!Consume()) {
                 SetError(ErrorCode::unexpected_EOF);
                 return nullptr;
@@ -169,13 +169,13 @@ namespace binred {
             return ReadorEOF();
         }
 
-        std::shared_ptr<token> GetorEOF() {
+        std::shared_ptr<token_t> GetorEOF() {
             if (!current) {
                 SetError(ErrorCode::unexpected_EOF);
             }
             return current;
         }
-        std::shared_ptr<token> Get() {
+        std::shared_ptr<token_t> Get() {
             return current;
         }
     };

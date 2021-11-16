@@ -9,8 +9,8 @@
 
 namespace binred {
     struct Macro : Element {
-        Macro()
-            : Element(ElementType::macro) {}
+        Macro(std::shared_ptr<token_t>&& tok)
+            : Element(std::move(tok), ElementType::macro) {}
         std::string name;
         std::vector<std::string> args;
         std::string expand;

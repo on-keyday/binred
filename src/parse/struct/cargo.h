@@ -13,8 +13,8 @@ namespace binred {
     };
 
     struct Cargo : Element {
-        Cargo()
-            : Element(ElementType::cargo) {}
+        Cargo(std::shared_ptr<token_t>&& tok)
+            : Element(std::move(tok), ElementType::cargo) {}
         std::string name;
         std::vector<std::shared_ptr<Param>> params;
         BaseInfo base;

@@ -4,7 +4,7 @@
 #include <tokenparser/tokendef.h>
 #include <string>
 namespace binred {
-    using token = commonlib2::tokenparser::Token<std::string>;
+    using token_t = commonlib2::tokenparser::Token<std::string>;
     enum class ElementType {
         cargo,
         numalias,
@@ -18,8 +18,9 @@ namespace binred {
 
     struct Element {
         ElementType type;
-        Element(ElementType t)
-            : type(t) {}
+        std::shared_ptr<token_t> token;
+        Element(std::shared_ptr<token_t>&& tok, ElementType t)
+            : type(t), token(std::move(tok)) {}
     };
 
     enum class ExprKind {
@@ -34,7 +35,7 @@ namespace binred {
         std::string v;
         std::shared_ptr<Expr> left;
         std::shared_ptr<Expr> right;
-        std::shared_ptr<token> token;
+        std::shared_ptr<token_t> token;
     };
 
     struct CallExpr : Expr {
@@ -45,12 +46,12 @@ namespace binred {
 
     struct Value {
         std::shared_ptr<Expr> expr;
-        std::shared_ptr<token> token;
+        std::shared_ptr<token_t> token;
     };
 
     struct Condition {
         std::shared_ptr<Expr> expr;
-        std::shared_ptr<token> token;
+        std::shared_ptr<token_t> token;
     };
 
 }  // namespace binred
