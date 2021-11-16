@@ -21,6 +21,7 @@ namespace binred {
         std::shared_ptr<Value> default_v;
         std::shared_ptr<token_t> token;
         bool expand = false;
+        bool nilable = false;
     };
 
     enum class LengthType {

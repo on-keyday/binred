@@ -79,6 +79,14 @@ namespace binred {
                     r.Consume();
                     param->expand = true;
                 }
+                else if (e->has_("nilable")) {
+                    if (param->nilable) {
+                        r.SetError(ErrorCode::double_decoration, "expand");
+                        return false;
+                    }
+                    r.Consume();
+                    param->nilable = true;
+                }
                 else {
                     /*r.SetError(ErrorCode::expect_condition_keyword);
                     return false;*/
