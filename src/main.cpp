@@ -21,7 +21,7 @@ void binred_test() {
     }
     for (auto& c : result) {
         if (c->type == binred::ElementType::cargo) {
-            auto cg = static_cast<binred::Cargo*>(&*c);
+            auto cg = binred::castptr<binred::Cargo>(c);
             binred::cpp::CargoToCppStruct::convert(ctx, *cg, record);
         }
     }
