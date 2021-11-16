@@ -6,6 +6,7 @@
 #include "parse_tree.h"
 #include "parse_macro.h"
 #include "../struct/record.h"
+#include "parse_types.h"
 
 namespace binred {
 
