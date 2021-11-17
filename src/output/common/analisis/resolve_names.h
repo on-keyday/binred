@@ -8,10 +8,12 @@ namespace binred {
     struct Error {
         std::string errmsg;
         std::shared_ptr<Element> elm;
+
         operator bool() {
             return errmsg.size() != 0;
         }
     };
+
     struct TypeResolver {
         Error resolve_cargo(SortElement& sorted, Record& rec) {
             for (auto& c : sorted.cargo) {
@@ -31,11 +33,15 @@ namespace binred {
                         auto custom = castptr<Custom>(p);
                         auto found = rec.cargos.find(custom->cargoname);
                         if (found != rec.cargos.end()) {
+                            sorted.unresolved_param.emplace(p);
                             continue;
                         }
+                        sorted.unresolved_param.erase(p);
+                        custom->cargo = found->second;
                     }
                 }
             }
+            return {};
         }
     };
 

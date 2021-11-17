@@ -12,6 +12,7 @@ namespace binred {
         Sorted<TypeAlias> typealias;
         Sorted<Read> read;
         Sorted<Write> write;
+        std::set<std::weak_ptr<Param>> unresolved_param;
         SortElement(ParseResult& result) {
             for (auto& e : result) {
                 switch (e->type) {
