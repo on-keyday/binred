@@ -93,6 +93,7 @@ namespace PROJECT_NAME {
         size_t argcount = 0;
         bool same_denied = false;
         bool needless_cut = false;
+        size_t effort_min = 0;
 
         Option& operator=(const Option& other) {
             optname = other.optname;
@@ -174,6 +175,29 @@ namespace PROJECT_NAME {
                 }
             }
             return true;
+        }
+
+        OptErr set_option(const String& name, const Char* alias, const String& help, size_t argcount = 0, bool needless_cut = true, bool same_denied = false, size_t effort_min = 0) {
+            Opt opt{
+                .optname = name,
+                .help = help,
+                .argcount = argcount,
+                .same_denied = same_denied,
+                .needless_cut = needless_cut,
+                .effort_min = effort_min,
+            };
+            if (alias) {
+                if (alias[0] != 0) {
+                    opt.alias[0] = alias[0];
+                    if (alias[1] != 0) {
+                        opt.alias[1] = alias[1];
+                        if (alias[2] != 0) {
+                            opt.alias[2] = alias[2];
+                        }
+                    }
+                }
+            }
+            return set_option(opt);
         }
 
         OptErr set_option(const Opt& option) {
@@ -337,6 +361,9 @@ namespace PROJECT_NAME {
                     for (auto i = 0; i < opt->argcount; i++) {
                         index++;
                         if (index == argc || !argv[index]) {
+                            if (opt->effort_min && i >= opt->effort_min) {
+                                break;
+                            }
                             return OptError::need_more_argument;
                         }
                         String str;
