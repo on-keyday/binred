@@ -14,12 +14,14 @@ namespace binred {
 
     std::shared_ptr<CallExpr> parse_callexpr(TokenReader& r, Record& rec);
 
-    bool read_idname(TokenReader& r, std::string& idname) {
+    bool read_idname(TokenReader& r, std::string& idname, bool igkeyword = false) {
         auto e = r.ReadorEOF();
         if (!e) return false;
         if (!e->is_(TokenKind::identifiers)) {
-            r.SetError(ErrorCode::expect_id);
-            return false;
+            if (!igkeyword || !e->is_(TokenKind::keyword)) {
+                r.SetError(ErrorCode::expect_id);
+                return false;
+            }
         }
         idname = e->to_string();
         r.Consume();
@@ -30,8 +32,10 @@ namespace binred {
                     return false;
                 }
                 if (!e->is_(TokenKind::identifiers)) {
-                    r.SetError(ErrorCode::expect_id);
-                    return false;
+                    if (!igkeyword || !e->is_(TokenKind::keyword)) {
+                        r.SetError(ErrorCode::expect_id);
+                        return false;
+                    }
                 }
                 idname += ".";
                 idname += e->to_string();

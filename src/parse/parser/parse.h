@@ -25,7 +25,7 @@ namespace binred {
         auto e = red.Read();
         if (e && e->is_(TokenKind::keyword) && e->has_("libname")) {
             red.Consume();
-            if (!read_idname(red, mep.libname)) {
+            if (!read_idname(red, mep.libname, true)) {
                 return false;
             }
         }
