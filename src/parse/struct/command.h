@@ -22,8 +22,9 @@ namespace binred {
 
     struct Command {
         CommandKind kind;
-        constexpr Command(CommandKind k)
-            : kind(k) {}
+        std::shared_ptr<token_t> token;
+        Command(std::shared_ptr<token_t>&& tok, CommandKind k)
+            : kind(k), token(std::move(tok)) {}
     };
 
     struct IfCondition {
@@ -32,35 +33,35 @@ namespace binred {
     };
 
     struct IfCommand : Command {
-        IfCommand()
-            : Command(CommandKind::if_) {}
+        IfCommand(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::if_) {}
         std::vector<std::shared_ptr<IfCondition>> ifs;
     };
 
     struct DefCommand : Command {
-        DefCommand()
-            : Command(CommandKind::def) {}
+        DefCommand(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::def) {}
         std::shared_ptr<Param> param;
         std::shared_ptr<Value> default_value;
     };
 
     struct PopCommand : Command {
-        PopCommand()
-            : Command(CommandKind::pop) {}
+        PopCommand(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::pop) {}
         std::shared_ptr<Expr> numpop;
         std::string refid;
     };
 
     struct PushCommand : Command {
-        PushCommand()
-            : Command(CommandKind::push) {}
+        PushCommand(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::push) {}
         std::shared_ptr<Expr> numpop;
         std::string refid;
     };
 
     struct CallCommand : Command {
-        CallCommand()
-            : Command(CommandKind::call) {}
+        CallCommand(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::call) {}
         std::shared_ptr<CallExpr> call;
     };
 
@@ -70,41 +71,41 @@ namespace binred {
     };
 
     struct TransferDirect : Command {
-        TransferDirect()
-            : Command(CommandKind::transfer_direct) {}
+        TransferDirect(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::transfer_direct) {}
         TransferData data;
     };
 
     struct TransferIf : Command {
-        TransferIf()
-            : Command(CommandKind::transfer_if) {}
+        TransferIf(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::transfer_if) {}
         TransferData data;
         std::shared_ptr<Expr> cond;
     };
 
     struct TransferSwitch : Command {
-        TransferSwitch()
-            : Command(CommandKind::transfer_switch) {}
+        TransferSwitch(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::transfer_switch) {}
         std::shared_ptr<Expr> cond;
         std::vector<std::pair<std::shared_ptr<Expr>, TransferData>> to;
         TransferData defaults;
     };
 
     struct BindCommand : Command {
-        BindCommand()
-            : Command(CommandKind::bind) {}
+        BindCommand(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::bind) {}
         std::shared_ptr<Expr> expr;
     };
 
     struct TestCommand : Command {
-        TestCommand()
-            : Command(CommandKind::test) {}
+        TestCommand(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::test) {}
         std::shared_ptr<Expr> expr;
     };
 
     struct AssignCommand : Command {
-        AssignCommand()
-            : Command(CommandKind::assign) {}
+        AssignCommand(std::shared_ptr<token_t>&& tok)
+            : Command(std::move(tok), CommandKind::assign) {}
         std::string target;
         std::shared_ptr<Expr> expr;
     };

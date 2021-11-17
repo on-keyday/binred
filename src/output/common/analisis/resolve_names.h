@@ -8,6 +8,7 @@ namespace binred::analisis {
     struct Error {
         std::string errmsg;
         std::shared_ptr<Element> elm;
+        std::shared_ptr<token_t> token;
 
         operator bool() {
             return errmsg.size() != 0;
@@ -15,7 +16,7 @@ namespace binred::analisis {
     };
 
     struct TypeResolver {
-        Error resolve_read(SortElement& sorted, Record& rec) {
+        static Error resolve_read(SortElement& sorted, Record& rec) {
             for (auto& e : sorted.read) {
                 auto found = rec.cargos.find(e->name);
                 if (found == rec.cargos.end()) {
@@ -34,13 +35,21 @@ namespace binred::analisis {
                 e->cargo = found->second;
                 for (auto& c : e->cmds) {
                     if (c->kind == CommandKind::transfer_direct) {
-                        auto s = castptr<TransferDirect>(c);
+                        auto direct = castptr<TransferDirect>(c);
+                        auto cargo = rec.cargos.find(direct->data.cargoname);
+                        if (cargo != rec.cargos.end()) {
+                            return {
+                                "cargo `" + direct->data.cargoname + "` not found; need exist cargo name",
+                                e,
+                                direct->token,
+                            };
+                        }
                     }
                 }
             }
         }
 
-        Error resolve_cargo(SortElement& sorted, Record& rec) {
+        static Error resolve_cargo(SortElement& sorted, Record& rec) {
             for (auto& c : sorted.cargo) {
                 if (c->base.basename.size()) {
                     auto found = rec.cargos.find(c->base.basename);

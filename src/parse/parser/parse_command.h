@@ -18,7 +18,7 @@ namespace binred {
             return false;
         }
         r.Consume();
-        auto tmp = std::make_shared<CmdType>();
+        auto tmp = std::make_shared<CmdType>(std::move(e));
         //auto tree = get_tree();
         tmp->numpop = binary(r, rec.get_tree(), rec);
         if (!tmp->numpop) {
@@ -84,14 +84,18 @@ namespace binred {
     }
 
     bool parse_callcommand(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
-        auto tmp = std::make_shared<CallCommand>();
+        auto e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        auto tmp = std::make_shared<CallCommand>(std::move(e));
         if (tmp->call = parse_callexpr(r, rec); !tmp->call) {
             return false;
         }
         return true;
     }
 
-    bool parse_switch(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
+    bool parse_switch(std::shared_ptr<token_t>&& start, TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
         auto e = r.ReadorEOF();
         if (!e) {
             return false;
@@ -101,7 +105,7 @@ namespace binred {
             return false;
         }
         r.Consume();
-        auto tmp = std::make_shared<TransferSwitch>();
+        auto tmp = std::make_shared<TransferSwitch>(std::move(start));
         tmp->cond = binary(r, rec.get_tree(), rec);
         if (!tmp->cond) {
             return false;
@@ -185,6 +189,7 @@ namespace binred {
         if (!e) {
             return false;
         }
+        auto start = e;
         if (!e->is_(TokenKind::keyword) || !e->has_("transfer")) {
             r.SetError(ErrorCode::expect_keyword, "transfer");
             return false;
@@ -195,11 +200,11 @@ namespace binred {
         }
         if (e->is_(TokenKind::keyword)) {
             if (e->has_("switch")) {
-                return parse_switch(r, cmd, rec);
+                return parse_switch(std::move(start), r, cmd, rec);
             }
             else if (e->has_("if")) {
                 r.Consume();
-                auto tmp = std::make_shared<TransferIf>();
+                auto tmp = std::make_shared<TransferIf>(std::move(start));
                 tmp->cond = binary(r, rec.get_tree(), rec);
                 if (!tmp->cond) {
                     return false;
@@ -221,7 +226,7 @@ namespace binred {
             }
         }
         else if (e->is_(TokenKind::identifiers)) {
-            auto tmp = std::make_shared<TransferDirect>();
+            auto tmp = std::make_shared<TransferDirect>(std::move(start));
             tmp->data.cargoname = e->to_string();
             cmd = tmp;
             r.Consume();
@@ -244,7 +249,7 @@ namespace binred {
             return false;
         }
         r.Consume();
-        auto tmp = std::make_shared<CmdType>();
+        auto tmp = std::make_shared<CmdType>(std::move(e));
         tmp->expr = binary(r, rec.get_tree(), rec);
         if (!tmp->expr) {
             return false;
@@ -254,11 +259,15 @@ namespace binred {
     }
 
     bool parse_assign(TokenReader& r, std::shared_ptr<Command>& cmd, Record& rec) {
-        auto tmp = std::make_shared<AssignCommand>();
+        auto e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        auto tmp = std::make_shared<AssignCommand>(std::move(e));
         if (!read_idname(r, tmp->target)) {
             return false;
         }
-        auto e = r.ReadorEOF();
+        e = r.ReadorEOF();
         if (!e) {
             return false;
         }
@@ -287,7 +296,7 @@ namespace binred {
         }
         r.Consume();
         EXPAND_MACRO(rec)
-        auto tmp = std::make_shared<IfCommand>();
+        auto tmp = std::make_shared<IfCommand>(std::move(e));
         auto read_block = [&](auto& cond) -> bool {
             EXPAND_MACRO(rec)
             e = r.ReadorEOF();
