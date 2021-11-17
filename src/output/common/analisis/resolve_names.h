@@ -21,7 +21,7 @@ namespace binred::analisis {
                 auto found = rec.cargos.find(e->name);
                 if (found == rec.cargos.end()) {
                     return {
-                        "cargo `" + e->name + "` not found; need exists class name for read class",
+                        "cargo `" + e->name + "` not found; need exists cargo name for read cargo",
                         e,
                     };
                 }
@@ -34,15 +34,28 @@ namespace binred::analisis {
                 found->second->read = e;
                 e->cargo = found->second;
                 for (auto& c : e->cmds) {
-                    if (c->kind == CommandKind::transfer_direct) {
-                        auto direct = castptr<TransferDirect>(c);
-                        auto cargo = rec.cargos.find(direct->data.cargoname);
-                        if (cargo != rec.cargos.end()) {
-                            return {
-                                "cargo `" + direct->data.cargoname + "` not found; need exist cargo name",
-                                e,
-                                direct->token,
-                            };
+                    switch (c->kind) {
+                        case CommandKind::transfer_direct: {
+                            auto direct = castptr<TransferDirect>(c);
+                            auto cargo = rec.cargos.find(direct->data.cargoname);
+                            if (cargo != rec.cargos.end()) {
+                                return {
+                                    "cargo `" + direct->data.cargoname + "` not found; need exist cargo name",
+                                    e,
+                                    direct->token,
+                                };
+                            }
+                            if (cargo->second->base.cargo.lock() != found->second) {
+                                return {
+                                    "cargo `" + cargo->second->name + "` must be derived cargo of `" + found->second->name + "`",
+                                    e,
+                                    direct->token,
+                                };
+                            }
+                            direct->data.cargo = cargo->second;
+                            break;
+                        }
+                        case CommandKind::transfer_if: {
                         }
                     }
                 }
