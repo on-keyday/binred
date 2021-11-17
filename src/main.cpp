@@ -1,3 +1,10 @@
+/*
+    binred - binary reader code generator
+    Copyright (c) 2021 on-keyday (https://github.com/on-keyday)
+    Released under the MIT license
+    https://opensource.org/licenses/mit-license.php
+*/
+
 #include <fileio.h>
 #include "parse/parser/parse.h"
 #include "output/cpp/cargo_to_struct.h"
@@ -28,13 +35,7 @@ void binred_test() {
     {
         std::ofstream fs("D:/MiniTools/binred/generated/test.hpp");
         std::cout << ctx.buffer;
-        fs << "/*
-    binred - binary reader code generator
-    Copyright (c) 2021 on-keyday (https://github.com/on-keyday)
-    Released under the MIT license
-    https://opensource.org/licenses/mit-license.php
-*/
-\n#pragma once\n#include<cstdint>\n#include<string>\n";
+        fs << "/*license*/\n#pragma once\n#include<cstdint>\n#include<string>\n";
         fs << binred::cpp::error_enum_class(ctx);
         fs << ctx.buffer;
     }
