@@ -148,11 +148,11 @@ namespace binred {
                 if (!e->is_(TokenKind::identifiers)) {
                     return false;
                 }
-                tmp->to.push_back({expr, e->to_string()});
+                tmp->to.push_back({expr, {e->to_string()}});
                 r.Consume();
             }
             else if (e->has_("default")) {
-                if (tmp->defaults.size()) {
+                if (tmp->defaults.cargoname.size()) {
                     r.SetError(ErrorCode::multiple_default);
                     return false;
                 }
@@ -168,7 +168,7 @@ namespace binred {
                 if (!e->is_(TokenKind::identifiers)) {
                     return false;
                 }
-                tmp->defaults = e->to_string();
+                tmp->defaults.cargoname = e->to_string();
                 r.Consume();
             }
             else {
@@ -212,7 +212,7 @@ namespace binred {
                     r.SetError(ErrorCode::expect_id);
                     return false;
                 }
-                tmp->cargoname = e->to_string();
+                tmp->data.cargoname = e->to_string();
                 r.Consume();
             }
             else {
@@ -222,7 +222,7 @@ namespace binred {
         }
         else if (e->is_(TokenKind::identifiers)) {
             auto tmp = std::make_shared<TransferDirect>();
-            tmp->cargoname = e->to_string();
+            tmp->data.cargoname = e->to_string();
             cmd = tmp;
             r.Consume();
         }

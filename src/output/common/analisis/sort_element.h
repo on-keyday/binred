@@ -2,7 +2,7 @@
 #pragma once
 #include "../../../parse/parser/parse.h"
 #include "../../../calc/cast_ptr.h"
-namespace binred {
+namespace binred::analisis {
 
     struct SortElement {
         template <class T>

@@ -64,16 +64,21 @@ namespace binred {
         std::shared_ptr<CallExpr> call;
     };
 
+    struct TransferData {
+        std::string cargoname;
+        std::weak_ptr<Cargo> cargo;
+    };
+
     struct TransferDirect : Command {
         TransferDirect()
             : Command(CommandKind::transfer_direct) {}
-        std::string cargoname;
+        TransferData data;
     };
 
     struct TransferIf : Command {
         TransferIf()
             : Command(CommandKind::transfer_if) {}
-        std::string cargoname;
+        TransferData data;
         std::shared_ptr<Expr> cond;
     };
 
@@ -81,8 +86,8 @@ namespace binred {
         TransferSwitch()
             : Command(CommandKind::transfer_switch) {}
         std::shared_ptr<Expr> cond;
-        std::vector<std::pair<std::shared_ptr<Expr>, std::string>> to;
-        std::string defaults;
+        std::vector<std::pair<std::shared_ptr<Expr>, TransferData>> to;
+        TransferData defaults;
     };
 
     struct BindCommand : Command {

@@ -15,6 +15,9 @@ namespace binred {
         std::weak_ptr<Cargo> cargo;
     };
 
+    struct Read;
+    struct Write;
+
     struct Cargo : Element {
         Cargo(std::shared_ptr<token_t>&& tok)
             : Element(std::move(tok), ElementType::cargo) {}
@@ -24,6 +27,9 @@ namespace binred {
         bool expanded = false;
 
         std::map<std::string, std::weak_ptr<Cargo>> derived;
+
+        std::weak_ptr<Read> read;
+        std::weak_ptr<Write> write;
     };
 
 }  // namespace binred

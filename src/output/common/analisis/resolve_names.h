@@ -3,7 +3,7 @@
 
 #include "sort_element.h"
 
-namespace binred {
+namespace binred::analisis {
 
     struct Error {
         std::string errmsg;
@@ -15,6 +15,31 @@ namespace binred {
     };
 
     struct TypeResolver {
+        Error resolve_read(SortElement& sorted, Record& rec) {
+            for (auto& e : sorted.read) {
+                auto found = rec.cargos.find(e->name);
+                if (found == rec.cargos.end()) {
+                    return {
+                        "cargo `" + e->name + "` not found; need exists class name for read class",
+                        e,
+                    };
+                }
+                if (!found->second->read.expired()) {
+                    return {
+                        "cargo `" + e->name + "` already has read statment; need one read for one cargo",
+                        e,
+                    };
+                }
+                found->second->read = e;
+                e->cargo = found->second;
+                for (auto& c : e->cmds) {
+                    if (c->kind == CommandKind::transfer_direct) {
+                        auto s = castptr<TransferDirect>(c);
+                    }
+                }
+            }
+        }
+
         Error resolve_cargo(SortElement& sorted, Record& rec) {
             for (auto& c : sorted.cargo) {
                 if (c->base.basename.size()) {
@@ -45,4 +70,4 @@ namespace binred {
         }
     };
 
-}  // namespace binred
+}  // namespace binred::analisis

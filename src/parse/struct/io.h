@@ -12,6 +12,7 @@ namespace binred {
         std::string name;
         std::vector<std::shared_ptr<Param>> args;
         std::vector<std::shared_ptr<Command>> cmds;
+        std::weak_ptr<Cargo> cargo;
     };
 
     struct Read : IOElement {
