@@ -1,3 +1,4 @@
+/*license*/
 #pragma once
 
 #include "../../parse/parser/parse.h"

@@ -1,3 +1,4 @@
+/*license*/
 #pragma once
 #include "element.h"
 #include <memory>

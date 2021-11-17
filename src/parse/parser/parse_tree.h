@@ -1,3 +1,4 @@
+/*license*/
 #pragma once
 #include "parser.h"
 #include "../struct/element.h"
