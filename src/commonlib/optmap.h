@@ -131,6 +131,10 @@ namespace PROJECT_NAME {
                 return base;
             }
 
+            size_t get_flagcount() const {
+                return count;
+            }
+
             const Vec<Vec<String>>& args() const {
                 return arg_;
             }
