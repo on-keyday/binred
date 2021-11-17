@@ -61,6 +61,25 @@ namespace binred::analisis {
                             break;
                         }
                         case CommandKind::transfer_if: {
+                            auto tif = castptr<TransferIf>(c);
+                            if (auto err = resolve_transfer_and_cargo(tif->data, tif->token); !err) {
+                                return err;
+                            }
+                            break;
+                        }
+                        case CommandKind::transfer_switch: {
+                            auto tsw = castptr<TransferSwitch>(c);
+                            for (auto& t : tsw->to) {
+                                if (auto err = resolve_transfer_and_cargo(t.second, tsw->token); !err) {
+                                    return err;
+                                }
+                            }
+                            if (tsw->defaults.cargoname.size()) {
+                                if (auto err = resolve_transfer_and_cargo(tsw->defaults, tsw->token); !err) {
+                                    return err;
+                                }
+                            }
+                            break;
                         }
                     }
                 }
