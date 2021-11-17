@@ -7,9 +7,12 @@
 #include "param.h"
 namespace binred {
 
+    struct Cargo;
+
     struct BaseInfo {
         std::string selfname;
         std::string basename;
+        std::weak_ptr<Cargo> cargo;
     };
 
     struct Cargo : Element {
@@ -19,6 +22,8 @@ namespace binred {
         std::vector<std::shared_ptr<Param>> params;
         BaseInfo base;
         bool expanded = false;
+
+        std::map<std::string, std::weak_ptr<Cargo>> derived;
     };
 
 }  // namespace binred

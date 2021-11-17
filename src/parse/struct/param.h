@@ -68,10 +68,12 @@ namespace binred {
             : Builtin(ParamType::byte) {}
     };
 
+    struct Cargo;
+
     struct Custom : Param {
         Custom()
             : Param(ParamType::custom) {}
         std::string cargoname;
-        //std::shared_ptr<Cargo> base;
+        std::weak_ptr<Cargo> base;
     };
 }  // namespace binred

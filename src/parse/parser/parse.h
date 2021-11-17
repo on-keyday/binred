@@ -4,6 +4,7 @@
 #include "parse_cargo.h"
 #include "parse_macro.h"
 #include "parse_io.h"
+#include "parse_tree.h"
 
 namespace binred {
     using ParseResult = std::vector<std::shared_ptr<Element>>;
@@ -17,12 +18,10 @@ namespace binred {
         red = TokenReader(gt.parser.GetParsed());
         auto e = red.Read();
         if (e && e->is_(TokenKind::keyword) && e->has_("libname")) {
-            e = red.ConsumeReadorEOF();
-            if (!e) {
+            red.Consume();
+            if (!read_idname(red, mep.libname)) {
                 return false;
             }
-            mep.libname = e->to_string();
-            red.Consume();
         }
         while (!red.is_EOF()) {
             e = red.Read();
