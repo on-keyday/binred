@@ -28,7 +28,13 @@ void binred_test() {
     {
         std::ofstream fs("D:/MiniTools/binred/generated/test.hpp");
         std::cout << ctx.buffer;
-        fs << "/*license*/\n#pragma once\n#include<cstdint>\n#include<string>\n";
+        fs << "/*
+    binred - binary reader code generator
+    Copyright (c) 2021 on-keyday (https://github.com/on-keyday)
+    Released under the MIT license
+    https://opensource.org/licenses/mit-license.php
+*/
+\n#pragma once\n#include<cstdint>\n#include<string>\n";
         fs << binred::cpp::error_enum_class(ctx);
         fs << ctx.buffer;
     }
