@@ -33,26 +33,31 @@ namespace binred::analisis {
                 }
                 found->second->read = e;
                 e->cargo = found->second;
+                auto resolve_transfer_and_cargo = [&](TransferData& data, std::shared_ptr<token_t>& token) -> Error {
+                    auto cargo = rec.cargos.find(data.cargoname);
+                    if (cargo != rec.cargos.end()) {
+                        return {
+                            "cargo `" + data.cargoname + "` not found; need exist cargo name",
+                            e,
+                            token,
+                        };
+                    }
+                    if (cargo->second->base.cargo.lock() != found->second) {
+                        return {
+                            "cargo `" + cargo->second->name + "` must be derived cargo of `" + found->second->name + "`",
+                            e,
+                            token,
+                        };
+                    }
+                    data.cargo = cargo->second;
+                };
                 for (auto& c : e->cmds) {
                     switch (c->kind) {
                         case CommandKind::transfer_direct: {
                             auto direct = castptr<TransferDirect>(c);
-                            auto cargo = rec.cargos.find(direct->data.cargoname);
-                            if (cargo != rec.cargos.end()) {
-                                return {
-                                    "cargo `" + direct->data.cargoname + "` not found; need exist cargo name",
-                                    e,
-                                    direct->token,
-                                };
+                            if (auto err = resolve_transfer_and_cargo(direct->data, direct->token); !err) {
+                                return err;
                             }
-                            if (cargo->second->base.cargo.lock() != found->second) {
-                                return {
-                                    "cargo `" + cargo->second->name + "` must be derived cargo of `" + found->second->name + "`",
-                                    e,
-                                    direct->token,
-                                };
-                            }
-                            direct->data.cargo = cargo->second;
                             break;
                         }
                         case CommandKind::transfer_if: {
