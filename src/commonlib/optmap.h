@@ -78,6 +78,7 @@ namespace PROJECT_NAME {
         ignore_when_not_found = 0x4,
         two_same_opt_denied = 0x8,
         parse_all_arg = 0x10,
+        one_prefix_longname = 0x20,
         default_mode = two_prefix_igopt | ignore_when_not_found | two_prefix_longname | parse_all_arg
     };
 
@@ -355,7 +356,7 @@ namespace PROJECT_NAME {
                 }
                 return true;
             };
-            auto all_arg_set = [&]() -> OptErr {
+            auto read_as_arg = [&]() -> OptErr {
                 index--;
                 if (auto e = set_optarg(&str_opt[fullarg], true); !e) {
                     return e;
@@ -365,6 +366,36 @@ namespace PROJECT_NAME {
             auto invoke = [&](String&& str, bool on_error) {
                 return invoke_cb<Ignore, bool>::invoke(std::forward<Ignore>(cb), str, on_error);
             };
+            auto errorhandle_on_longname = [&](auto arg) -> OptErr {
+                if (any(op & OptOption::ignore_when_not_found)) {
+                    if (!invoke(arg + 1, false)) {
+                        return OptError::not_found;
+                    }
+                    return true;
+                }
+                if (any(op & OptOption::parse_all_arg)) {
+                    if (auto e = read_as_arg(); !e) {
+                        return e;
+                    }
+                    return true;
+                }
+                invoke(arg + 1, true);
+                return OptError::not_found;
+            };
+            auto set_logname_prefix = [&](auto arg, auto prefix) -> OptErr {
+                if (auto found = str_opt.find(arg + prefix); found != str_opt.end()) {
+                    if (auto e = set_optarg(&found->second); !e) {
+                        return e;
+                    }
+                    return true;
+                }
+                else {
+                    if (auto e = errorhandle_on_longname(arg); !e) {
+                        return e;
+                    }
+                    return true;
+                }
+            };
             bool first = false;
             for (; index < argc; index++) {
                 auto arg = argv[index];
@@ -372,7 +403,7 @@ namespace PROJECT_NAME {
                     if (col == 0) {
                         if (arg[0] != (C)optprefix) {
                             if (any(op & OptOption::parse_all_arg)) {
-                                if (auto e = all_arg_set(); !e) {
+                                if (auto e = read_as_arg(); !e) {
                                     return e;
                                 }
                                 break;
@@ -386,7 +417,7 @@ namespace PROJECT_NAME {
                         }
                         if (arg[1] == 0) {
                             if (any(op & OptOption::parse_all_arg)) {
-                                if (auto e = all_arg_set(); !e) {
+                                if (auto e = read_as_arg(); !e) {
                                     return e;
                                 }
                                 break;
@@ -399,7 +430,7 @@ namespace PROJECT_NAME {
                                     index++;
                                     if (any(op & OptOption::parse_all_arg)) {
                                         for (; index < argc; index++) {
-                                            if (auto e = all_arg_set(); !e) {
+                                            if (auto e = read_as_arg(); !e) {
                                                 return e;
                                             }
                                         }
@@ -411,35 +442,22 @@ namespace PROJECT_NAME {
                             if (any(op & OptOption::two_prefix_longname)) {
                                 if (arg[2] == 0) {
                                     if (any(op & OptOption::parse_all_arg)) {
-                                        if (auto e = all_arg_set(); !e) {
+                                        if (auto e = read_as_arg(); !e) {
                                             return e;
                                         }
                                         break;
                                     }
                                     return OptError::invalid_format;
                                 }
-                                if (auto found = str_opt.find((const C*)(arg + 2)); found == str_opt.end()) {
-                                    if (any(op & OptOption::ignore_when_not_found)) {
-                                        if (!invoke(arg + 1, false)) {
-                                            return OptError::not_found;
-                                        }
-                                        break;
-                                    }
-                                    if (any(op & OptOption::parse_all_arg)) {
-                                        if (auto e = all_arg_set(); !e) {
-                                            return e;
-                                        }
-                                        break;
-                                    }
-                                    invoke(arg + 1, true);
-                                    return OptError::not_found;
+                                if (auto e = set_logname_prefix(arg, 2); !e) {
+                                    return e;
                                 }
-                                else {
-                                    if (auto e = set_optarg(&found->second); !e) {
-                                        return e;
-                                    }
-                                    break;
-                                }
+                                break;
+                            }
+                        }
+                        if (any(op & OptOption::one_prefix_longname)) {
+                            if (auto e = set_logname_prefix(arg, 1); !e) {
+                                return e;
                             }
                         }
                     }

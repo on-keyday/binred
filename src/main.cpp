@@ -12,7 +12,7 @@
 #include "output/cpp/add_error_enum.h"
 #include <iostream>
 #include <fstream>
-#include <learnstd.h>
+#include <optmap.h>
 
 void binred_test() {
     binred::TokenReader red;
@@ -49,6 +49,9 @@ constexpr std::pair<commonlib2::U8MiniBuffer, char32_t> utf_convert(char32_t c) 
 }
 
 int main(int argc, char** argv) {
+    commonlib2::OptMap opt;
+    decltype(opt)::OptResMap result;
+    opt.parse_opt(argc, argv, result);
     binred_test();
     constexpr std::uint32_t uv = U'9';
     constexpr auto e = utf_convert(uv);
