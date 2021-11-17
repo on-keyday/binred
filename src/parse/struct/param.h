@@ -74,6 +74,6 @@ namespace binred {
         Custom()
             : Param(ParamType::custom) {}
         std::string cargoname;
-        std::weak_ptr<Cargo> base;
+        std::weak_ptr<Cargo> cargo;
     };
 }  // namespace binred

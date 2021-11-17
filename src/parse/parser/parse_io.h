@@ -27,6 +27,7 @@ namespace binred {
                 return false;
             }
             param->name = e->to_string();
+            param->token = e;
             vec.push_back(std::move(param));
         }
         return true;

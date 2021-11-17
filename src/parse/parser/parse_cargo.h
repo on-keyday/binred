@@ -103,6 +103,7 @@ namespace binred {
                 return false;
             }
             param->name = id->get_identifier();
+            param->token = e;
             tmp->params.push_back(param);
             tmp->expanded = tmp->expanded || param->expand;
             if (!already_set.insert(param->name).second) {

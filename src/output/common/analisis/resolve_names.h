@@ -27,6 +27,13 @@ namespace binred {
                     found->second->derived[c->name] = c->base.cargo;
                 }
                 for (auto& p : c->params) {
+                    if (p->type == ParamType::custom) {
+                        auto custom = castptr<Custom>(p);
+                        auto found = rec.cargos.find(custom->cargoname);
+                        if (found != rec.cargos.end()) {
+                            continue;
+                        }
+                    }
                 }
             }
         }
