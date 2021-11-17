@@ -124,6 +124,7 @@ namespace PROJECT_NAME {
             friend struct OptMap;
             Opt* base = nullptr;
             Vec<Vec<String>> arg_;
+            size_t count = 0;
 
            public:
             const Opt* info() const {
@@ -351,10 +352,12 @@ namespace PROJECT_NAME {
                         return OptError::option_already_set;
                     }
                     res = &found->second;
+                    res->count++;
                 }
                 else {
                     res = &optres.mapping[opt->optname];
                     res->base = opt;
+                    res->count = 1;
                 }
                 if (opt->argcount) {
                     Vec<String> arg;
