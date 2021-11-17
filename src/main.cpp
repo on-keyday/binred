@@ -45,13 +45,12 @@ constexpr std::pair<commonlib2::U8MiniBuffer, char32_t> utf_convert(char32_t c) 
     commonlib2::U8MiniBuffer minbuf;
     commonlib2::make_utf8_from_utf32(c, minbuf);
     auto restore_c = commonlib2::make_utf32_from_utf8(minbuf, minbuf.size());
-    if (c != restore_c) {
-        return {minbuf, restore_c};
-    }
-    return {minbuf, c};
+    return {minbuf, restore_c};
 }
 
 int main(int argc, char** argv) {
     binred_test();
-    constexpr auto e = utf_convert(U'𠮷');
+    constexpr std::uint32_t uv = U'9';
+    constexpr auto e = utf_convert(uv);
+    constexpr auto check = e.second == uv;
 }

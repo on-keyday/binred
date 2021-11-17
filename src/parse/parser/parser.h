@@ -21,6 +21,12 @@ namespace binred {
         TokenGetter() {
             parser.SetSymbolAndKeyWord(
                 {
+                    "==",
+                    "<=",
+                    ">=",
+                    "/*",
+                    "*/",
+                    "//",
                     "{",
                     "}",
                     ":",
@@ -42,12 +48,6 @@ namespace binred {
                     "=",
                     "[",
                     "]",
-                    "==",
-                    "<=",
-                    ">=",
-                    "/*",
-                    "*/",
-                    "//",
                 },
                 {
                     "cargo",
