@@ -79,7 +79,8 @@ namespace PROJECT_NAME {
         two_same_opt_denied = 0x8,
         parse_all_arg = 0x10,
         one_prefix_longname = 0x20,
-        default_mode = two_prefix_igopt | ignore_when_not_found | two_prefix_longname | parse_all_arg
+        default_mode = two_prefix_igopt | ignore_when_not_found | two_prefix_longname | parse_all_arg,
+        oneprefix_mode = ignore_when_not_found | one_prefix_longname | parse_all_arg,
     };
 
     DEFINE_ENUMOP(OptOption)
@@ -305,9 +306,9 @@ namespace PROJECT_NAME {
         }
 
         template <class C, class Ignore = bool (*)(const String&, bool)>
-        OptErr parse_opt(int argc, C** argv, OptResMap& optres, Ignore&& cb = Ignore()) {
+        OptErr parse_opt(int argc, C** argv, OptResMap& optres, OptOption opt = OptOption::default_mode, Ignore&& cb = Ignore()) {
             int index = 1, col = 0;
-            return parse_opt(index, col, argc, argv, optres, OptOption::default_mode, std::forward<Ignore>(cb));
+            return parse_opt(index, col, argc, argv, optres, opt, std::forward<Ignore>(cb));
         }
 
         template <class C, class Ignore = bool (*)(const String&, bool)>

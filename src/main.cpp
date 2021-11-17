@@ -50,6 +50,14 @@ constexpr std::pair<commonlib2::U8MiniBuffer, char32_t> utf_convert(char32_t c) 
 
 int main(int argc, char** argv) {
     commonlib2::OptMap opt;
+    opt.set_option({
+        {
+            "option",
+            {},
+            "",
+            true,
+        },
+    });
     decltype(opt)::OptResMap result;
     opt.parse_opt(argc, argv, result);
     binred_test();
