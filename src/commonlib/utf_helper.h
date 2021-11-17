@@ -251,7 +251,7 @@ namespace PROJECT_NAME {
 
     template <class Buf>
     constexpr char32_t make_utf32_from_utf8(Buf& buf, int len, int offset = 0) {
-        if (len <= 0 || len >= 4) {
+        if (len <= 0 || len > 4) {
             return 0;
         }
         auto maskbit = [](int i) {

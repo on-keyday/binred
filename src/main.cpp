@@ -41,31 +41,17 @@ void binred_test() {
     }
 }
 
-constexpr auto testf(char32_t c) {
+constexpr std::pair<commonlib2::U8MiniBuffer, char32_t> utf_convert(char32_t c) {
     commonlib2::U8MiniBuffer minbuf;
     commonlib2::make_utf8_from_utf32(c, minbuf);
-    return minbuf;
-}
-
-constexpr auto testvalue(char32_t c) {
-    auto result = testf(c);
-    auto a = result[0] + result[1] + result[2] + result[3];
-    return std::pair{result, a};
-}
-
-constexpr auto testvalues(size_t begin, size_t end = 0) {
-    if (end == 0) {
-        end = end + 10000;
+    auto restore_c = commonlib2::make_utf32_from_utf8(minbuf, minbuf.size());
+    if (c != restore_c) {
+        return {minbuf, restore_c};
     }
-    for (auto i = begin; i < end; i++) {
-        auto res = testvalue(i);
-        if (res.second >= 900) {
-            return res;
-        }
-    }
-    return testvalue(0);
+    return {minbuf, c};
 }
 
 int main(int argc, char** argv) {
     binred_test();
+    constexpr auto e = utf_convert(U'𠮷');
 }
