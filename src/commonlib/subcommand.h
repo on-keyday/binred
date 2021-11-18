@@ -58,7 +58,7 @@ namespace PROJECT_NAME {
                 if (index >= result.size()) {
                     return nullptr;
                 }
-                return &v[index].second;
+                return &result[index].second;
             }
 
             String error(const String& msg, Char sep = ':') {
