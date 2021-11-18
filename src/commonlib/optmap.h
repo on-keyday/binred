@@ -328,9 +328,6 @@ namespace PROJECT_NAME {
                 size_t sz = 0;
                 make_str(op, &sz);
                 if (sz > maxlen) {
-                    if (maxlen == 0) {
-                        ret += (Char)'\n';
-                    }
                     maxlen = sz;
                 }
             }

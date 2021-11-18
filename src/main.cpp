@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
     commonlib2::SubCmdDispatch disp(std::string("binred"));
     disp.get_option().set_usage("binred [<option>] <subcommand>");
     disp.set_callback([](decltype(disp)::result_t& r) {
-        std::cout << r.get_current()->help(0, 4, false, "subcommand:\n");
+        std::cout << r.get_current()->help(0, 4, false, "subcommand:");
     });
     disp.set_subcommand(
         "hello", "say hello",
