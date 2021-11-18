@@ -31,6 +31,7 @@ namespace PROJECT_NAME {
 
         struct SubCmdResult {
             friend Cmd;
+            friend SubCommand_base;
 
            private:
             Vec<std::pair<String, optres_t>> result;
@@ -85,7 +86,7 @@ namespace PROJECT_NAME {
             if (!ret.opt.set_option(list)) {
                 return nullptr;
             }
-            ret.parent = this;
+            ret.parent = static_cast<Cmd*>(this);
             return &(subcmd[name] = std::move(ret));
         }
 
@@ -102,7 +103,7 @@ namespace PROJECT_NAME {
                 flag &= ~OptOption::parse_all_arg;
             }
             optres.result.push_back(std::pair{cmdname, optres_t()});
-            optres.current = this;
+            optres.current = static_cast<Cmd*>(this);
             while (true) {
                 if (auto e = opt.parse_opt(index, col, argc, argv, optres.result.back().second, flag, cb)) {
                     return true;
@@ -135,8 +136,8 @@ namespace PROJECT_NAME {
     };
 
     template <class Function, class Char = char, class String = std::string, template <class...> class Vec = std::vector, template <class...> class Map = std::map>
-    struct SubCmdDispach : SubCommand_base<SubCmdDispach<Char, String, Vec, Map>, Char, String, Vec, Map> {
-        using base_t = SubCommand_base<SubCommand, Char, String, Vec, Map>;
+    struct SubCmdDispach : SubCommand_base<SubCmdDispach<Function, Char, String, Vec, Map>, Char, String, Vec, Map> {
+        using base_t = SubCommand_base<SubCmdDispach<Function, Char, String, Vec, Map>, Char, String, Vec, Map>;
         using result_t = typename base_t::SubCmdResult;
         Function func;
         template <class F>
