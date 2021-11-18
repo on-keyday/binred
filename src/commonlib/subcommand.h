@@ -80,7 +80,7 @@ namespace PROJECT_NAME {
                 if (p) {
                     String cmdname = p->get_currentcmdname(0);
                     cmdname.pop_back();
-                    return current->help(preoffset, currentoffset, noUsage, subcmdmsg, usagemsg, cmdname.c_str());
+                    return p->help(preoffset, currentoffset, noUsage, subcmdmsg, usagemsg, cmdname.c_str());
                 }
                 return String();
             }
