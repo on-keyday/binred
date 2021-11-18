@@ -111,6 +111,9 @@ int main(int argc, char** argv) {
                                 if (on_error) {
                                     msg = "-" + op + ": ";
                                 }
+                                else {
+                                    std::cout << "binred: warning: option -" + op + " ignored\n";
+                                }
                                 return true;
                             });
         !err.first) {
