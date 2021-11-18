@@ -17,10 +17,13 @@ namespace PROJECT_NAME {
         using option_t = OptMap<Char, String, Vec, Map>;
         using optset_t = typename option_t::Opt;
         using optres_t = typename option_t::OptResMap;
+
+       private:
         String cmdname;
         option_t opt;
         Map<String, SubCommand> subcmd;
 
+       public:
         struct SubCmdResult {
             friend SubCommand;
 
@@ -45,7 +48,15 @@ namespace PROJECT_NAME {
             }
         };
 
-        SubCommand* set_subcommand(const String& name, std::initializer_list<optset_t> list) {
+        option_t& get_option() {
+            return opt;
+        }
+
+        OptErr set_option(std::initializer_list<optset_t> list) {
+            return opt.set_option(list);
+        }
+
+        SubCommand* set_subcommand(const String& name, std::initializer_list<optset_t> list = {}) {
             if (subcmd.count(name)) {
                 return nullptr;
             }
@@ -54,6 +65,10 @@ namespace PROJECT_NAME {
                 return nullptr;
             }
             return &(subcmd.subcmd[name] = std::move(ret));
+        }
+
+        template <class C, class Ignore = bool (*)(const String&, bool)>
+        OptErr parse_opt(int argc, C** argv, SubCmdResult& optres, OptOption op = OptOption::default_mode, Ignore&& cb = Ignore()) {
         }
 
         template <class C, class Ignore = bool (*)(const String&, bool)>
