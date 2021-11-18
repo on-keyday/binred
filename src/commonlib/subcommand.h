@@ -67,6 +67,7 @@ namespace PROJECT_NAME {
             if (parent) {
                 ret = parent->get_currentcmdname();
             }
+            ret += cmdname;
             if (sep != 0) {
                 ret += sep;
             }
