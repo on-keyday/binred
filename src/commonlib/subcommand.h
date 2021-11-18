@@ -22,6 +22,7 @@ namespace PROJECT_NAME {
         String cmdname;
         option_t opt;
         Map<String, SubCommand> subcmd;
+        SubCommand* parent = nullptr;
 
        public:
         SubCommand() {}
@@ -33,8 +34,16 @@ namespace PROJECT_NAME {
 
            private:
             Vec<std::pair<String, optres_t>> result;
+            SubCommand* current = nullptr;
 
            public:
+            const SubCommand* get_current() const {
+                return current;
+            }
+
+            size_t get_layersize() const {
+                return result.size();
+            }
             optres_t* get_layer(const String& name) {
                 for (auto& v : result) {
                     if (v.first == name) {
@@ -52,6 +61,14 @@ namespace PROJECT_NAME {
             }
         };
 
+        const String& get_cmdname() const {
+            return cmdname;
+        }
+
+        const SubCommand* get_parent() const {
+            return parent;
+        }
+
         option_t& get_option() {
             return opt;
         }
@@ -68,6 +85,7 @@ namespace PROJECT_NAME {
             if (!ret.opt.set_option(list)) {
                 return nullptr;
             }
+            ret.parent = this;
             return &(subcmd[name] = std::move(ret));
         }
 
@@ -84,6 +102,7 @@ namespace PROJECT_NAME {
                 flag &= ~OptOption::parse_all_arg;
             }
             optres.result.push_back(std::pair{cmdname, optres_t()});
+            optres.current = this;
             while (true) {
                 if (auto e = opt.parse_opt(index, col, argc, argv, optres.result.back().second, flag, cb)) {
                     return true;
@@ -104,5 +123,8 @@ namespace PROJECT_NAME {
                 }
             }
         }
+    };
+
+    struct SubCmdDispach {
     };
 }  // namespace PROJECT_NAME
