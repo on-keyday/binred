@@ -135,10 +135,12 @@ namespace PROJECT_NAME {
             : SubCommand_base<SubCommand, Char, String, Vec, Map>(name) {}
     };
 
-    template <class... Arg>
+    template <class... Args>
     struct FuncHolder {
+       private:
         struct Base {
             virtual int operator()(Args&&... args) = 0;
+            virtual ~Base() {}
         };
         Base* base = nullptr;
 
@@ -148,11 +150,19 @@ namespace PROJECT_NAME {
             int operator()(Args&&... args) {
                 return f(std::forward<Args>(args)...);
             }
+            virtual ~Impl() {}
         };
+
+       public:
+        constexpr FuncHolder() {}
+
+        operator bool() {
+            return base != nullptr;
+        }
 
         template <class F>
         FuncHolder(F&& in) {
-            base = new Impl{std::forward<F>(f)};
+            base = new Impl{std::forward<F>(in)};
         }
 
         FuncHolder(const FuncHolder&) = delete;
@@ -169,9 +179,10 @@ namespace PROJECT_NAME {
     };
 
     template <class Char = char, class String = std::string, template <class...> class Vec = std::vector, template <class...> class Map = std::map>
-    struct SubCmdDispatch : SubCommand_base<SubCmdDispatch<Function, Char, String, Vec, Map>, Char, String, Vec, Map> {
+    struct SubCmdDispatch : SubCommand_base<SubCmdDispatch<Char, String, Vec, Map>, Char, String, Vec, Map> {
         using base_t = SubCommand_base<SubCmdDispatch<Char, String, Vec, Map>, Char, String, Vec, Map>;
         using result_t = typename base_t::SubCmdResult;
+        using optset_t = typename base_t::optset_t;
 
        private:
         FuncHolder<result_t> func;
@@ -183,7 +194,7 @@ namespace PROJECT_NAME {
             : func(std::decay_t<F>(f)), SubCommand_base<SubCmdDispatch<Char, String, Vec, Map>, Char, String, Vec, Map>(name) {}
 
         template <class F>
-        Cmd* set_subcommand(F&& in, const String& name, std::initializer_list<optset_t> list = {}) {
+        SubCmdDispatch* set_subcommand(F&& in, const String& name, std::initializer_list<optset_t> list = {}) {
             auto ret = this->set_subcommand(name, list);
             if (ret) {
                 ret->func = std::forward<F>(in);
@@ -198,7 +209,13 @@ namespace PROJECT_NAME {
             if (auto e = this->parse_opt(argc, argv, result, op, cb); !e) {
                 return {e, (int)e.e};
             }
-            return {true, result.get_current()->func(result)};
+            auto ptr = result.get_current();
+            while (ptr) {
+                if (ptr->func) {
+                    return {true, ptr->func(result)};
+                }
+            }
+            return {false, -1};
         }
     };
 }  // namespace PROJECT_NAME
