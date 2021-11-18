@@ -53,10 +53,11 @@ int main(int argc, char** argv) {
                 r.errorln(arg->arg()->at(0) + ": no such subcommand exists\ntry `binred help` for more info");
             }
             else {
-                r.errorln("need subcommandtry `binred help` for more info");
+                r.errorln("need subcommand\ntry `binred help` for more info");
             }
             return -1;
         }
+        return 0;
     });
     disp.set_option({
         {"process", {'p'}, "set maximum thread count (1-" + std::to_string(std::thread::hardware_concurrency()) + ")", 1, true},
