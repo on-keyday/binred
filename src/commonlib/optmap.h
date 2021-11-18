@@ -260,7 +260,7 @@ namespace PROJECT_NAME {
             usage = use;
         }
 
-        String help(size_t preoffset = 0, size_t currentoffset = 2, bool noUsage = false) const {
+        String help(size_t preoffset = 0, size_t currentoffset = 2, bool noUsage = false, const char* usagestr = "Usage:") const {
             String ret;
             String fullarg;
             size_t two = currentoffset << 1;
@@ -273,7 +273,8 @@ namespace PROJECT_NAME {
             if (usage.size()) {
                 if (!noUsage) {
                     add_space(preoffset);
-                    fullargkey("Usage:\n", ret);
+                    fullargkey(usagestr, ret);
+                    ret += '\n';
                 }
                 add_space(preoffset + currentoffset);
                 ret += "";
