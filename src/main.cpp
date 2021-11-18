@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
                                     msg = "-" + op + ": ";
                                 }
                                 else {
-                                    std::cout << "binred: warning: option -" + op + " ignored\n";
+                                    std::cout << "binred: warning: unknown option -" + op + " ignored\n";
                                 }
                                 return true;
                             });
