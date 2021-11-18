@@ -83,6 +83,7 @@ namespace PROJECT_NAME {
         allow_adjacent = 0x80,
         default_mode = two_prefix_igopt | ignore_when_not_found | two_prefix_longname | parse_all_arg,
         oneprefix_mode = ignore_when_not_found | one_prefix_longname | parse_all_arg,
+        getopt_mode = ignore_when_not_found | allow_equal | allow_adjacent | two_prefix_longname,
     };
 
     DEFINE_ENUMOP(OptOption)
@@ -456,7 +457,7 @@ namespace PROJECT_NAME {
                         if (!invoke(String(ch), false)) {
                             return OptError::not_found;
                         }
-                        continue;
+                        return true;
                     }
                     invoke(String(ch), true);
                     return OptError::not_found;
