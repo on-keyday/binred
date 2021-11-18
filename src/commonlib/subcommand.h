@@ -79,8 +79,8 @@ namespace PROJECT_NAME {
             if (subcmd.size()) {
                 flag &= ~OptOption::parse_all_arg;
             }
-            optres.result.push_back({cmdname});
-            if (auto e = opt.parse_opt(index, col, argc, argv, optres.result.back(), flag, cb)) {
+            optres.result.push_back(std::pair{cmdname, optres_t()});
+            if (auto e = opt.parse_opt(index, col, argc, argv, optres.result.back().second, flag, cb)) {
                 return true;
             }
             else if (e == OptError::option_suspended && subcmd.size()) {
