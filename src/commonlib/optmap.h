@@ -545,7 +545,7 @@ namespace PROJECT_NAME {
                             }
                         }
                         if (any(op & OptOption::allow_adjacent)) {
-                            if (auto e = set_shortname(arg[1], true); !e) {
+                            if (auto e = set_shortname(arg[1], arg); !e) {
                                 return e;
                             }
                         }
