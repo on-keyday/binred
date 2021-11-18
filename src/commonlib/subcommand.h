@@ -84,18 +84,24 @@ namespace PROJECT_NAME {
                 flag &= ~OptOption::parse_all_arg;
             }
             optres.result.push_back(std::pair{cmdname, optres_t()});
-            if (auto e = opt.parse_opt(index, col, argc, argv, optres.result.back().second, flag, cb)) {
-                return true;
-            }
-            else if (e == OptError::option_suspended && subcmd.size()) {
-                if (auto found = subcmd.find(argv[index]); found != subcmd.end()) {
-                    index++;
-                    return found->second.parse_opt(index, col, argc, argv, optres, op, cb);
+            while (true) {
+                if (auto e = opt.parse_opt(index, col, argc, argv, optres.result.back().second, flag, cb)) {
+                    return true;
                 }
-                return e;
-            }
-            else {
-                return e;
+                else if (e == OptError::option_suspended && subcmd.size()) {
+                    if (auto found = subcmd.find(argv[index]); found != subcmd.end()) {
+                        index++;
+                        return found->second.parse_opt(index, col, argc, argv, optres, op, cb);
+                    }
+                    if (any(op & OptOption::parse_all_arg)) {
+                        flag = op;
+                        continue;
+                    }
+                    return e;
+                }
+                else {
+                    return e;
+                }
             }
         }
     };
