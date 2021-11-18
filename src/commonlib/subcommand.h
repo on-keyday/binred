@@ -62,6 +62,18 @@ namespace PROJECT_NAME {
             }
         };
 
+        String get_currentcmdname(Char sep = ':') const {
+            String ret;
+            if (parent) {
+                ret = parent->get_currentcmdname();
+            }
+            if (sep != 0) {
+                ret += sep;
+            }
+            ret += ' ';
+            return ret;
+        }
+
         const String& get_cmdname() const {
             return cmdname;
         }
