@@ -94,8 +94,8 @@ namespace PROJECT_NAME {
                     ret += '-';
                     ret += ' ';
                     ret += helpstr;
-                    ret += '\n';
                 }
+                ret += '\n';
                 add = currentoffset;
             }
             auto two = (currentoffset << 1);
