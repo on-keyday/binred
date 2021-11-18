@@ -162,7 +162,7 @@ namespace PROJECT_NAME {
 
         template <class F>
         FuncHolder(F&& in) {
-            base = new Impl{std::forward<F>(in)};
+            base = new Impl<F>{std::forward<F>(in)};
         }
 
         FuncHolder(const FuncHolder&) = delete;
@@ -194,8 +194,8 @@ namespace PROJECT_NAME {
             : func(std::decay_t<F>(f)), SubCommand_base<SubCmdDispatch<Char, String, Vec, Map>, Char, String, Vec, Map>(name) {}
 
         template <class F>
-        SubCmdDispatch* set_subcommand(F&& in, const String& name, std::initializer_list<optset_t> list = {}) {
-            auto ret = this->set_subcommand(name, list);
+        SubCmdDispatch* set_subcommand(const String& name, std::initializer_list<optset_t> list, F&& in) {
+            auto ret = base_t::set_subcommand(name, list);
             if (ret) {
                 ret->func = std::forward<F>(in);
             }
