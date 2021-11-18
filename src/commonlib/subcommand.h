@@ -24,6 +24,7 @@ namespace PROJECT_NAME {
         Map<String, SubCommand> subcmd;
 
        public:
+        SubCommand() {}
         SubCommand(const String& name)
             : cmdname(name) {}
 
