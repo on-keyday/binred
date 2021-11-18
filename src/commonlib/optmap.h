@@ -552,6 +552,12 @@ namespace PROJECT_NAME {
                             }
                             break;
                         }
+                        if (any(op & OptOption::parse_all_arg) && str_opt.size() == 1) {
+                            if (auto e = read_as_arg(); !e) {
+                                return e;
+                            }
+                            break;
+                        }
                     }
                     else {
                         if (auto e = set_shortname(arg[col]); !e) {
