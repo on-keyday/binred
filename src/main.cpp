@@ -45,7 +45,7 @@ void binred_test() {
 
 int main(int argc, char** argv) {
     commonlib2::SubCmdDispatch disp(std::string("binred"));
-    disp.set_helpstr("binary reader generator");
+    disp.set_helpstr("binary I/O generator");
     disp.set_usage("binred [<option>] <subcommand>");
     disp.set_callback([](decltype(disp)::result_t& r) {
         if (r.get_current()->get_cmdname() == "binred") {
