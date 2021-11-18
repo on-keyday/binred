@@ -287,7 +287,7 @@ namespace PROJECT_NAME {
             while (ptr) {
                 if (ptr->func) {
                     auto e = ptr->func(result);
-                    if (!ptr->get_parent() || e.second) {
+                    if (e.second || !ptr->get_parent()) {
                         return {true, e.first};
                     }
                 }
