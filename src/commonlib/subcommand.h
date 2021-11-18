@@ -101,6 +101,7 @@ namespace PROJECT_NAME {
                     ret += sub.second.cmdname;
                     auto sz = sub.second.cmdname.size();
                     while (sz < maxlen) {
+                        ret += ' ';
                         sz++;
                     }
                     ret += ':';
