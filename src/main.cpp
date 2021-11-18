@@ -45,9 +45,13 @@ void binred_test() {
 
 int main(int argc, char** argv) {
     commonlib2::SubCmdDispatch disp(std::string("binred"));
+    disp.set_helpstr("binary reader generator");
     disp.get_option().set_usage("binred [<option>] <subcommand>");
     disp.set_callback([](decltype(disp)::result_t& r) {
-        std::cout << r.get_current()->help(0, 3, false, "subcommand:");
+        std::cout << r.get_current()->help(0, 3, false, "subcommand:", "usage:");
+    });
+    disp.set_option({
+        {"process", {'p'}, "set maximum thread count (max:" + std::to_string(std::thread::hardware_concurrency()) + ")", 1, true},
     });
     disp.set_subcommand(
             "hello", "say hello",
@@ -71,11 +75,16 @@ int main(int argc, char** argv) {
         "get", "get package from the Internet", {
                                                     {"where", {'w'}, "set where fetch from", 1, false, true},
                                                 });
+    std::string msg;
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
-                            [](auto& op, bool on_error) {
+                            [&](auto& op, bool on_error) {
+                                if (on_error) {
+                                    msg = "-" + op + ": ";
+                                }
                                 return true;
                             });
         !err.first) {
+        std::cout << "binred: error: " << msg << commonlib2::error_message(err.first);
     }
     //binred_test();
 }
