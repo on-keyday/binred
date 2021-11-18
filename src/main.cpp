@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
         "hello",
         {},
         [](auto&) {
-            return 0;
+
         });
     cmd.set_option({
         {"input", {'i'}, "set input files", 1, false, true},

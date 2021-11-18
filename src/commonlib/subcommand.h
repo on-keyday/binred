@@ -208,7 +208,8 @@ namespace PROJECT_NAME {
         using optset_t = typename base_t::optset_t;
 
        private:
-        FuncHolder<result_t&> func;
+        using holder_t = FuncHolder<result_t&>;
+        holder_t func;
 
        public:
         SubCmdDispatch() {}
@@ -220,7 +221,12 @@ namespace PROJECT_NAME {
             : func(std::decay_t<F>(f)), SubCommand_base<SubCmdDispatch<Char, String, Vec, Map>, Char, String, Vec, Map>(name) {}
 
         template <class F>
-        SubCmdDispatch* set_subcommand(const String& name, std::initializer_list<optset_t> list, F&& in) {
+        void set_callback(F&& f) {
+            func = std::forward<F>(f);
+        }
+
+        template <class F = holder_t>
+        SubCmdDispatch* set_subcommand(const String& name, std::initializer_list<optset_t> list, F&& in = holder_t()) {
             auto ret = base_t::set_subcommand(name, list);
             if (ret) {
                 ret->func = std::forward<F>(in);
@@ -240,6 +246,7 @@ namespace PROJECT_NAME {
                 if (ptr->func) {
                     return {true, ptr->func(result)};
                 }
+                ptr = ptr->get_parent();
             }
             return {false, -1};
         }
