@@ -144,11 +144,27 @@ namespace PROJECT_NAME {
         };
         Base* base = nullptr;
 
-        template <class F>
+        DEFINE_ENABLE_IF_EXPR_VALID(return_int, (int)std::declval<T>()(std::declval<Args>()...));
+
+        template <class F, bool is_int = return_int<F>::value>
         struct Impl : Base {
             F f;
+            Impl(F&& in)
+                : f(std::forward<F>(in)) {}
             int operator()(Args&&... args) {
-                return f(std::forward<Args>(args)...);
+                return (int)f(std::forward<Args>(args)...);
+            }
+            virtual ~Impl() {}
+        };
+
+        template <class F>
+        struct Impl<F, false> : Base {
+            F f;
+            Impl(F&& in)
+                : f(std::forward<F>(in)) {}
+            int operator()(Args&&... args) {
+                f(std::forward<Args>(args)...);
+                return 0;
             }
             virtual ~Impl() {}
         };
@@ -160,9 +176,16 @@ namespace PROJECT_NAME {
             return base != nullptr;
         }
 
+        FuncHolder& operator=(FuncHolder&& in) noexcept {
+            delete base;
+            base = in.base;
+            in.base = nullptr;
+            return *this;
+        }
+
         template <class F>
         FuncHolder(F&& in) {
-            base = new Impl<F>{std::forward<F>(in)};
+            base = new Impl<F>(std::forward<F>(in));
         }
 
         FuncHolder(const FuncHolder&) = delete;
@@ -185,10 +208,13 @@ namespace PROJECT_NAME {
         using optset_t = typename base_t::optset_t;
 
        private:
-        FuncHolder<result_t> func;
+        FuncHolder<result_t&> func;
 
        public:
         SubCmdDispatch() {}
+        SubCmdDispatch(const String& name)
+            : SubCommand_base<SubCmdDispatch<Char, String, Vec, Map>, Char, String, Vec, Map>(name) {}
+
         template <class F>
         SubCmdDispatch(const String& name, F&& f)
             : func(std::decay_t<F>(f)), SubCommand_base<SubCmdDispatch<Char, String, Vec, Map>, Char, String, Vec, Map>(name) {}
