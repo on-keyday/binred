@@ -254,7 +254,7 @@ namespace PROJECT_NAME {
         }
 
         template <class F = holder_t>
-        SubCmdDispatch* set_subcommand(const String& name, std::initializer_list<optset_t> list, F&& in = holder_t()) {
+        SubCmdDispatch* set_subcommand(const String& name, std::initializer_list<optset_t> list = {}, F&& in = holder_t()) {
             auto ret = base_t::set_subcommand(name, list);
             if (ret) {
                 ret->func = std::forward<F>(in);

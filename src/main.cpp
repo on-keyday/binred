@@ -43,16 +43,10 @@ void binred_test() {
     }
 }
 
-constexpr std::pair<commonlib2::U8MiniBuffer, char32_t> utf_convert(char32_t c) {
-    commonlib2::U8MiniBuffer minbuf;
-    commonlib2::make_utf8_from_utf32(c, minbuf);
-    auto restore_c = commonlib2::make_utf32_from_utf8(minbuf, minbuf.size());
-    return {minbuf, restore_c};
-}
-
 int main(int argc, char** argv) {
-    commonlib2::SubCmdDispatch disp(std::string("binred"), [](auto& r) {
-        std::cout << r.get_current()->get_currentcmdname() << "unhandled command\n";
+    commonlib2::SubCmdDispatch disp(std::string("binred"));
+    disp.set_callback([](decltype(disp)::result_t& r) {
+        std::cout << r.errorln("unhandled command");
     });
     disp.set_subcommand(
         "hello",
@@ -74,7 +68,4 @@ int main(int argc, char** argv) {
         !err.first) {
     }
     binred_test();
-    constexpr std::uint32_t uv = U'9';
-    constexpr auto e = utf_convert(uv);
-    constexpr auto check = e.second == uv;
 }
