@@ -147,11 +147,10 @@ namespace PROJECT_NAME {
         std::pair<OptErr, int> run(int argc, C** argv, OptOption op = OptOption::default_mode, Ignore&& cb = Ignore()) {
             result_t result;
             op |= OptOption::parse_all_arg;
-            if (auto e = this->parse_opt(); !e) {
-                return {
-                    e,
-                }
+            if (auto e = this->parse_opt(argc, argv, result, op, cb); !e) {
+                return {e, (int)e.e};
             }
+            return {true, result.get_current()->func(result)};
         }
     };
 }  // namespace PROJECT_NAME
