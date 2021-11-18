@@ -481,7 +481,7 @@ namespace PROJECT_NAME {
                 }
                 return true;
             };
-            bool first = false;
+            //bool first = false;
             for (; index < argc; index++) {
                 auto arg = argv[index];
                 for (; arg[col]; col++) {
@@ -493,12 +493,12 @@ namespace PROJECT_NAME {
                                 }
                                 break;
                             }
-                            if (first) {
+                            /*if (first) {
                                 return OptError::no_option;
                             }
-                            else {
-                                return OptError::option_suspended;
-                            }
+                            else {*/
+                            return OptError::option_suspended;
+                            //}
                         }
                         if (arg[1] == 0) {
                             if (any(op & OptOption::parse_all_arg)) {
