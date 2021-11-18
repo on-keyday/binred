@@ -79,6 +79,8 @@ namespace PROJECT_NAME {
         two_same_opt_denied = 0x8,
         parse_all_arg = 0x10,
         one_prefix_longname = 0x20,
+        allow_equal = 0x40,
+        allow_adjacent = 0x80,
         default_mode = two_prefix_igopt | ignore_when_not_found | two_prefix_longname | parse_all_arg,
         oneprefix_mode = ignore_when_not_found | one_prefix_longname | parse_all_arg,
     };
@@ -349,7 +351,7 @@ namespace PROJECT_NAME {
             if (any(op & OptOption::parse_all_arg)) {
                 setfullarg(fullarg);
             }
-            auto set_optarg = [&](Opt* opt, bool fullarg = false) -> OptErr {
+            auto set_optarg = [&](Opt* opt, bool fullarg = false, String* argp = nullptr) -> OptErr {
                 OptResult* res = nullptr;
                 if (auto found = optres.mapping.find(opt->optname); found != optres.mapping.end()) {
                     if (!fullarg && (any(op & OptOption::two_same_opt_denied) || opt->same_denied)) {
@@ -365,7 +367,12 @@ namespace PROJECT_NAME {
                 }
                 if (opt->argcount) {
                     Vec<String> arg;
-                    for (auto i = 0; i < opt->argcount; i++) {
+                    auto i = 0;
+                    if (argp) {
+                        arg.push_back(*argp);
+                        i = 1;
+                    }
+                    for (; i < opt->argcount; i++) {
                         index++;
                         if (index == argc || !argv[index]) {
                             if (opt->effort_min && i >= opt->effort_min) {
@@ -417,9 +424,21 @@ namespace PROJECT_NAME {
                 invoke(arg + 1, true);
                 return OptError::not_found;
             };
-            auto set_logname_prefix = [&](auto arg, auto prefix) -> OptErr {
-                if (auto found = str_opt.find(arg + prefix); found != str_opt.end()) {
-                    if (auto e = set_optarg(&found->second); !e) {
+            auto set_longname_prefix = [&](auto arg, auto prefix) -> OptErr {
+                decltype(str_opt.find(arg)) found;
+                String arg;
+                if (any(OptOption::allow_equal)) {
+                    auto result = commonlib2::split<String, const C*, Vec<String>>(String(arg + prefix), "=", 1);
+                    if (result.size() == 2) {
+                        arg = result[1];
+                    }
+                    found = str_opt.find(result[0]);
+                }
+                else {
+                    found = str_opt.find(arg + prefix);
+                }
+                if (found != str_opt.end()) {
+                    if (auto e = set_optarg(&found->second, false, arg.size() ? &arg : nullptr); !e) {
                         return e;
                     }
                     return true;
@@ -430,6 +449,30 @@ namespace PROJECT_NAME {
                     }
                     return true;
                 }
+            };
+            auto set_shortname = [&](auto ch, bool adj = false) -> OptErr {
+                if (auto found = char_opt.find(ch); found == char_opt.end()) {
+                    if (any(op & OptOption::ignore_when_not_found)) {
+                        if (!invoke(String(ch), false)) {
+                            return OptError::not_found;
+                        }
+                        continue;
+                    }
+                    invoke(String(ch), true);
+                    return OptError::not_found;
+                }
+                else {
+                    String arg;
+                    if (adj) {
+                        if (any(op & OptOption::allow_equal)) {
+                        }
+                    }
+                    if (auto e = set_optarg(found->second); !e) {
+                        invoke(String(ch), true);
+                        return e;
+                    }
+                }
+                return true;
             };
             bool first = false;
             for (; index < argc; index++) {
@@ -484,34 +527,26 @@ namespace PROJECT_NAME {
                                     }
                                     return OptError::invalid_format;
                                 }
-                                if (auto e = set_logname_prefix(arg, 2); !e) {
+                                if (auto e = set_longname_prefix(arg, 2); !e) {
                                     return e;
                                 }
                                 break;
                             }
                         }
                         if (any(op & OptOption::one_prefix_longname)) {
-                            if (auto e = set_logname_prefix(arg, 1); !e) {
+                            if (auto e = set_longname_prefix(arg, 1); !e) {
+                                return e;
+                            }
+                        }
+                        if (any(op & OptOption::allow_adjacent)) {
+                            if (auto e = set_shortname(arg[1], true); !e) {
                                 return e;
                             }
                         }
                     }
                     else {
-                        if (auto found = char_opt.find(arg[col]); found == char_opt.end()) {
-                            if (any(op & OptOption::ignore_when_not_found)) {
-                                if (!invoke(String(arg + col, 1), false)) {
-                                    return OptError::not_found;
-                                }
-                                continue;
-                            }
-                            invoke(String(arg + col, 1), true);
-                            return OptError::not_found;
-                        }
-                        else {
-                            if (auto e = set_optarg(found->second); !e) {
-                                invoke(String(arg + col, 1), true);
-                                return e;
-                            }
+                        if (auto e = set_shortname(arg[col]); !e) {
+                            return e;
                         }
                     }
                 }

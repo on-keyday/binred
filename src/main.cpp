@@ -50,9 +50,14 @@ constexpr std::pair<commonlib2::U8MiniBuffer, char32_t> utf_convert(char32_t c) 
 
 int main(int argc, char** argv) {
     commonlib2::OptMap opt;
-    opt.set_option("option", "v", "");
     decltype(opt)::OptResMap result;
-    opt.parse_opt(argc, argv, result);
+    if (auto err = opt.parse_opt(argc, argv, result, commonlib2::OptOption::default_mode,
+                                 [](auto& op, bool on_error) {
+
+                                 });
+        !err) {
+    }
+
     binred_test();
     constexpr std::uint32_t uv = U'9';
     constexpr auto e = utf_convert(uv);
