@@ -50,10 +50,10 @@ int main(int argc, char** argv) {
     disp.set_callback([](decltype(disp)::result_t& r) {
         if (r.get_current()->get_cmdname() == "binred") {
             if (auto arg = r.get_layer(0)->has_(":arg")) {
-                r.errorln(arg->arg()->at(0) + ": no such subcommand exists\ntry `binred help` for more info");
+                std::cout << r.errorln(arg->arg()->at(0) + ": no such subcommand exists\ntry `binred help` for more info");
             }
             else {
-                r.errorln("need subcommand\ntry `binred help` for more info");
+                std::cout << r.errorln("need subcommand\ntry `binred help` for more info");
             }
             return -1;
         }
