@@ -425,18 +425,18 @@ namespace PROJECT_NAME {
                 invoke(arg + 1, true);
                 return OptError::not_found;
             };
-            auto set_longname_prefix = [&](auto arg, auto prefix) -> OptErr {
-                decltype(str_opt.find(arg)) found;
+            auto set_longname_prefix = [&](auto argp, auto prefix) -> OptErr {
+                decltype(str_opt.find(argp)) found;
                 String arg;
                 if (any(OptOption::allow_equal)) {
-                    auto result = commonlib2::split<String, const C*, Vec<String>>(String(arg + prefix), "=", 1);
+                    auto result = commonlib2::split<String, const C*, Vec<String>>(String(argp + prefix), "=", 1);
                     if (result.size() == 2) {
                         arg = result[1];
                     }
                     found = str_opt.find(result[0]);
                 }
                 else {
-                    found = str_opt.find(arg + prefix);
+                    found = str_opt.find(argp + prefix);
                 }
                 if (found != str_opt.end()) {
                     if (auto e = set_optarg(&found->second, false, arg.size() ? &arg : nullptr); !e) {
@@ -445,26 +445,26 @@ namespace PROJECT_NAME {
                     return true;
                 }
                 else {
-                    if (auto e = errorhandle_on_longname(arg); !e) {
+                    if (auto e = errorhandle_on_longname(argp); !e) {
                         return e;
                     }
                     return true;
                 }
             };
-            auto set_shortname = [&](auto ch, auto argp = nullptr) -> OptErr {
+            auto set_shortname = [&](auto ch, const C* argp = nullptr) -> OptErr {
                 if (auto found = char_opt.find(ch); found == char_opt.end()) {
                     if (any(op & OptOption::ignore_when_not_found)) {
-                        if (!invoke(String(ch), false)) {
+                        if (!invoke(String(&ch, 1), false)) {
                             return OptError::not_found;
                         }
                         return true;
                     }
-                    invoke(String(ch), true);
+                    invoke(String(&ch, 1), true);
                     return OptError::not_found;
                 }
                 else {
                     String arg;
-                    if (arg) {
+                    if (argp) {
                         if (any(op & OptOption::allow_equal)) {
                             if (argp[2] == '=') {
                                 arg = String(argp + 3);
@@ -475,7 +475,7 @@ namespace PROJECT_NAME {
                         }
                     }
                     if (auto e = set_optarg(found->second, false, arg.size() ? &arg : nullptr); !e) {
-                        invoke(String(ch), true);
+                        invoke(String(&ch, 1), true);
                         return e;
                     }
                 }
@@ -544,11 +544,13 @@ namespace PROJECT_NAME {
                             if (auto e = set_longname_prefix(arg, 1); !e) {
                                 return e;
                             }
+                            break;
                         }
                         if (any(op & OptOption::allow_adjacent)) {
                             if (auto e = set_shortname(arg[1], arg); !e) {
                                 return e;
                             }
+                            break;
                         }
                     }
                     else {

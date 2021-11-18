@@ -50,10 +50,20 @@ constexpr std::pair<commonlib2::U8MiniBuffer, char32_t> utf_convert(char32_t c) 
 
 int main(int argc, char** argv) {
     commonlib2::OptMap opt;
+    opt.set_option({
+        {
+            "option",
+            {'o'},
+            "",
+            1,
+            false,
+            true,
+        },
+    });
     decltype(opt)::OptResMap result;
-    if (auto err = opt.parse_opt(argc, argv, result, commonlib2::OptOption::default_mode,
+    if (auto err = opt.parse_opt(argc, argv, result, commonlib2::OptOption::getopt_mode,
                                  [](auto& op, bool on_error) {
-
+                                     return true;
                                  });
         !err) {
     }
