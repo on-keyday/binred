@@ -100,6 +100,7 @@ namespace PROJECT_NAME {
             ret += opt.help(preoffset + add, currentoffset, noUsage);
             if (subcmd.size()) {
                 ret += '\n';
+                add_space(add ? preoffset : 0);
                 Reader<const char*>(subcmdmsg) >> ret;
                 ret += '\n';
                 size_t maxlen = 0;
