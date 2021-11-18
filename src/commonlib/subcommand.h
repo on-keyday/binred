@@ -150,6 +150,13 @@ namespace PROJECT_NAME {
             return parent;
         }
 
+        const Cmd* get_subcmd(const String& name) const {
+            if (auto found = subcmd.find(name); found != subcmd.end()) {
+                return &found->second;
+            }
+            return nullptr;
+        }
+
         option_t& get_option() {
             return opt;
         }
@@ -322,6 +329,10 @@ namespace PROJECT_NAME {
         template <class F>
         void set_callback(F&& f) {
             func = std::forward<F>(f);
+        }
+
+        const holder_t& get_callback() const {
+            return func;
         }
 
         template <class F = holder_t>
