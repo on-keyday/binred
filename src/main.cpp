@@ -48,7 +48,8 @@ int main(int argc, char** argv) {
     disp.set_helpstr("binary reader generator");
     disp.get_option().set_usage("binred [<option>] <subcommand>");
     disp.set_callback([](decltype(disp)::result_t& r) {
-        std::cout << r.get_current()->help(0, 3, false, "subcommand:", "usage:");
+        auto c = r.get_current();
+        std::cout << c->help(0, 3, false, "subcommand:", "usage:");
     });
     disp.set_option({
         {"process", {'p'}, "set maximum thread count (max:" + std::to_string(std::thread::hardware_concurrency()) + ")", 1, true},
