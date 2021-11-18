@@ -54,11 +54,11 @@ int main(int argc, char** argv) {
         [](auto& r) {
             std::cout << r.errorln("Hello!");
         });
-    disp.set_option({
-        {"input", {'i'}, "set input files", 1, false, true},
-        {"language", {'l'}, "set output language (cpp)", 1, false, true},
-        {"output", {'o'}, "set output file", 1, false, true},
-    });
+    disp.set_subcommand("complie", {
+                                       {"input", {'i'}, "set input files", 1, false, true},
+                                       {"language", {'l'}, "set output language (cpp)", 1, false, true},
+                                       {"output", {'o'}, "set output file", 1, false, true},
+                                   });
     disp.set_subcommand("get", {{"where", {'w'}, "set where fetch from", 1, false, true}});
 
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
