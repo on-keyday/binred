@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
                 auto arg = r.get_layer("help")->has_(":arg");
                 auto base = r.get_current()->get_parent();
                 if (!arg) {
-                    std::cout << r.help(base, "usage:", "subcommand", 3);
+                    std::cout << r.help(base, "usage:", "subcommand:", 3);
                     return 0;
                 }
                 auto& key = arg->arg()->at(0);
