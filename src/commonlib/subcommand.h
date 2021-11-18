@@ -135,14 +135,61 @@ namespace PROJECT_NAME {
             : SubCommand_base<SubCommand, Char, String, Vec, Map>(name) {}
     };
 
-    template <class Function, class Char = char, class String = std::string, template <class...> class Vec = std::vector, template <class...> class Map = std::map>
-    struct SubCmdDispach : SubCommand_base<SubCmdDispach<Function, Char, String, Vec, Map>, Char, String, Vec, Map> {
-        using base_t = SubCommand_base<SubCmdDispach<Function, Char, String, Vec, Map>, Char, String, Vec, Map>;
-        using result_t = typename base_t::SubCmdResult;
-        Function func;
+    template <class... Arg>
+    struct FuncHolder {
+        struct Base {
+            virtual int operator()(Args&&... args) = 0;
+        };
+        Base* base = nullptr;
+
         template <class F>
-        SubCmdDispach(F&& f)
-            : func(std::decay_t<F>(f)) {}
+        struct Impl : Base {
+            F f;
+            int operator()(Args&&... args) {
+                return f(std::forward<Args>(args)...);
+            }
+        };
+
+        template <class F>
+        FuncHolder(F&& in) {
+            base = new Impl{std::forward<F>(f)};
+        }
+
+        FuncHolder(const FuncHolder&) = delete;
+
+        FuncHolder(FuncHolder&& in) noexcept {
+            delete base;
+            base = in.base;
+            in.base = nullptr;
+        }
+
+        ~FuncHolder() {
+            delete base;
+        }
+    };
+
+    template <class Char = char, class String = std::string, template <class...> class Vec = std::vector, template <class...> class Map = std::map>
+    struct SubCmdDispatch : SubCommand_base<SubCmdDispatch<Function, Char, String, Vec, Map>, Char, String, Vec, Map> {
+        using base_t = SubCommand_base<SubCmdDispatch<Char, String, Vec, Map>, Char, String, Vec, Map>;
+        using result_t = typename base_t::SubCmdResult;
+
+       private:
+        FuncHolder<result_t> func;
+
+       public:
+        SubCmdDispatch() {}
+        template <class F>
+        SubCmdDispatch(const String& name, F&& f)
+            : func(std::decay_t<F>(f)), SubCommand_base<SubCmdDispatch<Char, String, Vec, Map>, Char, String, Vec, Map>(name) {}
+
+        template <class F>
+        Cmd* set_subcommand(F&& in, const String& name, std::initializer_list<optset_t> list = {}) {
+            auto ret = this->set_subcommand(name, list);
+            if (ret) {
+                ret->func = std::forward<F>(in);
+            }
+            return ret;
+        }
 
         template <class C, class Ignore = bool (*)(const String&, bool)>
         std::pair<OptErr, int> run(int argc, C** argv, OptOption op = OptOption::default_mode, Ignore&& cb = Ignore()) {
