@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
                     return 1;
                 }
                 std::cout << r.help(c, "subcommand:", "usage:", 3);
+                return 0;
             })
         ->set_usage("binred help <command>");
     disp.set_subcommand(
