@@ -54,13 +54,17 @@ int main(int argc, char** argv) {
         {},
         [](decltype(disp)::result_t& r) {
             std::cout << r.errorln("Hello!");
+            return std::pair{0, false};
         });
     disp.set_subcommand(
-        "build", "build ", {
-                               {"input", {'i'}, "set input files", 1, false, true},
-                               {"language", {'l'}, "set output language (cpp)", 1, false, true},
-                               {"output", {'o'}, "set output file", 1, false, true},
-                           });
+            "build", "translate binred to other language",
+            {
+                {"input", {'i'}, "set input files", 1, false, true},
+                {"language", {'l'}, "set output language (cpp)", 1, false, true},
+                {"output", {'o'}, "set output file", 1, false, true},
+            })
+        ->get_option()
+        .set_usage("binred build [<options>]");
     disp.set_subcommand(
         "get", "get package from the Internet", {
                                                     {"where", {'w'}, "set where fetch from", 1, false, true},

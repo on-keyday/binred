@@ -78,7 +78,7 @@ namespace PROJECT_NAME {
             helpstr = str;
         }
 
-        String help(size_t preoffset = 0, size_t currentoffset = 2, bool noUsage = false) const {
+        String help(size_t preoffset = 0, size_t currentoffset = 2, bool noUsage = false, const char* subcmdmsg = "Subcommand:") const {
             auto ret = opt.help(preoffset, currentoffset);
             auto add_space = [&](auto count) {
                 for (size_t i = 0; i < count; i++) {
@@ -88,8 +88,8 @@ namespace PROJECT_NAME {
             if (subcmd.size()) {
                 auto two = currentoffset << 1;
                 ret += '\n';
-                add_space(preoffset + currentoffset);
-                Reader<const char*>("Subcommand:\n") >> ret;
+                Reader<const char*>(subcmdmsg) >> ret;
+                ret += '\n';
                 size_t maxlen = 0;
                 for (auto& sub : subcmd) {
                     auto sz = sub.second.cmdname.size();
