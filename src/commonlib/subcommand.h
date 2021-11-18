@@ -89,18 +89,20 @@ namespace PROJECT_NAME {
             if (!noUsage) {
                 add_space(preoffset);
                 ret += cmdname;
-                ret += ' ';
-                ret += '-';
-                ret += ' ';
-                ret += helpstr;
-                ret += '\n';
+                if (helpstr.size()) {
+                    ret += ' ';
+                    ret += '-';
+                    ret += ' ';
+                    ret += helpstr;
+                    ret += '\n';
+                }
                 add = currentoffset;
             }
             auto two = (currentoffset << 1);
             ret += opt.help(preoffset + add, currentoffset, noUsage);
             if (subcmd.size()) {
                 ret += '\n';
-                add_space(add ? preoffset : 0);
+                add_space(preoffset + add);
                 Reader<const char*>(subcmdmsg) >> ret;
                 ret += '\n';
                 size_t maxlen = 0;
