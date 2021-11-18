@@ -46,21 +46,26 @@ void binred_test() {
 int main(int argc, char** argv) {
     commonlib2::SubCmdDispatch disp(std::string("binred"));
     disp.set_callback([](decltype(disp)::result_t& r) {
-        std::cout << r.errorln("unhandled command");
+        r.get_layer(0)->has_("help");
+        std::cout
+            << r.errorln("need sub command\ntry 'binred --help' for more info");
     });
     disp.set_subcommand(
         "hello",
         {},
-        [](auto& r) {
+        [](decltype(disp)::result_t& r) {
             std::cout << r.errorln("Hello!");
         });
-    disp.set_subcommand("complie", {
-                                       {"input", {'i'}, "set input files", 1, false, true},
-                                       {"language", {'l'}, "set output language (cpp)", 1, false, true},
-                                       {"output", {'o'}, "set output file", 1, false, true},
-                                   });
-    disp.set_subcommand("get", {{"where", {'w'}, "set where fetch from", 1, false, true}});
-
+    disp.set_subcommand(
+        "build", {
+                     {"input", {'i'}, "set input files", 1, false, true},
+                     {"language", {'l'}, "set output language (cpp)", 1, false, true},
+                     {"output", {'o'}, "set output file", 1, false, true},
+                 });
+    disp.set_subcommand(
+        "get", {
+                   {"where", {'w'}, "set where fetch from", 1, false, true},
+               });
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
                             [](auto& op, bool on_error) {
                                 return true;

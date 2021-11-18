@@ -27,6 +27,7 @@ namespace PROJECT_NAME {
         not_found,
         need_more_argument,
         option_already_set,
+        needless_argument,
     };
 
     BEGIN_ENUM_ERROR_MSG(OptError)
@@ -39,6 +40,7 @@ namespace PROJECT_NAME {
     ENUM_ERROR_MSG(OptError::not_found, "unknown option")
     ENUM_ERROR_MSG(OptError::need_more_argument, "need more argument")
     ENUM_ERROR_MSG(OptError::option_already_set, "option already set")
+    ENUM_ERROR_MSG(OptError::needless_argument, "needless argument")
     END_ENUM_ERROR_MSG
 
     /*
@@ -396,6 +398,9 @@ namespace PROJECT_NAME {
                     else {
                         res->arg_.push_back(std::move(arg));
                     }
+                }
+                else if (argp) {
+                    return OptError::needless_argument;
                 }
                 return true;
             };
