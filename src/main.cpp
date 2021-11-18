@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
                     std::cout << r.errorln(key + ": no such subcommand exists");
                     return 1;
                 }
-                std::cout << r.help(c, "subcommand:", "usage:", 3);
+                std::cout << r.help(c, "usage:", "subcommand:", 3);
                 return 0;
             })
         ->set_usage("binred help <command>");
