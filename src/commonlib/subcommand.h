@@ -137,7 +137,7 @@ namespace PROJECT_NAME {
         String get_currentcmdname(Char sep = ':') const {
             String ret;
             if (parent) {
-                ret = parent->get_currentcmdname();
+                ret = parent->get_currentcmdname(sep);
             }
             ret += cmdname;
             if (sep != 0) {
