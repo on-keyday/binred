@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
         {"language", {'l'}, "set output language (cpp)", 1, false, true},
         {"output", {'o'}, "set output file", 1, false, true},
     });
-    cmd.set_subcommand("get", {{"where", {'w'}, "set where fetch from"}});
+    cmd.set_subcommand("get", {{"where", {'w'}, "set where fetch from", 1, false, true}});
     decltype(cmd)::SubCmdResult result;
     if (auto err = cmd.parse_opt(argc, argv, result, commonlib2::OptOption::getopt_mode,
                                  [](auto& op, bool on_error) {

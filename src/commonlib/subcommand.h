@@ -24,6 +24,9 @@ namespace PROJECT_NAME {
         Map<String, SubCommand> subcmd;
 
        public:
+        SubCommand(const String& name)
+            : cmdname(name) {}
+
         struct SubCmdResult {
             friend SubCommand;
 
@@ -60,7 +63,7 @@ namespace PROJECT_NAME {
             if (subcmd.count(name)) {
                 return nullptr;
             }
-            SubCommand ret;
+            SubCommand ret(name);
             if (!ret.opt.set_option(list)) {
                 return nullptr;
             }
