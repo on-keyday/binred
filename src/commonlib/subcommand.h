@@ -60,6 +60,17 @@ namespace PROJECT_NAME {
                 }
                 return &v[index].second;
             }
+
+            String error(const String& msg, Char sep = ':') {
+                if (current) {
+                    return current->get_currentcmdname(sep) + msg;
+                }
+                return msg;
+            }
+
+            String errorln(const String& msg, Char sep = ':') {
+                return error(msg, sep) + '\n';
+            }
         };
 
         String get_currentcmdname(Char sep = ':') const {

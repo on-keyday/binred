@@ -51,8 +51,8 @@ constexpr std::pair<commonlib2::U8MiniBuffer, char32_t> utf_convert(char32_t c) 
 }
 
 int main(int argc, char** argv) {
-    commonlib2::SubCmdDispatch disp(std::string(argv[0]), [](auto& r) {
-        std::cout << "unhandled command: " << r.get_current()->get_currentcmdname();
+    commonlib2::SubCmdDispatch disp(std::string("binred"), [](auto& r) {
+        std::cout << r.get_current()->get_currentcmdname() << "unhandled command\n";
     });
     disp.set_subcommand(
         "hello",
