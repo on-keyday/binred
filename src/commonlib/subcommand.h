@@ -79,14 +79,26 @@ namespace PROJECT_NAME {
         }
 
         String help(size_t preoffset = 0, size_t currentoffset = 2, bool noUsage = false, const char* subcmdmsg = "Subcommand:") const {
-            auto ret = opt.help(preoffset, currentoffset, noUsage);
+            String ret;
             auto add_space = [&](auto count) {
                 for (size_t i = 0; i < count; i++) {
                     ret += (Char)' ';
                 }
             };
+            auto add = 0;
+            if (!noUsage) {
+                add_space(preoffset);
+                ret += cmdname;
+                ret += ' ';
+                ret += '-';
+                ret += ' ';
+                ret += helpstr;
+                ret += '\n';
+                add = currentoffset;
+            }
+            auto two = (currentoffset << 1);
+            ret += opt.help(preoffset + add, currentoffset, noUsage);
             if (subcmd.size()) {
-                auto two = currentoffset << 1;
                 ret += '\n';
                 Reader<const char*>(subcmdmsg) >> ret;
                 ret += '\n';
@@ -98,7 +110,7 @@ namespace PROJECT_NAME {
                     }
                 }
                 for (auto& sub : subcmd) {
-                    add_space(preoffset + two);
+                    add_space(preoffset + two + add);
                     ret += sub.second.cmdname;
                     auto sz = sub.second.cmdname.size();
                     while (sz < maxlen) {
