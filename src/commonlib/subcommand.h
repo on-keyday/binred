@@ -139,7 +139,7 @@ namespace PROJECT_NAME {
     struct FuncHolder {
        private:
         struct Base {
-            virtual int operator()(Args&&... args) = 0;
+            virtual int operator()(Args&&... args) const = 0;
             virtual ~Base() {}
         };
         Base* base = nullptr;
@@ -151,7 +151,7 @@ namespace PROJECT_NAME {
             F f;
             Impl(F&& in)
                 : f(std::forward<F>(in)) {}
-            int operator()(Args&&... args) {
+            int operator()(Args&&... args) const {
                 return (int)f(std::forward<Args>(args)...);
             }
             virtual ~Impl() {}
@@ -162,7 +162,7 @@ namespace PROJECT_NAME {
             F f;
             Impl(F&& in)
                 : f(std::forward<F>(in)) {}
-            int operator()(Args&&... args) {
+            int operator()(Args&&... args) const {
                 f(std::forward<Args>(args)...);
                 return 0;
             }
@@ -172,8 +172,12 @@ namespace PROJECT_NAME {
        public:
         constexpr FuncHolder() {}
 
-        operator bool() {
+        operator bool() const {
             return base != nullptr;
+        }
+
+        int operator()(Args&&... args) const {
+            return (*base)(std::forward<Args>(args)...);
         }
 
         FuncHolder& operator=(FuncHolder&& in) noexcept {

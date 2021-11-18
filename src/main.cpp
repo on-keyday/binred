@@ -51,7 +51,6 @@ constexpr std::pair<commonlib2::U8MiniBuffer, char32_t> utf_convert(char32_t c) 
 }
 
 int main(int argc, char** argv) {
-    commonlib2::SubCommand cmd(std::string("root"));
     commonlib2::SubCmdDispatch disp(std::string("root"), [](auto& r) {
         std::cout << "unhandled command: " << r.get_current()->get_cmdname();
     });
@@ -61,18 +60,18 @@ int main(int argc, char** argv) {
         [](auto&) {
 
         });
-    cmd.set_option({
+    disp.set_option({
         {"input", {'i'}, "set input files", 1, false, true},
         {"language", {'l'}, "set output language (cpp)", 1, false, true},
         {"output", {'o'}, "set output file", 1, false, true},
     });
-    cmd.set_subcommand("get", {{"where", {'w'}, "set where fetch from", 1, false, true}});
-    decltype(cmd)::result_t result;
-    if (auto err = cmd.parse_opt(argc, argv, result, commonlib2::OptOption::getopt_mode,
-                                 [](auto& op, bool on_error) {
-                                     return true;
-                                 });
-        !err) {
+    disp.set_subcommand("get", {{"where", {'w'}, "set where fetch from", 1, false, true}});
+
+    if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
+                            [](auto& op, bool on_error) {
+                                return true;
+                            });
+        !err.first) {
     }
     binred_test();
     constexpr std::uint32_t uv = U'9';
