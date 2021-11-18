@@ -12,32 +12,32 @@
 #include "optmap.h"
 
 namespace PROJECT_NAME {
-    template <class Char = char, class String = std::string, template <class...> class Vec = std::vector, template <class...> class Map = std::map>
-    struct SubCommand {
+    template <class Cmd, class Char = char, class String = std::string, template <class...> class Vec = std::vector, template <class...> class Map = std::map>
+    struct SubCommand_base {
         using option_t = OptMap<Char, String, Vec, Map>;
         using optset_t = typename option_t::Opt;
         using optres_t = typename option_t::OptResMap;
 
-       private:
+       protected:
         String cmdname;
         option_t opt;
-        Map<String, SubCommand> subcmd;
-        SubCommand* parent = nullptr;
+        Map<String, Cmd> subcmd;
+        Cmd* parent = nullptr;
 
        public:
-        SubCommand() {}
-        SubCommand(const String& name)
+        SubCommand_base() {}
+        SubCommand_base(const String& name)
             : cmdname(name) {}
 
         struct SubCmdResult {
-            friend SubCommand;
+            friend Cmd;
 
            private:
             Vec<std::pair<String, optres_t>> result;
-            SubCommand* current = nullptr;
+            Cmd* current = nullptr;
 
            public:
-            const SubCommand* get_current() const {
+            const Cmd* get_current() const {
                 return current;
             }
 
@@ -65,7 +65,7 @@ namespace PROJECT_NAME {
             return cmdname;
         }
 
-        const SubCommand* get_parent() const {
+        const Cmd* get_parent() const {
             return parent;
         }
 
@@ -77,11 +77,11 @@ namespace PROJECT_NAME {
             return opt.set_option(list);
         }
 
-        SubCommand* set_subcommand(const String& name, std::initializer_list<optset_t> list = {}) {
+        Cmd* set_subcommand(const String& name, std::initializer_list<optset_t> list = {}) {
             if (subcmd.count(name)) {
                 return nullptr;
             }
-            SubCommand ret(name);
+            Cmd ret(name);
             if (!ret.opt.set_option(list)) {
                 return nullptr;
             }
@@ -125,6 +125,33 @@ namespace PROJECT_NAME {
         }
     };
 
-    struct SubCmdDispach {
+    template <class Char = char, class String = std::string, template <class...> class Vec = std::vector, template <class...> class Map = std::map>
+    struct SubCommand : SubCommand_base<SubCommand<Char, String, Vec, Map>, Char, String, Vec, Map> {
+        using base_t = SubCommand_base<SubCommand, Char, String, Vec, Map>;
+        using result_t = typename base_t::SubCmdResult;
+        SubCommand() {}
+        SubCommand(const String& name)
+            : SubCommand_base<SubCommand, Char, String, Vec, Map>(name) {}
+    };
+
+    template <class Function, class Char = char, class String = std::string, template <class...> class Vec = std::vector, template <class...> class Map = std::map>
+    struct SubCmdDispach : SubCommand_base<SubCmdDispach<Char, String, Vec, Map>, Char, String, Vec, Map> {
+        using base_t = SubCommand_base<SubCommand, Char, String, Vec, Map>;
+        using result_t = typename base_t::SubCmdResult;
+        Function func;
+        template <class F>
+        SubCmdDispach(F&& f)
+            : func(std::decay_t<F>(f)) {}
+
+        template <class C, class Ignore = bool (*)(const String&, bool)>
+        std::pair<OptErr, int> run(int argc, C** argv, OptOption op = OptOption::default_mode, Ignore&& cb = Ignore()) {
+            result_t result;
+            op |= OptOption::parse_all_arg;
+            if (auto e = this->parse_opt(); !e) {
+                return {
+                    e,
+                }
+            }
+        }
     };
 }  // namespace PROJECT_NAME

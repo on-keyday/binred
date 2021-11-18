@@ -486,7 +486,7 @@ namespace PROJECT_NAME {
                 auto arg = argv[index];
                 for (; arg[col]; col++) {
                     if (col == 0) {
-                        if (arg[0] != (C)optprefix) {
+                        if (arg[0] != (C)optprefix || str_opt.size() == 0) {
                             if (any(op & OptOption::parse_all_arg)) {
                                 if (auto e = read_as_arg(); !e) {
                                     return e;
@@ -548,12 +548,6 @@ namespace PROJECT_NAME {
                         }
                         if (any(op & OptOption::allow_adjacent)) {
                             if (auto e = set_shortname(arg[1], arg); !e) {
-                                return e;
-                            }
-                            break;
-                        }
-                        if (any(op & OptOption::parse_all_arg) && str_opt.size() == 1) {
-                            if (auto e = read_as_arg(); !e) {
                                 return e;
                             }
                             break;

@@ -58,14 +58,13 @@ int main(int argc, char** argv) {
         {"output", {'o'}, "set output file", 1, false, true},
     });
     cmd.set_subcommand("get", {{"where", {'w'}, "set where fetch from", 1, false, true}});
-    decltype(cmd)::SubCmdResult result;
+    decltype(cmd)::result_t result;
     if (auto err = cmd.parse_opt(argc, argv, result, commonlib2::OptOption::getopt_mode,
                                  [](auto& op, bool on_error) {
                                      return true;
                                  });
         !err) {
     }
-
     binred_test();
     constexpr std::uint32_t uv = U'9';
     constexpr auto e = utf_convert(uv);
