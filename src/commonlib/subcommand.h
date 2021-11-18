@@ -78,7 +78,7 @@ namespace PROJECT_NAME {
                     p = current;
                 }
                 if (p) {
-                    String cmdname = current->get_currentcmdname(0);
+                    String cmdname = p->get_currentcmdname(0);
                     cmdname.pop_back();
                     return current->help(preoffset, currentoffset, noUsage, subcmdmsg, usagemsg, cmdname.c_str());
                 }
