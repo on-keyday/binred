@@ -45,27 +45,26 @@ void binred_test() {
 
 int main(int argc, char** argv) {
     commonlib2::SubCmdDispatch disp(std::string("binred"));
+    disp.get_option().set_usage("binred [<option>] <subcommand>");
     disp.set_callback([](decltype(disp)::result_t& r) {
-        r.get_layer(0)->has_("help");
-        std::cout
-            << r.errorln("need sub command\ntry 'binred --help' for more info");
+        std::cout << r.get_current()->help(0, 3);
     });
     disp.set_subcommand(
-        "hello",
+        "hello", "say hello",
         {},
         [](decltype(disp)::result_t& r) {
             std::cout << r.errorln("Hello!");
         });
     disp.set_subcommand(
-        "build", {
-                     {"input", {'i'}, "set input files", 1, false, true},
-                     {"language", {'l'}, "set output language (cpp)", 1, false, true},
-                     {"output", {'o'}, "set output file", 1, false, true},
-                 });
+        "build", "build ", {
+                               {"input", {'i'}, "set input files", 1, false, true},
+                               {"language", {'l'}, "set output language (cpp)", 1, false, true},
+                               {"output", {'o'}, "set output file", 1, false, true},
+                           });
     disp.set_subcommand(
-        "get", {
-                   {"where", {'w'}, "set where fetch from", 1, false, true},
-               });
+        "get", "get package from the Internet", {
+                                                    {"where", {'w'}, "set where fetch from", 1, false, true},
+                                                });
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
                             [](auto& op, bool on_error) {
                                 return true;

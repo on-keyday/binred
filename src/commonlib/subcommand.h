@@ -23,6 +23,7 @@ namespace PROJECT_NAME {
         option_t opt;
         Map<String, Cmd> subcmd;
         Cmd* parent = nullptr;
+        String helpstr;
 
        public:
         SubCommand_base() {}
@@ -73,6 +74,43 @@ namespace PROJECT_NAME {
             }
         };
 
+        void set_helpstr(const String& str) {
+            helpstr = str;
+        }
+
+        String help(size_t preoffset = 0, size_t currentoffset = 2, bool noUsage = false) const {
+            auto ret = opt.help(preoffset, currentoffset);
+            auto add_space = [&](auto count) {
+                for (size_t i = 0; i < count; i++) {
+                    ret += (Char)' ';
+                }
+            };
+            if (subcmd.size()) {
+                auto two = currentoffset << 1;
+                add_space(preoffset + currentoffset);
+                Reader<const char*>("sub command\n") >> ret;
+                size_t maxlen = 0;
+                for (auto& sub : subcmd) {
+                    auto sz = sub.second.cmdname.size();
+                    if (sz > maxlen) {
+                        maxlen = sz;
+                    }
+                }
+                for (auto& sub : subcmd) {
+                    add_space(preoffset + two);
+                    ret += sub.second.cmdname;
+                    auto sz = sub.second.cmdname.size();
+                    while (sz < maxlen) {
+                        sz++;
+                    }
+                    ret += ':';
+                    ret += sub.second.helpstr;
+                    ret += '\n';
+                }
+            }
+            return ret;
+        }
+
         String get_currentcmdname(Char sep = ':') const {
             String ret;
             if (parent) {
@@ -102,7 +140,7 @@ namespace PROJECT_NAME {
             return opt.set_option(list);
         }
 
-        Cmd* set_subcommand(const String& name, std::initializer_list<optset_t> list = {}) {
+        Cmd* set_subcommand(const String& name, const String& help, std::initializer_list<optset_t> list = {}) {
             if (subcmd.count(name)) {
                 return nullptr;
             }
@@ -110,6 +148,7 @@ namespace PROJECT_NAME {
             if (!ret.opt.set_option(list)) {
                 return nullptr;
             }
+            ret.helpstr = help;
             ret.parent = static_cast<Cmd*>(this);
             return &(subcmd[name] = std::move(ret));
         }
@@ -268,8 +307,8 @@ namespace PROJECT_NAME {
         }
 
         template <class F = holder_t>
-        SubCmdDispatch* set_subcommand(const String& name, std::initializer_list<optset_t> list = {}, F&& in = holder_t()) {
-            auto ret = base_t::set_subcommand(name, list);
+        SubCmdDispatch* set_subcommand(const String& name, const String& help, std::initializer_list<optset_t> list = {}, F&& in = holder_t()) {
+            auto ret = base_t::set_subcommand(name, help, list);
             if (ret) {
                 ret->func = std::forward<F>(in);
             }
