@@ -1,5 +1,5 @@
 /*
-    binred - binary reader code generator
+    binred - binary I/O code generator
     Copyright (c) 2021 on-keyday (https://github.com/on-keyday)
     Released under the MIT license
     https://opensource.org/licenses/mit-license.php
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
                 {"where", {'w'}, "set where fetch from", 1, false, true},
             })
         ->set_usage("binred get [<options>] <url>");
-    ;
+
     std::string msg;
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
                             [&](auto& op, bool on_error) {
