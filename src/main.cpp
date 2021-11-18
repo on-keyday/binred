@@ -72,9 +72,13 @@ int main(int argc, char** argv) {
         ->get_option()
         .set_usage("binred build [<options>]");
     disp.set_subcommand(
-        "get", "get package from the Internet", {
-                                                    {"where", {'w'}, "set where fetch from", 1, false, true},
-                                                });
+            "get", "get package from the Internet",
+            {
+                {"where", {'w'}, "set where fetch from", 1, false, true},
+            })
+        ->get_option()
+        .set_usage("binred get [<options>] <url>");
+    ;
     std::string msg;
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
                             [&](auto& op, bool on_error) {
