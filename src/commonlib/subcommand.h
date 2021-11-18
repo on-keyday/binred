@@ -87,8 +87,9 @@ namespace PROJECT_NAME {
             };
             if (subcmd.size()) {
                 auto two = currentoffset << 1;
+                ret += '\n';
                 add_space(preoffset + currentoffset);
-                Reader<const char*>("\nSubcommand:\n") >> ret;
+                Reader<const char*>("Subcommand:\n") >> ret;
                 size_t maxlen = 0;
                 for (auto& sub : subcmd) {
                     auto sz = sub.second.cmdname.size();
