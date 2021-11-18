@@ -52,14 +52,14 @@ constexpr std::pair<commonlib2::U8MiniBuffer, char32_t> utf_convert(char32_t c) 
 int main(int argc, char** argv) {
     commonlib2::OptMap opt;
     commonlib2::SubCommand cmd;
-
-    opt.set_option({
+    cmd.set_option({
         {"input", {'i'}, "set input files", 1, false, true},
         {"language", {'l'}, "set output language (cpp)", 1, false, true},
         {"output", {'o'}, "set output file", 1, false, true},
     });
-    decltype(opt)::OptResMap result;
-    if (auto err = opt.parse_opt(argc, argv, result, commonlib2::OptOption::getopt_mode,
+    cmd.set_subcommand("get", {{"where", {'w'}, "set where fetch from"}});
+    decltype(cmd)::SubCmdResult result;
+    if (auto err = cmd.parse_opt(argc, argv, result, commonlib2::OptOption::getopt_mode,
                                  [](auto& op, bool on_error) {
                                      return true;
                                  });

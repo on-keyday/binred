@@ -64,11 +64,13 @@ namespace PROJECT_NAME {
             if (!ret.opt.set_option(list)) {
                 return nullptr;
             }
-            return &(subcmd.subcmd[name] = std::move(ret));
+            return &(subcmd[name] = std::move(ret));
         }
 
         template <class C, class Ignore = bool (*)(const String&, bool)>
         OptErr parse_opt(int argc, C** argv, SubCmdResult& optres, OptOption op = OptOption::default_mode, Ignore&& cb = Ignore()) {
+            int index = 1, col = 0;
+            return parse_opt(index, col, argc, argv, optres, op, cb);
         }
 
         template <class C, class Ignore = bool (*)(const String&, bool)>
