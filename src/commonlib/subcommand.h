@@ -107,7 +107,6 @@ namespace PROJECT_NAME {
                     }
                     ret += ' ';
                     ret += ':';
-                    ret += ' ';
                     ret += sub.second.helpstr;
                     ret += '\n';
                 }
