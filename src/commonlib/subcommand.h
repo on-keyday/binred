@@ -161,34 +161,48 @@ namespace PROJECT_NAME {
 
     template <class... Args>
     struct FuncHolder {
+        using result_t = std::pair<int, bool>;
+
        private:
         struct Base {
-            virtual int operator()(Args&&... args) const = 0;
+            virtual result_t operator()(Args&&... args) const = 0;
             virtual ~Base() {}
         };
         Base* base = nullptr;
 
         DEFINE_ENABLE_IF_EXPR_VALID(return_int, (int)std::declval<T>()(std::declval<Args>()...));
+        DEFINE_ENABLE_IF_EXPR_VALID(return_pair, (result_t)std::declval<T>()(std::declval<Args>()...));
 
-        template <class F, bool is_int = return_int<F>::value>
+        template <class F, bool is_int = return_int<F>::value, bool is_pair = return_pair<F>::value>
         struct Impl : Base {
             F f;
             Impl(F&& in)
                 : f(std::forward<F>(in)) {}
-            int operator()(Args&&... args) const {
-                return (int)f(std::forward<Args>(args)...);
+            result_t operator()(Args&&... args) const override {
+                return {(int)f(std::forward<Args>(args)...), true};
             }
             virtual ~Impl() {}
         };
 
         template <class F>
-        struct Impl<F, false> : Base {
+        struct Impl<F, false, false> : Base {
             F f;
             Impl(F&& in)
                 : f(std::forward<F>(in)) {}
-            int operator()(Args&&... args) const {
+            result_t operator()(Args&&... args) const override {
                 f(std::forward<Args>(args)...);
-                return 0;
+                return {0, true};
+            }
+            virtual ~Impl() {}
+        };
+
+        template <class F>
+        struct Impl<F, false, true> : Base {
+            F f;
+            Impl(F&& in)
+                : f(std::forward<F>(in)) {}
+            result_t operator()(Args&&... args) const override {
+                return f(std::forward<Args>(args)...);
             }
             virtual ~Impl() {}
         };
@@ -200,7 +214,7 @@ namespace PROJECT_NAME {
             return base != nullptr;
         }
 
-        int operator()(Args&&... args) const {
+        result_t operator()(Args&&... args) const {
             return (*base)(std::forward<Args>(args)...);
         }
 
@@ -272,7 +286,10 @@ namespace PROJECT_NAME {
             auto ptr = result.get_current();
             while (ptr) {
                 if (ptr->func) {
-                    return {true, ptr->func(result)};
+                    auto e = ptr->func(result);
+                    if (!ptr->get_parent() || e.second) {
+                        return {true, e.first};
+                    }
                 }
                 ptr = ptr->get_parent();
             }
