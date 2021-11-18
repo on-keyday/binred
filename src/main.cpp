@@ -49,7 +49,9 @@ int main(int argc, char** argv) {
     disp.get_option().set_usage("binred [<option>] <subcommand>");
     disp.set_callback([](decltype(disp)::result_t& r) {
         auto c = r.get_current();
-        std::cout << c->help(0, 3, false, "subcommand:", "usage:", c->get_currentcmdname(0).c_str());
+        auto s = c->get_currentcmdname(0);
+        s.pop_back();
+        std::cout << c->help(0, 3, false, "subcommand:", "usage:", s.c_str());
     });
     disp.set_option({
         {"process", {'p'}, "set maximum thread count (max:" + std::to_string(std::thread::hardware_concurrency()) + ")", 1, true},
