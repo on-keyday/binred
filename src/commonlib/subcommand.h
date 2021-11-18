@@ -72,6 +72,18 @@ namespace PROJECT_NAME {
             String errorln(const String& msg, Char sep = ':') {
                 return error(msg, sep) + '\n';
             }
+
+            String help(const Cmd* p = nullptr, const char* usagemsg = "Usage:", const char* subcmdmsg = "Subcommand:", size_t currentoffset = 2, size_t preoffset = 0, bool noUsage = false) {
+                if (!p) {
+                    p = current;
+                }
+                if (p) {
+                    String cmdname = current->getcurrent_cmdname(0);
+                    cmdname.pop_back();
+                    return current->help(preoffset, currentoffset, noUsage, subcmdmsg, usagemsg, cmdname.c_str());
+                }
+                return String();
+            }
         };
 
         void set_helpstr(const String& str) {
@@ -145,6 +157,10 @@ namespace PROJECT_NAME {
             }
             ret += ' ';
             return ret;
+        }
+
+        void set_usage(const String& str) {
+            opt.set_usage(str);
         }
 
         const String& get_cmdname() const {

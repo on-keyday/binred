@@ -46,16 +46,32 @@ void binred_test() {
 int main(int argc, char** argv) {
     commonlib2::SubCmdDispatch disp(std::string("binred"));
     disp.set_helpstr("binary reader generator");
-    disp.get_option().set_usage("binred [<option>] <subcommand>");
+    disp.set_usage("binred [<option>] <subcommand>");
     disp.set_callback([](decltype(disp)::result_t& r) {
-        auto c = r.get_current();
-        auto s = c->get_currentcmdname(0);
-        s.pop_back();
-        std::cout << c->help(0, 3, false, "subcommand:", "usage:", s.c_str());
+
     });
     disp.set_option({
-        {"process", {'p'}, "set maximum thread count (max:" + std::to_string(std::thread::hardware_concurrency()) + ")", 1, true},
+        {"process", {'p'}, "set maximum thread count (1-" + std::to_string(std::thread::hardware_concurrency()) + ")", 1, true},
     });
+    disp.set_subcommand(
+            "help", "show command help",
+            {},
+            [](decltype(disp)::result_t& r) {
+                auto arg = r.get_layer("help")->has_(":arg");
+                auto base = r.get_current()->get_parent();
+                if (!arg) {
+                    std::cout << r.help(base, "usage:", "subcommand", 3);
+                    return 0;
+                }
+                auto& key = arg->arg()->at(0);
+                auto c = base->get_subcmd(key);
+                if (!c) {
+                    std::cout << r.errorln(key + ": no such subcommand exists");
+                    return 1;
+                }
+                std::cout << r.help(c, "subcommand:", "usage:", 3);
+            })
+        ->set_usage("binred help <command>");
     disp.set_subcommand(
             "hello", "say hello",
             {},
@@ -63,8 +79,7 @@ int main(int argc, char** argv) {
                 std::cout << r.errorln("Hello!");
                 return std::pair{0, false};
             })
-        ->get_option()
-        .set_usage("binred hello");
+        ->set_usage("binred hello");
     disp.set_subcommand(
             "build", "translate binred to other language",
             {
@@ -72,15 +87,13 @@ int main(int argc, char** argv) {
                 {"language", {'l'}, "set output language (cpp)", 1, false, true},
                 {"output", {'o'}, "set output file", 1, false, true},
             })
-        ->get_option()
-        .set_usage("binred build [<options>]");
+        ->set_usage("binred build [<options>]");
     disp.set_subcommand(
             "get", "get package from the Internet",
             {
                 {"where", {'w'}, "set where fetch from", 1, false, true},
             })
-        ->get_option()
-        .set_usage("binred get [<options>] <url>");
+        ->set_usage("binred get [<options>] <url>");
     ;
     std::string msg;
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
