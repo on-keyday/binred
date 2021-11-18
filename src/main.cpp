@@ -51,8 +51,8 @@ int main(int argc, char** argv) {
     disp.set_subcommand(
         "hello",
         {},
-        [](auto&) {
-
+        [](auto& r) {
+            std::cout << r.errorln("Hello!");
         });
     disp.set_option({
         {"input", {'i'}, "set input files", 1, false, true},
