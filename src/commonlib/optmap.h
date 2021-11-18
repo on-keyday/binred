@@ -450,7 +450,7 @@ namespace PROJECT_NAME {
                     return true;
                 }
             };
-            auto set_shortname = [&](auto ch, bool adj = false) -> OptErr {
+            auto set_shortname = [&](auto ch, auto argp = nullptr) -> OptErr {
                 if (auto found = char_opt.find(ch); found == char_opt.end()) {
                     if (any(op & OptOption::ignore_when_not_found)) {
                         if (!invoke(String(ch), false)) {
@@ -463,11 +463,17 @@ namespace PROJECT_NAME {
                 }
                 else {
                     String arg;
-                    if (adj) {
+                    if (arg) {
                         if (any(op & OptOption::allow_equal)) {
+                            if (argp[2] == '=') {
+                                arg = String(argp + 3);
+                            }
+                        }
+                        if (arg.size() == 0) {
+                            arg = String(argp + 2);
                         }
                     }
-                    if (auto e = set_optarg(found->second); !e) {
+                    if (auto e = set_optarg(found->second, false, arg.size() ? &arg : nullptr); !e) {
                         invoke(String(ch), true);
                         return e;
                     }
