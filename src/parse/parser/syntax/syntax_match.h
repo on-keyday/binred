@@ -30,12 +30,8 @@ namespace binred {
             bool ifexists = false;
         };
 
-        struct RefSyntax : Syntax {
-            std::string other;
-        };
-
         struct OrSyntax : Syntax {
-            std::vector<std::shared_ptr<Syntax>> syntax;
+            std::vector<std::vector<std::shared_ptr<Syntax>>> syntax;
         };
 
         struct SyntaxC {
@@ -99,7 +95,7 @@ namespace binred {
                     if (!e || e->is_(TokenKind::line)) {
                         break;
                     }
-                    if (bracket && e->has_("]")) {
+                    if (bracket && (e->has_("]") || e->has_("|"))) {
                         break;
                     }
                     if (e->has_("\"")) {
@@ -131,6 +127,14 @@ namespace binred {
                         r.Consume();
                     }
                     else if (e->is_(TokenKind::identifiers)) {
+                        ptr = std::make_shared<Syntax>(SyntaxType::ref);
+                        ptr->token = e;
+                        r.Consume();
+                    }
+                    else if (e->has_("[")) {
+                        r.Consume();
+                        auto tmp = std::make_shared<OrSyntax>(SyntaxType::or_);
+                        tmp->token = e;
                     }
                 }
             }
