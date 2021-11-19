@@ -103,8 +103,7 @@ namespace binred {
                         break;
                     }
                     if (e->has_("\"")) {
-                        r.Consume();
-                        e = r.GetorEOF();
+                        e = r.ConsumeGetorEOF();
                         if (!e) {
                             errmsg = "unexpected EOF, expect string";
                             return false;
@@ -115,7 +114,23 @@ namespace binred {
                         }
                         ptr = std::make_shared<Syntax>(SyntaxType::literal);
                         ptr->token = e;
+                        e = r.ConsumeGetorEOF();
+                        if (!e) {
+                            errmsg = "unexpected EOF,expect \"";
+                            return false;
+                        }
+                        if (!e->has_("\"")) {
+                            errmsg = "expect \" but " + e->to_string();
+                            return false;
+                        }
                         r.Consume();
+                    }
+                    else if (e->is_(TokenKind::keyword)) {
+                        ptr = std::make_shared<Syntax>(SyntaxType::identifier);
+                        ptr->token = e;
+                        r.Consume();
+                    }
+                    else if (e->is_(TokenKind::identifiers)) {
                     }
                 }
             }
