@@ -374,6 +374,13 @@ namespace PROJECT_NAME {
                 return current;
             }
 
+            std::shared_ptr<Token<String>> ConsumeGet() {
+                if (!Consume()) {
+                    return nullptr;
+                }
+                return Get();
+            }
+
             std::shared_ptr<Token<String>> ReadorEOF() {
                 auto ret = Read();
                 if (!ret) {
@@ -395,6 +402,14 @@ namespace PROJECT_NAME {
                     SetEOF();
                 }
                 return current;
+            }
+
+            std::shared_ptr<Token<String>> ConsumeGetorEOF() {
+                auto ret = ConsumeGet();
+                if (!ret) {
+                    SetEOF();
+                }
+                return ret;
             }
         };
     }  // namespace tokenparser

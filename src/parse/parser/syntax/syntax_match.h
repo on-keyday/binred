@@ -22,6 +22,8 @@ namespace binred {
         };
 
         struct Syntax {
+            Syntax(SyntaxType t)
+                : type(t) {}
             SyntaxType type;
             std::shared_ptr<token_t> token;
             bool repeat = false;
@@ -86,8 +88,38 @@ namespace binred {
 
         struct ReadSyntax {
             SyntaxC::TokenReader r;
-            std::map<std::string, std::vector<std::shared_ptr<Syntax>>> syntax;
+            using holder_t = std::vector<std::shared_ptr<Syntax>>;
+            std::map<std::string, holder_t> syntax;
             std::string errmsg;
+
+            bool read_syntaxline(holder_t& stx, bool bracket = false) {
+                while (true) {
+                    auto e = r.ReadorEOF();
+                    std::shared_ptr<Syntax> ptr;
+                    if (!e || e->is_(TokenKind::line)) {
+                        break;
+                    }
+                    if (bracket && e->has_("]")) {
+                        break;
+                    }
+                    if (e->has_("\"")) {
+                        r.Consume();
+                        e = r.GetorEOF();
+                        if (!e) {
+                            errmsg = "unexpected EOF, expect string";
+                            return false;
+                        }
+                        if (!e->is_(TokenKind::comments)) {
+                            errmsg = "parser is broken";
+                            return false;
+                        }
+                        ptr = std::make_shared<Syntax>(SyntaxType::literal);
+                        ptr->token = e;
+                        r.Consume();
+                    }
+                }
+            }
+
             bool operator()() {
                 auto e = r.ReadorEOF();
                 if (!e) {
@@ -98,6 +130,7 @@ namespace binred {
                     errmsg = "expect identifier for syntax name but " + e->to_string();
                     return false;
                 }
+                std::string name = e->to_string();
                 e = r.ConsumeReadorEOF();
                 if (!e) {
                     return false;
@@ -107,7 +140,12 @@ namespace binred {
                     return false;
                 }
                 r.Consume();
-                e = r.ReadorEOF();
+                auto result = syntax.insert({name, holder_t()});
+                if (!result.second) {
+                    errmsg = "syntax " + name + " is already defined";
+                    return false;
+                }
+                auto& stx = result.first->second;
             }
         };
     }  // namespace syntax
