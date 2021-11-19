@@ -136,8 +136,8 @@ namespace binred {
             SetError(ErrorCode::unexpected_EOF);
         }
 
-        bool is_IgnoreSymbol() override {
-            return this->current->has_("/*") || this->current->has_("*/") || this->current->has_("//");
+        bool is_IgnoreToken() override {
+            return this->is_DefaultIgnore() || this->current->has_("/*") || this->current->has_("*/") || this->current->has_("//");
         }
     };
 }  // namespace binred

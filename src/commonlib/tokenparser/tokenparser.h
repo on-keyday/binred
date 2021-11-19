@@ -329,8 +329,12 @@ namespace PROJECT_NAME {
                 : root(tok), current(tok) {}
 
            protected:
-            virtual bool is_IgnoreSymbol() {
-                return false;
+            bool is_DefaultIgnore() {
+                return current->is_nodisplay() || current->is_(TokenKind::comments);
+            }
+
+            virtual bool is_IgnoreToken() {
+                return is_DefaultIgnore();
             }
 
             virtual void SetEOF() {}
@@ -353,10 +357,7 @@ namespace PROJECT_NAME {
             }
 
             std::shared_ptr<Token<String>> Read() {
-                while (current &&
-                       (current->is_nodisplay() ||
-                        is_IgnoreSymbol() ||
-                        current->is_(TokenKind::comments))) {
+                while (current && is_IgnoreToken()) {
                     current = current->get_next();
                 }
                 return current;

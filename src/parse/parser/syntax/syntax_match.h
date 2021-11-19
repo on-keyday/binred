@@ -14,9 +14,26 @@
 
 namespace binred {
     namespace syntax {
+        enum class SyntaxType {
+            literal,
+            ref,
+            identifier,
+            or_,
+        };
+
         struct Syntax {
+            SyntaxType type;
             std::shared_ptr<token_t> token;
-            std::vector<std::shared_ptr<Syntax>> next;
+            bool repeat = false;
+            bool ifexists = false;
+        };
+
+        struct RefSyntax : Syntax {
+            std::string other;
+        };
+
+        struct OrSyntax : Syntax {
+            std::vector<std::shared_ptr<Syntax>> syntax;
         };
 
         struct SyntaxC {
@@ -47,12 +64,29 @@ namespace binred {
                 rule.string_symbol[0];
                 return parser.ReadAndMerge(r, rule);
             }
+
+            struct TokenReader : TokenReaderBase<std::string> {
+                using TokenReaderBase<std::string>::TokenReaderBase;
+
+                bool is_IgnoreToken() override {
+                    return current->has_("#");
+                }
+            };
+
+            auto get_reader() {
+                return TokenReader(parser.GetParsed());
+            }
         };
 
-        struct TokenReader : TokenReaderBase<std::string> {
-            using TokenReaderBase<std::string>::TokenReaderBase;
+        struct ReadSyntax {
+            SyntaxC::TokenReader r;
+            std::map<std::string, std::vector<std::shared_ptr<Syntax>>> syntax;
 
-            bool is_IgnoreSymbol() override {
+            bool operator()() {
+                auto e = r.ReadorEOF();
+                if (!e) {
+                    return false;
+                }
             }
         };
     }  // namespace syntax
