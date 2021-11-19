@@ -57,6 +57,9 @@ int main(int argc, char** argv) {
             }
             return -1;
         }
+        else {
+            std::cout << r.errorln("command not implemented");
+        }
         return 0;
     });
     disp.set_option({
