@@ -15,6 +15,7 @@
 #include <optmap.h>
 #include <subcommand.h>
 #include <functional>
+#include <variant>
 
 void binred_test() {
     binred::TokenReader red;

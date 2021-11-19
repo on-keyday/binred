@@ -44,4 +44,4 @@ namespace binred::analisis {
         }
     };
 
-}  // namespace binred
+}  // namespace binred::analisis

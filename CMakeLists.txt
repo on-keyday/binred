@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 project(binred)
 
 if(WIN32)
-include_directories("src/commonlib")
 link_directories("D:/OpenSSL/build-x64-debug/lib")
 else()
 # find_package(OPENSSL REQUIRED)
@@ -17,7 +16,7 @@ find_package(Threads REQUIRED)
 
 add_executable(binred "src/main.cpp")
 
-
+#add_executable(wsserver "src/webserver.cpp")
 
 #if(WIN32)
 #target_link_libraries(wsserver libssl libcrypto ws2_32)

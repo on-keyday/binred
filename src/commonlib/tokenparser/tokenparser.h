@@ -57,6 +57,14 @@ namespace PROJECT_NAME {
                 keywords = std::move(key);
             }
 
+            reg_t& GetSymbols() {
+                return symbols;
+            }
+
+            reg_t& GetKeyWords() {
+                return keywords;
+            }
+
             template <class Buf>
             bool Read(commonlib2::Reader<Buf>& r) {
                 auto set_next = [this](auto& v) {
