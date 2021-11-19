@@ -200,7 +200,7 @@ namespace PROJECT_NAME {
                 }
             }
 
-            virtual ~Token() {
+            ~Token() {
                 remove();
             }
 
