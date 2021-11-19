@@ -67,9 +67,15 @@ namespace binred {
 
             struct TokenReader : TokenReaderBase<std::string> {
                 using TokenReaderBase<std::string>::TokenReaderBase;
-
+                bool igline = true;
+                void SetIgnoreLine(bool t) {
+                    igline = t;
+                }
                 bool is_IgnoreToken() override {
-                    return current->has_("#");
+                    if (!igline && current->is_(TokenKind::line)) {
+                        return false;
+                    }
+                    return is_DefaultIgnore() || current->has_("#");
                 }
             };
 
@@ -81,12 +87,27 @@ namespace binred {
         struct ReadSyntax {
             SyntaxC::TokenReader r;
             std::map<std::string, std::vector<std::shared_ptr<Syntax>>> syntax;
-
+            std::string errmsg;
             bool operator()() {
                 auto e = r.ReadorEOF();
                 if (!e) {
                     return false;
                 }
+                r.SetIgnoreLine(false);
+                if (!e->is_(TokenKind::identifiers)) {
+                    errmsg = "expect identifier for syntax name but " + e->to_string();
+                    return false;
+                }
+                e = r.ConsumeReadorEOF();
+                if (!e) {
+                    return false;
+                }
+                if (!e->has_(":=")) {
+                    errmsg = "expect symbol := but " + e->to_string();
+                    return false;
+                }
+                r.Consume();
+                e = r.ReadorEOF();
             }
         };
     }  // namespace syntax
