@@ -134,31 +134,12 @@ namespace binred {
             this->additional = addtional;
         }
 
+        void SetEOF() override {
+            SetError(ErrorCode::unexpected_EOF);
+        }
+
         bool is_IgnoreSymbol() override {
             return current->has_("/*") || current->has_("*/") || current->has_("//");
-        }
-
-        std::shared_ptr<token_t> ReadorEOF() {
-            auto ret = this->Read();
-            if (!ret) {
-                SetError(ErrorCode::unexpected_EOF);
-            }
-            return ret;
-        }
-
-        std::shared_ptr<token_t> ConsumeReadorEOF() {
-            auto ret = this->ConsumeRead();
-            if (!ret) {
-                SetError(ErrorCode::unexpected_EOF);
-            }
-            return ret;
-        }
-
-        std::shared_ptr<token_t> GetorEOF() {
-            if (!current) {
-                SetError(ErrorCode::unexpected_EOF);
-            }
-            return current;
         }
     };
 }  // namespace binred

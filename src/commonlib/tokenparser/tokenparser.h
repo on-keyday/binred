@@ -333,6 +333,8 @@ namespace PROJECT_NAME {
                 return false;
             }
 
+            virtual void SetEOF() {}
+
            public:
             bool is_EOF() {
                 return current == nullptr;
@@ -368,6 +370,29 @@ namespace PROJECT_NAME {
             }
 
             std::shared_ptr<Token<String>> Get() {
+                return current;
+            }
+
+            std::shared_ptr<Token<String>> ReadorEOF() {
+                auto ret = Read();
+                if (!ret) {
+                    SetEOF();
+                }
+                return ret;
+            }
+
+            std::shared_ptr<Token<String>> ConsumeReadorEOF() {
+                auto ret = ConsumeRead();
+                if (!ret) {
+                    SetEOF();
+                }
+                return ret;
+            }
+
+            std::shared_ptr<Token<String>> GetorEOF() {
+                if (!current) {
+                    SetEOF();
+                }
                 return current;
             }
         };
