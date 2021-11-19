@@ -122,8 +122,6 @@ namespace binred {
     };
 
     struct TokenReader : TokenReaderBase<std::string> {
-        //std::shared_ptr<token_t> root;
-        //std::shared_ptr<token_t> current;
         ErrorCode code = ErrorCode::none;
         const char* additional = nullptr;
 
@@ -139,7 +137,7 @@ namespace binred {
         }
 
         bool is_IgnoreSymbol() override {
-            return current->has_("/*") || current->has_("*/") || current->has_("//");
+            return this->current->has_("/*") || this->current->has_("*/") || this->current->has_("//");
         }
     };
 }  // namespace binred

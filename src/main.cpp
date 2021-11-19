@@ -123,5 +123,5 @@ int main(int argc, char** argv) {
         !err.first) {
         std::cout << "binred: error: " << msg << commonlib2::error_message(err.first);
     }
-    //binred_test();
+    binred_test();
 }
