@@ -13,38 +13,47 @@
 #include <vector>
 
 namespace binred {
-    struct Syntax {
-        std::shared_ptr<token_t> token;
-        std::vector<std::shared_ptr<Syntax>> next;
-    };
+    namespace syntax {
+        struct Syntax {
+            std::shared_ptr<token_t> token;
+            std::vector<std::shared_ptr<Syntax>> next;
+        };
 
-    struct SyntaxC {
-        using Parser = TokenParser<std::vector<std::string>, std::string>;
-        Parser parser;
-        SyntaxC() {
-            parser.SetSymbolAndKeyWord(
-                {
-                    "\"",
-                    "'",
-                    "`",
-                    ":=",
-                    "?",
-                    "[",
-                    "]",
-                    "*",
-                    "|",
-                    "#",
-                },
-                {"ID"});
-        }
+        struct SyntaxC {
+            using Parser = TokenParser<std::vector<std::string>, std::string>;
+            Parser parser;
+            SyntaxC() {
+                parser.SetSymbolAndKeyWord(
+                    {
+                        "\"",
+                        "'",
+                        "`",
+                        ":=",
+                        "?",
+                        "[",
+                        "]",
+                        "*",
+                        "|",
+                        "#",
+                    },
+                    {"ID"});
+            }
 
-        template <class Reader>
-        MergeErr parse(Reader& r) {
-            MergeRule<std::string> rule;
-            rule.oneline_comment = "#";
-            rule.string_symbol[0].symbol = '"';
-            rule.string_symbol[0];
-            return parser.ReadAndMerge(r, rule);
-        }
-    };
+            template <class Reader>
+            MergeErr parse(Reader& r) {
+                MergeRule<std::string> rule;
+                rule.oneline_comment = "#";
+                rule.string_symbol[0].symbol = '"';
+                rule.string_symbol[0];
+                return parser.ReadAndMerge(r, rule);
+            }
+        };
+
+        struct TokenReader : TokenReaderBase<std::string> {
+            using TokenReaderBase<std::string>::TokenReaderBase;
+
+            bool is_IgnoreSymbol() override {
+            }
+        };
+    }  // namespace syntax
 }  // namespace binred
