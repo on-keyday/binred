@@ -8,6 +8,7 @@
 #pragma once
 
 #include "../parser.h"
+#include "../parse_tree.h"
 
 #include <vector>
 
@@ -18,5 +19,32 @@ namespace binred {
     };
 
     struct SyntaxC {
+        using Parser = TokenParser<std::vector<std::string>, std::string>;
+        Parser parser;
+        SyntaxC() {
+            parser.SetSymbolAndKeyWord(
+                {
+                    "\"",
+                    "'",
+                    "`",
+                    ":=",
+                    "?",
+                    "[",
+                    "]",
+                    "*",
+                    "|",
+                    "#",
+                },
+                {"ID"});
+        }
+
+        template <class Reader>
+        MergeErr parse(Reader& r) {
+            MergeRule<std::string> rule;
+            rule.oneline_comment = "#";
+            rule.string_symbol[0].symbol = '"';
+            rule.string_symbol[0];
+            return parser.ReadAndMerge(r, rule);
+        }
     };
 }  // namespace binred

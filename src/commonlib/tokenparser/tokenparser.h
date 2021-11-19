@@ -318,5 +318,58 @@ namespace PROJECT_NAME {
                 return roottoken.get_next();
             }
         };
+
+        template <class String>
+        struct TokenReaderBase {
+            std::shared_ptr<Token<String>> root;
+            std::shared_ptr<Token<String>> current;
+            TokenReaderBase() {}
+
+            TokenReaderBase(std::shared_ptr<Token<String>> tok)
+                : root(tok), current(tok) {}
+
+           protected:
+            virtual bool is_IgnoreSymbol() {
+                return false;
+            }
+
+           public:
+            bool is_EOF() {
+                return current == nullptr;
+            }
+
+            void SeekRoot() {
+                current = root;
+            }
+
+            bool Consume() {
+                if (current) {
+                    current = current->get_next();
+                    return true;
+                }
+                return false;
+            }
+
+            std::shared_ptr<Token<String>> Read() {
+                while (current &&
+                       (current->is_nodisplay() ||
+                        is_IgnoreSymbol() ||
+                        current->is_(TokenKind::comments))) {
+                    current = current->get_next();
+                }
+                return current;
+            }
+
+            std::shared_ptr<Token<String>> ConsumeRead() {
+                if (!Consume()) {
+                    return nullptr;
+                }
+                return Read();
+            }
+
+            std::shared_ptr<Token<String>> Get() {
+                return current;
+            }
+        };
     }  // namespace tokenparser
 }  // namespace PROJECT_NAME

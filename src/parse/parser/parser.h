@@ -121,71 +121,43 @@ namespace binred {
         unimplemented,
     };
 
-    struct TokenReader {
-        std::shared_ptr<token_t> root;
-        std::shared_ptr<token_t> current;
+    struct TokenReader : TokenReaderBase<std::string> {
+        //std::shared_ptr<token_t> root;
+        //std::shared_ptr<token_t> current;
         ErrorCode code = ErrorCode::none;
         const char* additional = nullptr;
 
-        TokenReader() {}
-
-        TokenReader(std::shared_ptr<token_t> tok)
-            : root(tok), current(tok) {}
-
-        bool is_EOF() {
-            return current == nullptr;
-        }
-
-        void SeekRoot() {
-            current = root;
-        }
+        using TokenReaderBase<std::string>::TokenReaderBase;
 
         void SetError(ErrorCode code, const char* addtional = nullptr) {
             this->code = code;
             this->additional = addtional;
         }
 
-        std::shared_ptr<token_t> Read() {
-            while (current &&
-                   (current->is_nodisplay() ||
-                    current->has_("/*") || current->has_("*/") || current->has_("//") ||
-                    current->is_(TokenKind::comments))) {
-                current = current->get_next();
-            }
-            return current;
+        bool is_IgnoreSymbol() override {
+            return current->has_("/*") || current->has_("*/") || current->has_("//");
         }
 
         std::shared_ptr<token_t> ReadorEOF() {
-            auto ret = Read();
+            auto ret = this->Read();
             if (!ret) {
                 SetError(ErrorCode::unexpected_EOF);
             }
             return ret;
         }
 
-        bool Consume() {
-            if (current) {
-                current = current->get_next();
-                return true;
-            }
-            return false;
-        }
-
         std::shared_ptr<token_t> ConsumeReadorEOF() {
-            if (!Consume()) {
+            auto ret = this->ConsumeRead();
+            if (!ret) {
                 SetError(ErrorCode::unexpected_EOF);
-                return nullptr;
             }
-            return ReadorEOF();
+            return ret;
         }
 
         std::shared_ptr<token_t> GetorEOF() {
             if (!current) {
                 SetError(ErrorCode::unexpected_EOF);
             }
-            return current;
-        }
-        std::shared_ptr<token_t> Get() {
             return current;
         }
     };

@@ -47,6 +47,43 @@ namespace binred {
         return true;
     }
 
+    bool read_string(TokenReader& r, std::string& str) {
+        auto e = r.ReadorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->is_(TokenKind::symbols)) {
+            r.SetError(ErrorCode::expect_symbol);
+            return false;
+        }
+        if (!e->has_("\"") && !e->has_("'") && !e->has_("`")) {
+            r.SetError(ErrorCode::unexpected_symbol, "\" or ' or `");
+            return false;
+        }
+        auto first = e;
+        r.Consume();
+        e = r.GetorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->is_(TokenKind::comments)) {
+            r.SetError(ErrorCode::expect_primary);
+            return false;
+        }
+        str = e->to_string();
+        r.Consume();
+        e = r.GetorEOF();
+        if (!e) {
+            return false;
+        }
+        if (!e->has_(first->to_string())) {
+            r.SetError(ErrorCode::unexpected_symbol, "\" or ' or `");
+            return false;
+        }
+        r.Consume();
+        return true;
+    }
+
     std::shared_ptr<Expr> binary(TokenReader& r, Tree& t, Record& mep);
 
     std::shared_ptr<Expr> primary(TokenReader& r, Tree& t, Record& mep) {
