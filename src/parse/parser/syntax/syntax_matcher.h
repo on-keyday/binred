@@ -81,7 +81,7 @@ namespace binred {
                 auto res = parse_on_vec(cr, found->second);
                 if (res > 0) {
                     if (r.current == cr.current) {
-                        p.errmsg = "detect infinity loop.please fix definitions especially around ? or *";
+                        p.errmsg = "infinity loop detected. please fix definitions especially around ? or *";
                         return -1;
                     }
                     r.current = cr.current;
