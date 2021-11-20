@@ -14,6 +14,7 @@
 
 namespace binred {
     namespace syntax {
+        using Parser = TokenParser<std::vector<std::string>, std::string>;
         enum class SyntaxType {
             literal,
             ref,
@@ -50,11 +51,24 @@ namespace binred {
             }
         };
 
-        struct ReadSyntax {
+        struct MakeSyntaxParser {
             TokenReader r;
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             std::map<std::string, holder_t> syntax;
             std::string errmsg;
+            Parser parser;
+            std::set<std::string> already_found;
+
+            bool is_symbol(const std::string& str) {
+                for (auto& c : str) {
+                    auto s = (std::uint8_t)c;
+                    if (std::isgraph(s) && !std::isalnum(s)) {
+                        continue;
+                    }
+                    return false;
+                }
+                return true;
+            }
 
             bool read_syntaxline(holder_t& stx, bool bracket = false) {
                 while (true) {
@@ -90,6 +104,14 @@ namespace binred {
                             return false;
                         }
                         r.Consume();
+                        if (auto found = already_found.insert(ptr->token->to_string()); found.second) {
+                            if (is_symbol(*found.first)) {
+                                parser.GetSymbols().Register(*found.first);
+                            }
+                            else {
+                                parser.GetSymbols().Register(*found.first);
+                            }
+                        }
                     }
                     else if (e->is_(TokenKind::keyword)) {
                         ptr = std::make_shared<Syntax>(SyntaxType::keyword);
@@ -207,12 +229,21 @@ namespace binred {
                         return false;
                     }
                 }
+                auto& keywords = parser.GetKeyWords().reg;
+                auto& symbols = parser.GetSymbols().reg;
+                auto sorter = [](const std::string& a, const std::string& b) {
+                    if (a.size() > b.size()) {
+                        return true;
+                    }
+                    return a > b;
+                };
+                std::sort(keywords.begin(), keywords.end(), sorter);
+                std::sort(symbols.begin(), symbols.end(), sorter);
                 return true;
             }
         };
 
         struct SyntaxC {
-            using Parser = TokenParser<std::vector<std::string>, std::string>;
             Parser parser;
             SyntaxC() {
                 parser.SetSymbolAndKeyWord(
@@ -250,7 +281,7 @@ namespace binred {
             }
 
             auto get_compiler() {
-                return ReadSyntax{get_reader()};
+                return MakeSyntaxParser{get_reader()};
             }
         };
     }  // namespace syntax
