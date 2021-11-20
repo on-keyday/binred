@@ -177,7 +177,7 @@ namespace binred {
                     }
                 }
                 else {
-                    if (str[allowed] == 'e' || str[allowed] == 'E') {
+                    if (str[allowed] != 'e' && str[allowed] != 'E') {
                         p.errmsg = "invalid float format. token is " + str;
                         return false;
                     }
