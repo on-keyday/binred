@@ -67,8 +67,9 @@ namespace binred {
                 f = new Impl(std::forward<F>(f));
             }
 
-            Ret operator()(Args&&... args) const {
-                return (*f)(std::forward<Args>(args)...);
+            template <class... CArg>
+            Ret operator()(CArg&&... args) const {
+                return (*f)(std::forward<CArg>(args)...);
             }
 
             ~Callback() {

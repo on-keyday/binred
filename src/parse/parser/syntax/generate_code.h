@@ -22,7 +22,14 @@ namespace binred {
         struct Matching {
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             SyntaxParser p;
-            Callback<void,std::string&> cb;
+            Callback<void, std::string&, std::string&, bool> cb;
+            std::string scope;
+
+            void callback(std::string& token, bool on_error) {
+                if (cb) {
+                    cb(scope, token, std::move(on_error));
+                }
+            }
 
             int parse_literal(TokenReader& r, std::shared_ptr<Syntax>& v) {
                 auto e = r.ReadorEOF();
@@ -392,6 +399,7 @@ namespace binred {
                     p.errmsg = "need ROOT syntax element";
                     return false;
                 }
+                scope = "ROOT";
                 auto r = p.get_reader();
                 return parse_on_vec(r, found->second);
             }
