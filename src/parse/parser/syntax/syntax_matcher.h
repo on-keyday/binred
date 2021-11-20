@@ -418,6 +418,7 @@ namespace binred {
                 if (res > 0) {
                     p.errmsg.clear();
                 }
+                return res;
             }
         };
     }  // namespace syntax
