@@ -83,9 +83,9 @@ namespace binred {
                 if (res > 0) {
                     r.current = cr.current;
                 }
+                callback(scope, "LEAVE", false);
                 scope = tmp;
                 fullscope = tmp2;
-                callback(tmp, "LEAVE", false);
                 return res;
             }
 
