@@ -139,6 +139,7 @@ namespace binred {
                         e = r.Read();
                         if (e && e->has_("$")) {
                             tmp->once_each = true;
+                            r.Consume();
                         }
                         ptr = tmp;
                     }
