@@ -109,7 +109,7 @@ namespace binred {
                                 parser.GetSymbols().Register(*found.first);
                             }
                             else {
-                                parser.GetSymbols().Register(*found.first);
+                                parser.GetKeyWords().Register(*found.first);
                             }
                         }
                     }
