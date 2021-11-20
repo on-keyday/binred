@@ -64,7 +64,7 @@ namespace binred {
 
             template <class F>
             Callback(F&& f) {
-                fn = new Impl<F>(std::forward<F>(f));
+                fn = new Impl<std::decay_t<F>>(std::forward<std::decay_t<F>>(f));
             }
 
             template <class... CArg>
