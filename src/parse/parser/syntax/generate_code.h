@@ -188,6 +188,8 @@ namespace binred {
                         }
                     }
                 }
+                if (str.size()) {
+                }
                 check_int_str(str, i, base, allowed);
             }
 
