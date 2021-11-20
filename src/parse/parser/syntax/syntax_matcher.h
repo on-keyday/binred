@@ -306,6 +306,34 @@ namespace binred {
                         return res;
                     }
                 }
+                else if (v->token->has_("STRING")) {
+                    auto e = cr.ReadorEOF();
+                    if (!e) {
+                        p.errmsg = "unexpected EOF. expect string";
+                        return 0;
+                    }
+                    if (!e->has_("\"") && !e->has_("'") && !e->has_("`")) {
+                        p.errmsg = "expected string but token is " + e->to_string();
+                        return 0;
+                    }
+                    auto start = e->to_string();
+                    e = cr.ConsumeGetorEOF();
+                    if (!e) {
+                        p.errmsg = "unexpected EOF. expect string";
+                        return 0;
+                    }
+                    auto value = e->to_string();
+                    e = cr.ConsumeGetorEOF();
+                    if (!e) {
+                        p.errmsg = "unexpected EOF. expect end of string " + start;
+                        return 0;
+                    }
+                    if (!e->has_(start)) {
+                        p.errmsg = "expect " + start + " but token is " + e->to_string();
+                    }
+                    callback(value, "STRING", false);
+                    cr.Consume();
+                }
                 else {
                     p.errmsg = "unimplemented " + v->token->to_string();
                     return -1;
