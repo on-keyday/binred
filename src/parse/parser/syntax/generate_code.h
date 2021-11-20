@@ -126,11 +126,10 @@ namespace binred {
             }
 
             int parse_float(TokenReader& r) {
-                std::string str;
                 auto cr = r.FromCurrent();
                 FloatReadPoint pt;
                 get_floatpoint(cr, pt);
-                if (str.size() == 0) {
+                if (pt.str.size() == 0) {
                     p.errmsg = "expected number but not";
                     return 0;
                 }
@@ -140,17 +139,17 @@ namespace binred {
                     p.errmsg = "invalid float number format";
                     return 0;
                 }
-                if (str.starts_with("0x") || str.starts_with("0X")) {
-                    if (str.size() >= 3 && str[2] == '.' && !pt.afterdot) {
-                        p.errmsg = "invalid hex float fromat. token is " + str;
+                if (pt.str.starts_with("0x") || pt.str.starts_with("0X")) {
+                    if (pt.str.size() >= 3 && pt.str[2] == '.' && !pt.afterdot) {
+                        p.errmsg = "invalid hex float fromat. token is " + pt.str;
                         return 0;
                     }
                     base = 16;
                     i = 2;
                 }
                 int allowed = false;
-                check_int_str(str, i, base, allowed);
-                if (str.size() == allowed) {
+                check_int_str(pt.str, i, base, allowed);
+                if (pt.str.size() == allowed) {
                     if (!pt.beforedot || pt.dot || pt.sign) {
                         p.errmsg = "parser is broken";
                         return -1;
@@ -158,15 +157,15 @@ namespace binred {
                     r.current = pt.beforedot->get_next();
                     return 1;
                 }
-                if (str[allowed] == '.') {
+                if (pt.str[allowed] == '.') {
                     if (!pt.dot) {
                         p.errmsg = "parser is broken";
                         return -1;
                     }
                     i = allowed + 1;
                 }
-                check_int_str(str, i, base, allowed);
-                if (str.size() == allowed) {
+                check_int_str(pt.str, i, base, allowed);
+                if (pt.str.size() == allowed) {
                     if (pt.sign) {
                         p.errmsg = "parser is broken";
                         return -1;
@@ -184,20 +183,20 @@ namespace binred {
                     return 1;
                 }
                 if (base == 16) {
-                    if (str[allowed] != 'p' && str[allowed] != 'P') {
-                        p.errmsg = "invalid hex float format. token is " + str;
+                    if (pt.str[allowed] != 'p' && pt.str[allowed] != 'P') {
+                        p.errmsg = "invalid hex float format. token is " + pt.str;
                         return 0;
                     }
                 }
                 else {
-                    if (str[allowed] != 'e' && str[allowed] != 'E') {
-                        p.errmsg = "invalid float format. token is " + str;
+                    if (pt.str[allowed] != 'e' && pt.str[allowed] != 'E') {
+                        p.errmsg = "invalid float format. token is " + pt.str;
                         return 0;
                     }
                 }
                 i = allowed + 1;
-                if (str.size() > i) {
-                    if (str[i] == '+' || str[i] == '-') {
+                if (pt.str.size() > i) {
+                    if (pt.str[i] == '+' || pt.str[i] == '-') {
                         if (!pt.sign) {
                             p.errmsg = "parser is broken";
                             return -1;
@@ -205,13 +204,13 @@ namespace binred {
                         i++;
                     }
                 }
-                if (str.size() <= i) {
-                    p.errmsg = "invalid float format. token is " + str;
+                if (pt.str.size() <= i) {
+                    p.errmsg = "invalid float format. token is " + pt.str;
                     return 0;
                 }
-                check_int_str(str, i, 10, allowed);
-                if (str.size() != allowed) {
-                    p.errmsg = "invalid float format. token is " + str;
+                check_int_str(pt.str, i, 10, allowed);
+                if (pt.str.size() != allowed) {
+                    p.errmsg = "invalid float format. token is " + pt.str;
                     return 0;
                 }
                 if (pt.aftersign) {
@@ -276,7 +275,7 @@ namespace binred {
                     cr.Consume();
                 }
                 else if (v->token->has_("NUMBER")) {
-                    if (auto res = parse_float(r); res <= 0) {
+                    if (auto res = parse_float(cr); res <= 0) {
                         return res;
                     }
                 }
