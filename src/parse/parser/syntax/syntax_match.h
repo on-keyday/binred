@@ -110,7 +110,7 @@ namespace binred {
                             if (!read_syntaxline(holder, true)) {
                                 return false;
                             }
-                            if (holder.size() != 0) {
+                            if (holder.size() == 0) {
                                 errmsg = "need more than one syntax element";
                                 return false;
                             }
