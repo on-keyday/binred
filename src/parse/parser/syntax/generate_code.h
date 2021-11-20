@@ -316,6 +316,7 @@ namespace binred {
                                         v)) {
                                 return -1;
                             }
+                            break;
                         }
                         case SyntaxType::ref: {
                             if (!call_v([this](auto& r, auto& v) {
