@@ -60,7 +60,7 @@ namespace binred {
                     return -1;
                 }
                 auto cr = r.FromCurrent();
-                auto res = parse_on_vec(r, found->second);
+                auto res = parse_on_vec(cr, found->second);
                 if (res > 0) {
                     r.current = cr.current;
                 }
@@ -367,7 +367,8 @@ namespace binred {
                             break;
                         }
                         default:
-                            break;
+                            p.errmsg = "unimplemented";
+                            return -1;
                     }
                 }
                 return 1;
