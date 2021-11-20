@@ -7,6 +7,7 @@
 
 #pragma once
 #include "syntax_match.h"
+#include "callback.h"
 namespace binred {
     namespace syntax {
         struct FloatReadPoint {
@@ -21,6 +22,7 @@ namespace binred {
         struct Matching {
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             SyntaxParser p;
+            Callback<void,std::string&> cb;
 
             int parse_literal(TokenReader& r, std::shared_ptr<Syntax>& v) {
                 auto e = r.ReadorEOF();
