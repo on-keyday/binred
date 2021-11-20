@@ -73,7 +73,10 @@ namespace binred {
                 auto tmp = scope;
                 auto tmp2 = fullscope;
                 scope = found->first;
-                fullscope += "::" + scope;
+                if (fullscope.size()) {
+                    fullscope += "::";
+                }
+                fullscope += scope;
                 auto cr = r.FromCurrent();
                 auto res = parse_on_vec(cr, found->second);
                 if (res > 0) {
@@ -412,7 +415,7 @@ namespace binred {
                     return false;
                 }
                 scope = "ROOT";
-                fullscope = "ROOT";
+                fullscope.clear();
                 auto r = p.get_reader();
                 auto res = parse_on_vec(r, found->second);
                 if (res > 0) {
