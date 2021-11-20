@@ -411,7 +411,7 @@ namespace binred {
                     return false;
                 }
                 scope = "ROOT";
-                fullscope = "::ROOT";
+                fullscope = "ROOT";
                 auto r = p.get_reader();
                 return parse_on_vec(r, found->second);
             }
