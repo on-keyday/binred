@@ -22,8 +22,9 @@ namespace binred {
         struct Matching {
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             SyntaxParser p;
-            Callback<void, const std::string&, const std::string&, const std::string&, bool> cb;
+            Callback<void, const std::string&, const std::string&, const std::string&, const std::string&, bool> cb;
             std::string scope;
+            std::string fullscope;
 
             void callback(const std::string& token, const std::string& elm, bool on_error) {
                 if (cb) {
@@ -70,13 +71,16 @@ namespace binred {
                     return -1;
                 }
                 auto tmp = scope;
+                auto tmp2 = fullscope;
                 scope = found->first;
+                fullscope += "::" + scope;
                 auto cr = r.FromCurrent();
                 auto res = parse_on_vec(cr, found->second);
                 if (res > 0) {
                     r.current = cr.current;
                 }
                 scope = tmp;
+                fullscope = tmp2;
                 return res;
             }
 
@@ -407,6 +411,7 @@ namespace binred {
                     return false;
                 }
                 scope = "ROOT";
+                fullscope = "::ROOT";
                 auto r = p.get_reader();
                 return parse_on_vec(r, found->second);
             }

@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
         m.p.parse(stxr);
     }
     m.cb = [&](auto& scope, auto& elm, auto& tok, bool) {
-        std::cout << scope << ":" << elm << ":" << tok;
+        std::cout << scope << ":" << elm << ":" << tok << "\n";
     };
     m.parse_follow_syntax();
 }
