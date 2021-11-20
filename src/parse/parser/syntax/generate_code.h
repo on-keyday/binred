@@ -28,7 +28,7 @@ namespace binred {
 
             void callback(const std::string& token, const std::string& elm, bool on_error) {
                 if (cb) {
-                    cb(scope, elm, token, std::move(on_error));
+                    cb(fullscope, scope, elm, token, std::move(on_error));
                 }
             }
 
