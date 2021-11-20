@@ -136,5 +136,8 @@ int main(int argc, char** argv) {
         commonlib2::Reader stxr(commonlib2::FileReader("./test_syntax.txt"));
         m.p.parse(stxr);
     }
+    m.cb = [&](auto& scope, auto& elm, auto& tok, bool) {
+        std::cout << scope << ":" << elm << ":" << tok;
+    };
     m.parse_follow_syntax();
 }

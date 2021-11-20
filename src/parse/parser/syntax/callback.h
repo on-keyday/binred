@@ -18,12 +18,12 @@ namespace binred {
                 virtual ~Base() {}
             };
 
-            Base* f = nullptr;
+            Base* fn = nullptr;
 
             DEFINE_ENABLE_IF_EXPR_VALID(return_Ret, static_cast<Ret>(std::declval<T>()(std::declval<Args>()...)));
 
             template <class F, bool ret_void = std::disjunction_v<std::is_same<Ret, void>, std::negation<return_Ret<F>>>>
-            struct Impl {
+            struct Impl : Base {
                 F f;
                 Impl(F&& in)
                     : f(std::forward<F>(in)) {}
@@ -33,7 +33,7 @@ namespace binred {
             };
 
             template <class F>
-            struct Impl<F, true> {
+            struct Impl<F, true> : Base {
                 F f;
                 Impl(F&& in)
                     : f(std::forward<F>(in)) {}
@@ -47,33 +47,33 @@ namespace binred {
             constexpr Callback() {}
 
             constexpr operator bool() const {
-                return f != nullptr;
+                return fn != nullptr;
             }
 
             Callback(Callback&& in) noexcept {
-                f = in.f;
+                fn = in.f;
                 in.f = nullptr;
             }
 
             Callback& operator=(Callback&& in) noexcept {
-                delete f;
-                f = in.f;
-                in.f = nullptr;
+                delete fn;
+                fn = in.fn;
+                in.fn = nullptr;
                 return *this;
             }
 
             template <class F>
             Callback(F&& f) {
-                f = new Impl(std::forward<F>(f));
+                fn = new Impl<F>(std::forward<F>(f));
             }
 
             template <class... CArg>
             Ret operator()(CArg&&... args) const {
-                return (*f)(std::forward<CArg>(args)...);
+                return (*fn)(std::forward<CArg>(args)...);
             }
 
             ~Callback() {
-                delete f;
+                delete fn;
             }
         };
 

@@ -22,12 +22,12 @@ namespace binred {
         struct Matching {
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             SyntaxParser p;
-            Callback<void, const std::string&, const std::string&, bool> cb;
+            Callback<void, const std::string&, const std::string&, const std::string&, bool> cb;
             std::string scope;
 
-            void callback(const std::string& token, bool on_error) {
+            void callback(const std::string& token, const std::string& elm, bool on_error) {
                 if (cb) {
-                    cb(scope, token, std::move(on_error));
+                    cb(scope, elm, token, std::move(on_error));
                 }
             }
 
@@ -42,7 +42,7 @@ namespace binred {
                     p.errmsg = "expected " + value + " but " + e->to_string();
                     return 0;
                 }
-                callback(value, false);
+                callback(value, e->is_(TokenKind::symbols) ? "SYMBOL" : "KEYWORD", false);
                 r.Consume();
                 return 1;
             }
@@ -69,11 +69,14 @@ namespace binred {
                     p.errmsg = "syntax " + v->token->to_string() + " is not defined";
                     return -1;
                 }
+                auto tmp = scope;
+                scope = found->first;
                 auto cr = r.FromCurrent();
                 auto res = parse_on_vec(cr, found->second);
                 if (res > 0) {
                     r.current = cr.current;
                 }
+                scope = tmp;
                 return res;
             }
 
@@ -236,6 +239,7 @@ namespace binred {
                     p.errmsg = "parser is broken";
                     return -1;
                 }
+                callback(pt.str, "NUMBER", false);
                 return true;
             }
 
@@ -267,6 +271,7 @@ namespace binred {
                         p.errmsg = "expect identifier but token is " + e->to_string();
                         return 0;
                     }
+                    callback(e->to_string(), "ID", false);
                     cr.Consume();
                 }
                 else if (v->token->has_("INTEGER")) {
@@ -282,6 +287,7 @@ namespace binred {
                     if (!check_integer(e)) {
                         return -1;
                     }
+                    callback(e->to_string(), "INTEGER", false);
                     cr.Consume();
                 }
                 else if (v->token->has_("NUMBER")) {
