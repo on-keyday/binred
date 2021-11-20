@@ -171,26 +171,49 @@ namespace binred {
                     return true;
                 }
                 if (base == 16) {
-                    if (str[allowed] == 'p' || str[allowed] == 'P') {
-                        i = allowed + 1;
+                    if (str[allowed] != 'p' && str[allowed] != 'P') {
+                        p.errmsg = "invalid hex float format. token is " + str;
+                        return false;
                     }
                 }
                 else {
                     if (str[allowed] == 'e' || str[allowed] == 'E') {
-                        i = allowed + 1;
+                        p.errmsg = "invalid float format. token is " + str;
+                        return false;
                     }
                 }
-                if (i == allowed + 1 && str.size() > i) {
+                i = allowed + 1;
+                if (str.size() > i) {
                     if (str[i] == '+' || str[i] == '-') {
                         if (!sign) {
                             p.errmsg = "parser is broken";
                             return false;
                         }
+                        i++;
                     }
                 }
-                if (str.size()) {
+                if (str.size() <= i) {
+                    p.errmsg = "invalid float format. token is " + str;
+                    return false;
                 }
-                check_int_str(str, i, base, allowed);
+                check_int_str(str, i, 10, allowed);
+                if (str.size() != allowed) {
+                    p.errmsg = "invalid float format. token is " + str;
+                    return false;
+                }
+                if (aftersign) {
+                    r.current = aftersign->get_next();
+                }
+                else if (afterdot) {
+                    r.current = afterdot->get_next();
+                }
+                else if (beforedot) {
+                    r.current = beforedot->get_next();
+                }
+                else {
+                    p.errmsg = "parser is broken";
+                }
+                return true;
             }
 
             int parse_keyword(TokenReader& r, std::shared_ptr<Syntax>& v) {
