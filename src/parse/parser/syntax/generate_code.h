@@ -9,6 +9,15 @@
 #include "syntax_match.h"
 namespace binred {
     namespace syntax {
+        struct FloatReadPoint {
+            std::string str;
+            std::shared_ptr<token_t> beforedot;
+            std::shared_ptr<token_t> dot;
+            std::shared_ptr<token_t> afterdot;
+            std::shared_ptr<token_t> sign;
+            std::shared_ptr<token_t> aftersign;
+        };
+
         struct Matching {
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             SyntaxParser p;
@@ -77,60 +86,64 @@ namespace binred {
                 return true;
             }
 
-            bool parse_float(TokenReader& r, std::shared_ptr<Syntax>& v) {
-                std::string str;
-                auto cr = r.FromCurrent();
-                std::shared_ptr<token_t> beforedot, dot, afterdot, sign, aftersign;
+            void get_floatpoint(TokenReader& cr, FloatReadPoint& pt) {
                 cr.Read();
                 while (true) {
                     auto e = cr.Get();
                     if (!e) {
                         break;
                     }
-                    if (!dot && !sign && e->has_(".")) {
-                        dot = e;
-                        str += e->to_string();
+                    if (!pt.dot && !pt.sign && e->has_(".")) {
+                        pt.dot = e;
+                        pt.str += e->to_string();
                         cr.Consume();
                         continue;
                     }
-                    if (!sign && (e->has_("+") || e->has_("-"))) {
-                        sign = e;
-                        str += e->to_string();
+                    if (!pt.sign && (e->has_("+") || e->has_("-"))) {
+                        pt.sign = e;
+                        pt.str += e->to_string();
                         cr.Consume();
                         continue;
                     }
                     if (!e->is_(TokenKind::identifiers)) {
                         break;
                     }
-                    if (!dot && !sign && !beforedot) {
-                        beforedot = e;
+                    if (!pt.dot && !pt.sign && !pt.beforedot) {
+                        pt.beforedot = e;
                     }
-                    else if (dot && !afterdot) {
-                        afterdot = e;
+                    else if (pt.dot && !pt.afterdot) {
+                        pt.afterdot = e;
                     }
-                    else if (sign && !aftersign) {
-                        aftersign = e;
+                    else if (pt.sign && !pt.aftersign) {
+                        pt.aftersign = e;
                     }
                     else {
                         break;
                     }
-                    str += e->to_string();
+                    pt.str += e->to_string();
                     cr.Consume();
                 }
+            }
+
+            int parse_float(TokenReader& r) {
+                std::string str;
+                auto cr = r.FromCurrent();
+                FloatReadPoint pt;
+                get_floatpoint(cr, pt);
                 if (str.size() == 0) {
                     p.errmsg = "expected number but not";
-                    return false;
+                    return 0;
                 }
                 int base = 10;
                 int i = 0;
-                if (dot && !beforedot && !afterdot) {
+                if (pt.dot && !pt.beforedot && !pt.afterdot) {
                     p.errmsg = "invalid float number format";
-                    return false;
+                    return 0;
                 }
                 if (str.starts_with("0x") || str.starts_with("0X")) {
-                    if (str.size() >= 3 && str[2] == '.' && !afterdot) {
+                    if (str.size() >= 3 && str[2] == '.' && !pt.afterdot) {
                         p.errmsg = "invalid hex float fromat. token is " + str;
-                        return false;
+                        return 0;
                     }
                     base = 16;
                     i = 2;
@@ -138,80 +151,81 @@ namespace binred {
                 int allowed = false;
                 check_int_str(str, i, base, allowed);
                 if (str.size() == allowed) {
-                    if (!beforedot || dot || sign) {
+                    if (!pt.beforedot || pt.dot || pt.sign) {
                         p.errmsg = "parser is broken";
-                        return false;
+                        return -1;
                     }
-                    r.current = beforedot->get_next();
-                    return true;
+                    r.current = pt.beforedot->get_next();
+                    return 1;
                 }
                 if (str[allowed] == '.') {
-                    if (!dot) {
+                    if (!pt.dot) {
                         p.errmsg = "parser is broken";
-                        return false;
+                        return -1;
                     }
                     i = allowed + 1;
                 }
                 check_int_str(str, i, base, allowed);
                 if (str.size() == allowed) {
-                    if (sign) {
+                    if (pt.sign) {
                         p.errmsg = "parser is broken";
-                        return false;
+                        return -1;
                     }
-                    if (afterdot) {
-                        r.current = afterdot->get_next();
+                    if (pt.afterdot) {
+                        r.current = pt.afterdot->get_next();
                     }
-                    else if (dot) {
-                        r.current = dot->get_next();
+                    else if (pt.dot) {
+                        r.current = pt.dot->get_next();
                     }
                     else {
                         p.errmsg = "parser is broken";
-                        return false;
+                        return -1;
                     }
-                    return true;
+                    return 1;
                 }
                 if (base == 16) {
                     if (str[allowed] != 'p' && str[allowed] != 'P') {
                         p.errmsg = "invalid hex float format. token is " + str;
-                        return false;
+                        return 0;
                     }
                 }
                 else {
                     if (str[allowed] != 'e' && str[allowed] != 'E') {
                         p.errmsg = "invalid float format. token is " + str;
-                        return false;
+                        return 0;
                     }
                 }
                 i = allowed + 1;
                 if (str.size() > i) {
                     if (str[i] == '+' || str[i] == '-') {
-                        if (!sign) {
+                        if (!pt.sign) {
                             p.errmsg = "parser is broken";
-                            return false;
+                            return -1;
                         }
                         i++;
                     }
                 }
                 if (str.size() <= i) {
                     p.errmsg = "invalid float format. token is " + str;
-                    return false;
+                    return 0;
                 }
                 check_int_str(str, i, 10, allowed);
                 if (str.size() != allowed) {
                     p.errmsg = "invalid float format. token is " + str;
-                    return false;
+                    return 0;
                 }
-                if (aftersign) {
-                    r.current = aftersign->get_next();
+                if (pt.aftersign) {
+                    r.current = pt.aftersign->get_next();
                 }
-                else if (afterdot) {
-                    r.current = afterdot->get_next();
+                else if (pt.afterdot) {
+                    r.current = pt.afterdot->get_next();
                 }
-                else if (beforedot) {
-                    r.current = beforedot->get_next();
+                else if (pt.beforedot) {
+                    r.current = pt.beforedot->get_next();
                 }
                 else {
                     p.errmsg = "parser is broken";
+                    return -1;
                 }
                 return true;
             }
@@ -262,7 +276,9 @@ namespace binred {
                     cr.Consume();
                 }
                 else if (v->token->has_("NUMBER")) {
-                    parse_float(r, v);
+                    if (auto res = parse_float(r); res <= 0) {
+                        return res;
+                    }
                 }
                 else {
                     return -1;
