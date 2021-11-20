@@ -11,6 +11,7 @@
 #include "../parse_tree.h"
 
 #include <vector>
+#include <set>
 
 namespace binred {
     namespace syntax {
@@ -49,9 +50,15 @@ namespace binred {
                 }
                 return is_DefaultIgnore() || current->has_("#");
             }
+
+            TokenReader FromCurrent() {
+                TokenReader ret(current);
+                ret.igline = igline;
+                return ret;
+            }
         };
 
-        struct MakeSyntaxParser {
+        struct SyntaxParser {
             TokenReader r;
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             std::map<std::string, holder_t> syntax;
@@ -221,6 +228,13 @@ namespace binred {
             }
 
             bool operator()() {
+                already_found.clear();
+                errmsg.clear();
+                parser = Parser();
+                already_found.emplace(".");
+                already_found.emplace("+");
+                already_found.emplace("-");
+                parser.GetSymbols() = {".", "+", "-"};
                 while (true) {
                     if (!r.Read()) {
                         break;
@@ -232,14 +246,29 @@ namespace binred {
                 auto& keywords = parser.GetKeyWords().reg;
                 auto& symbols = parser.GetSymbols().reg;
                 auto sorter = [](const std::string& a, const std::string& b) {
-                    if (a.size() > b.size()) {
-                        return true;
+                    if (a > b) {
+                        if (a.size() > b.size()) {
+                            return true;
+                        }
+                        return false;
                     }
-                    return a > b;
+                    return false;
                 };
                 std::sort(keywords.begin(), keywords.end(), sorter);
                 std::sort(symbols.begin(), symbols.end(), sorter);
                 return true;
+            }
+
+            template <class Reader>
+            MergeErr parse(Reader& r) {
+                MergeRule<std::string> rule;
+                rule.oneline_comment = "#";
+                rule.string_symbol[0].symbol = '"';
+                return parser.ReadAndMerge(r, rule);
+            }
+
+            auto get_reader() {
+                return TokenReader(parser.GetParsed());
             }
         };
 
@@ -281,7 +310,7 @@ namespace binred {
             }
 
             auto get_compiler() {
-                return MakeSyntaxParser{get_reader()};
+                return SyntaxParser{get_reader()};
             }
         };
     }  // namespace syntax

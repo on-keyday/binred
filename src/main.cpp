@@ -14,7 +14,7 @@
 #include <fstream>
 #include <optmap.h>
 #include <subcommand.h>
-#include "parse/parser/syntax/syntax_match.h"
+#include "parse/parser/syntax/generate_code.h"
 
 void binred_test() {
     binred::TokenReader red;
@@ -124,8 +124,17 @@ int main(int argc, char** argv) {
     }
     //binred_test();
     binred::syntax::SyntaxC p;
-    commonlib2::Reader stxr(commonlib2::FileReader("./aboutCall.txt"));
-    p.parse(stxr);
+    binred::syntax::Matching m;
+    {
+        commonlib2::Reader stxr(commonlib2::FileReader("./aboutCall.txt"));
+        p.parse(stxr);
+    }
     auto compile = p.get_compiler();
     compile();
+    m.p = std::move(compile);
+    {
+        commonlib2::Reader stxr(commonlib2::FileReader("./test_syntax.txt"));
+        m.p.parse(stxr);
+    }
+    m.parse_follow_syntax();
 }
