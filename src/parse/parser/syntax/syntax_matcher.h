@@ -300,6 +300,7 @@ namespace binred {
                     }
                 }
                 else {
+                    p.errmsg = "unimplemented " + v->token->to_string();
                     return -1;
                 }
                 r.current = cr.current;
