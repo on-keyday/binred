@@ -414,7 +414,10 @@ namespace binred {
                 scope = "ROOT";
                 fullscope = "ROOT";
                 auto r = p.get_reader();
-                return parse_on_vec(r, found->second);
+                auto res = parse_on_vec(r, found->second);
+                if (res > 0) {
+                    p.errmsg.clear();
+                }
             }
         };
     }  // namespace syntax
