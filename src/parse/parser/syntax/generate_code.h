@@ -292,12 +292,12 @@ namespace binred {
                     while (true) {
                         if (auto res = f(r, v); res == 0) {
                             if (!repeating && !v->ifexists) {
-                                return false;
+                                return 0;
                             }
                             break;
                         }
                         else if (res < 0) {
-                            return false;
+                            return -1;
                         }
                         if (v->repeat) {
                             repeating = true;
@@ -305,65 +305,74 @@ namespace binred {
                         }
                         break;
                     }
-                    return true;
+                    return 1;
                 };
                 for (auto& v : vec) {
                     switch (v->type) {
                         case SyntaxType::literal: {
-                            if (!call_v([this](auto& r, auto& v) {
-                                    return parse_literal(r, v);
-                                },
-                                        v)) {
-                                return -1;
+                            if (auto e = call_v(
+                                    [this](auto& r, auto& v) {
+                                        return parse_literal(r, v);
+                                    },
+                                    v);
+                                e <= 0) {
+                                return e;
                             }
                             break;
                         }
                         case SyntaxType::ref: {
-                            if (!call_v([this](auto& r, auto& v) {
-                                    return parse_ref(r, v);
-                                },
-                                        v)) {
-                                return -1;
+                            if (auto e = call_v(
+                                    [this](auto& r, auto& v) {
+                                        return parse_ref(r, v);
+                                    },
+                                    v);
+                                e <= 0) {
+                                return e;
                             }
                             break;
                         }
                         case SyntaxType::or_: {
                             auto ptr = std::static_pointer_cast<OrSyntax>(v);
                             if (!ptr->once_each) {
-                                if (!call_v([&](auto& r, auto& v) {
-                                        int index = 0;
-                                        return parse_or(r, v, index);
-                                    },
-                                            ptr)) {
-                                    return -1;
+                                if (auto e = call_v(
+                                        [&](auto& r, auto& v) {
+                                            int index = 0;
+                                            return parse_or(r, v, index);
+                                        },
+                                        ptr);
+                                    e <= 0) {
+                                    return e;
                                 }
                             }
                             else {
                                 std::set<int> already_set;
-                                if (!call_v([&](auto& r, auto& v) {
-                                        int index = 0;
-                                        auto res = parse_or(r, v, index);
-                                        if (res > 0) {
-                                            if (!already_set.insert(index).second) {
-                                                p.errmsg = "index " + std::to_string(index) + " is already set";
-                                                return -1;
+                                if (auto e = call_v(
+                                        [&](auto& r, auto& v) {
+                                            int index = 0;
+                                            auto res = parse_or(r, v, index);
+                                            if (res > 0) {
+                                                if (!already_set.insert(index).second) {
+                                                    p.errmsg = "index " + std::to_string(index) + " is already set";
+                                                    return -1;
+                                                }
                                             }
-                                        }
-                                        return res;
-                                    },
-                                            ptr)) {
-                                    return -1;
+                                            return res;
+                                        },
+                                        ptr);
+                                    e <= 0) {
+                                    return e;
                                 }
-                                return true;
                             }
                             break;
                         }
                         case SyntaxType::keyword: {
-                            if (!call_v([this](auto& r, auto& v) {
-                                    return parse_keyword(r, v);
-                                },
-                                        v)) {
-                                return -1;
+                            if (auto e = call_v(
+                                    [this](auto& r, auto& v) {
+                                        return parse_keyword(r, v);
+                                    },
+                                    v);
+                                e <= 0) {
+                                return e;
                             }
                             break;
                         }
