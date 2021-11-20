@@ -73,7 +73,6 @@ namespace binred {
                 auto tmp = scope;
                 auto tmp2 = fullscope;
                 scope = found->first;
-                callback(scope, "ENTER", false);
                 if (fullscope.size()) {
                     fullscope += "::";
                 }
@@ -83,7 +82,6 @@ namespace binred {
                 if (res > 0) {
                     r.current = cr.current;
                 }
-                callback(scope, "LEAVE", false);
                 scope = tmp;
                 fullscope = tmp2;
                 return res;
