@@ -14,7 +14,7 @@
 #include <fstream>
 #include <optmap.h>
 #include <subcommand.h>
-#include "parse/parser/syntax/generate_code.h"
+#include "parse/parser/syntax/syntax_matcher.h"
 
 void binred_test() {
     binred::TokenReader red;
@@ -140,4 +140,5 @@ int main(int argc, char** argv) {
         std::cout << fullscope << "::" << elm << "::" << tok << "\n";
     };
     m.parse_follow_syntax();
+    std::cout << m.p.errmsg;
 }

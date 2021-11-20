@@ -6,7 +6,7 @@
 */
 
 #pragma once
-#include "syntax_match.h"
+#include "syntax_parser.h"
 #include "callback.h"
 namespace binred {
     namespace syntax {
@@ -289,7 +289,7 @@ namespace binred {
                         return 0;
                     }
                     if (!check_integer(e)) {
-                        return -1;
+                        return 0;
                     }
                     callback(e->to_string(), "INTEGER", false);
                     cr.Consume();
