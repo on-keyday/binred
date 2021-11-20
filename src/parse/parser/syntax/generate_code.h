@@ -370,6 +370,7 @@ namespace binred {
                             break;
                     }
                 }
+                return 1;
             }
 
             bool parse_follow_syntax() {
