@@ -22,10 +22,10 @@ namespace binred {
         struct Matching {
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             SyntaxParser p;
-            Callback<void, std::string&, std::string&, bool> cb;
+            Callback<void, const std::string&, const std::string&, bool> cb;
             std::string scope;
 
-            void callback(std::string& token, bool on_error) {
+            void callback(const std::string& token, bool on_error) {
                 if (cb) {
                     cb(scope, token, std::move(on_error));
                 }
@@ -42,6 +42,7 @@ namespace binred {
                     p.errmsg = "expected " + value + " but " + e->to_string();
                     return 0;
                 }
+                callback(value, false);
                 r.Consume();
                 return 1;
             }
