@@ -73,10 +73,10 @@ namespace binred {
                 auto tmp = scope;
                 auto tmp2 = fullscope;
                 scope = found->first;
+                callback(scope, "ENTER", false);
                 if (fullscope.size()) {
                     fullscope += "::";
                 }
-                callback(scope, "ENTER", false);
                 fullscope += scope;
                 auto cr = r.FromCurrent();
                 auto res = parse_on_vec(cr, found->second);
