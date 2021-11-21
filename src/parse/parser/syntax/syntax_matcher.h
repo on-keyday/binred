@@ -20,7 +20,7 @@ namespace binred {
         };
 
         struct MatchingContext {
-            friend struct Matching;
+            friend struct SyntaxMatching;
 
            private:
             std::vector<std::string> scope;
@@ -46,7 +46,7 @@ namespace binred {
             }
         };
 
-        struct Matching {
+        struct SyntaxMatching {
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             SyntaxParser p;
             Callback<void, const MatchingContext&> cb;

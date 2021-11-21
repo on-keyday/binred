@@ -275,9 +275,9 @@ namespace binred {
             }
         };
 
-        struct SyntaxC {
+        struct SyntaxParserMaker {
             Parser parser;
-            SyntaxC() {
+            SyntaxParserMaker() {
                 parser.SetSymbolAndKeyWord(
                     {
                         "\"",

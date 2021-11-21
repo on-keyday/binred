@@ -14,7 +14,7 @@
 #include <fstream>
 #include <optmap.h>
 #include <subcommand.h>
-#include "parse/parser/syntax/syntax_matcher.h"
+#include "parse/parser/syntax/syntax.h"
 
 void binred_test() {
     binred::TokenReader red;
@@ -123,23 +123,4 @@ int main(int argc, char** argv) {
         std::cout << "binred: error: " << msg << commonlib2::error_message(err.first);
     }
     //binred_test();
-    binred::syntax::SyntaxC p;
-    binred::syntax::Matching m;
-    {
-        commonlib2::Reader stxr(commonlib2::FileReader("./aboutCall.txt"));
-        p.parse(stxr);
-    }
-    auto compile = p.get_compiler();
-    compile();
-    m.p = std::move(compile);
-    {
-        commonlib2::Reader stxr(commonlib2::FileReader("./test_syntax.txt"));
-        m.p.parse(stxr);
-    }
-    m.cb = [&](const binred::syntax::MatchingContext& ctx) {
-        std::cout << ctx.current() << ":" << ctx.get_elm() << ":" << ctx.get_token()
-                  << "\n";
-    };
-    m.parse_follow_syntax();
-    std::cout << m.p.errmsg;
 }
