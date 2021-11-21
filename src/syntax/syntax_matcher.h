@@ -61,6 +61,10 @@ namespace binred {
             }
 
            public:
+            std::weak_ptr<token_t>& get_pos() {
+                return node;
+            }
+
             void set_errmsg(const std::string& v) {
                 *err = v;
             }
