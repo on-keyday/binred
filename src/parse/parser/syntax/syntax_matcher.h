@@ -49,6 +49,7 @@ namespace binred {
             }
 
             int parse_or(TokenReader& r, std::shared_ptr<OrSyntax>& v, int& idx) {
+                std::string errs;
                 for (auto i = 0; i < v->syntax.size(); i++) {
                     auto cr = r.FromCurrent();
                     auto res = parse_on_vec(cr, v->syntax[i]);
@@ -60,7 +61,9 @@ namespace binred {
                     else if (res < 0) {
                         return res;
                     }
+                    errs = p.errmsg + "\n";
                 }
+                p.errmsg = errs;
                 return 0;
             }
 
