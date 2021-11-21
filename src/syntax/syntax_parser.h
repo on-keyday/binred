@@ -239,7 +239,8 @@ namespace binred {
                 already_found.emplace(".");
                 already_found.emplace("+");
                 already_found.emplace("-");
-                parser.GetSymbols() = {".", "+", "-"};
+                already_found.emplace("\"");
+                parser.GetSymbols() = {".", "+", "-", "\""};
                 while (true) {
                     if (!r.Read()) {
                         break;
