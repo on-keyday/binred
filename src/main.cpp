@@ -15,6 +15,7 @@
 #include <optmap.h>
 #include <subcommand.h>
 #include "syntax/syntax.h"
+#include "syntax_rule/set_by_syntax.h"
 
 void binred_test() {
     binred::TokenReader red;

@@ -81,4 +81,7 @@ namespace binred {
             return true;
         }
     };
+
+    struct IfStmt {
+    };
 }  // namespace binred

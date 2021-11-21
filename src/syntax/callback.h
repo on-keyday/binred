@@ -101,6 +101,27 @@ namespace binred {
                 return reinterpret_cast<T*>(fn->get_rawptr());
             }
 
+           private:
+            template <class Base, class T, class... Other>
+            Base* find_derived() {
+                auto ret = get_rawfunc<T>();
+                if (ret) {
+                    return static_cast<Base*>(ret);
+                }
+                return find_derived<Base, Other...>();
+            }
+
+            template <class Base>
+            Base* find_derived() {
+                return nullptr;
+            }
+
+           public:
+            template <class Base, class... Derived>
+            Base* get_rawfunc() {
+                return find_derived<Base, Derived...>();
+            }
+
             ~Callback() {
                 delete fn;
             }

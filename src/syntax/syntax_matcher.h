@@ -393,7 +393,33 @@ namespace binred {
                     }
                     return true;
                 };
-                if (v->token->has_("ID")) {
+                if (v->token->has_("EOF")) {
+                    auto e = cr.Read();
+                    if (e) {
+                        p.errmsg = "expect EOF but token is " + e->to_string();
+                    }
+                    if (!callback(e, cr, e->to_string(), "EOF")) {
+                        return -1;
+                    }
+                }
+                else if (v->token->has_("EOL")) {
+                    cr.SetIgnoreLine(false);
+                    auto e = r.ReadorEOF();
+                    cr.SetIgnoreLine(true);
+                    if (!e) {
+                        p.errmsg = "unexpected EOF. expect EOL but not";
+                        return 0;
+                    }
+                    if (!e->is_(TokenKind::line)) {
+                        p.errmsg = "expect EOL but token is " + e->to_string();
+                        return 0;
+                    }
+                    if (!callback(e, cr, e->to_string(), "EOL")) {
+                        return -1;
+                    }
+                    cr.Consume();
+                }
+                else if (v->token->has_("ID")) {
                     auto e = cr.ReadorEOF();
                     if (!e) {
                         p.errmsg = "unexpected EOF. expect identifier";

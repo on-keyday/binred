@@ -14,7 +14,7 @@
 # エスケープシーケンスは無効(これもそのうち(略))
 # ROOTから解析が始まる
 
-ROOT:=GLOBALSTMT*
+ROOT:=SEXPR
 GLOBALSTMT:=[STRUCT|NAMESPACE]
 STRUCT:="struct" ID BASESTRUCT? "{" VARDEF?* "}"
 BASESTRUCT:= ":" VARDEF
@@ -36,3 +36,8 @@ IFSTMT:="if" EXPR [";" EXPR]? "{" STMT*? "}"
 RETURNSTMT:="return" EXPR
 FUNCCALL:="(" [EXPR ["," EXPR]*? ]?")"
 VARSTMT:="var" VARDEF
+
+
+#S式
+SEXPR:=[ID|"("SEXPR "." SEXPR ")"| SLIST]
+SLIST:="(" SEXPR SEXPR*? ")" 

@@ -294,6 +294,8 @@ namespace binred {
                         "INTEGER",
                         "NUMBER",
                         "STRING",
+                        "EOL",
+                        "EOF",
                     });
             }
 
