@@ -19,16 +19,48 @@ namespace binred {
             std::shared_ptr<token_t> aftersign;
         };
 
+        struct MatchingContext {
+            friend struct Matching;
+
+           private:
+            std::vector<std::string> scope;
+            std::string token;
+            std::string elm;
+            TokenReader* r;
+
+           public:
+            const std::string& current() const {
+                return scope[scope.size() - 1];
+            }
+
+            const TokenReader& get_reader() const {
+                return *r;
+            }
+
+            const std::string& get_token() const {
+                return token;
+            }
+
+            const std::string& get_elm() const {
+                return elm;
+            }
+        };
+
         struct Matching {
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             SyntaxParser p;
-            Callback<void, const std::string&, const std::string&, const std::string&, const std::string&, bool> cb;
-            std::string scope;
-            std::string fullscope;
+            Callback<void, const MatchingContext&> cb;
 
-            void callback(const std::string& token, const std::string& elm, bool on_error) {
+           private:
+            MatchingContext ctx;
+
+           public:
+            void callback(TokenReader& r, const std::string& token, const std::string& elm) {
                 if (cb) {
-                    cb(fullscope, scope, elm, token, std::move(on_error));
+                    ctx.token = token;
+                    ctx.elm = elm;
+                    ctx.r = &r;
+                    cb(ctx);
                 }
             }
 
@@ -43,7 +75,7 @@ namespace binred {
                     p.errmsg = "expected " + value + " but " + e->to_string();
                     return 0;
                 }
-                callback(value, e->is_(TokenKind::symbols) ? "SYMBOL" : "KEYWORD", false);
+                callback(r, value, e->is_(TokenKind::symbols) ? "SYMBOL" : "KEYWORD");
                 r.Consume();
                 return 1;
             }
@@ -73,13 +105,7 @@ namespace binred {
                     p.errmsg = "syntax " + v->token->to_string() + " is not defined";
                     return -1;
                 }
-                auto tmp = scope;
-                auto tmp2 = fullscope;
-                scope = found->first;
-                if (fullscope.size()) {
-                    fullscope += "::";
-                }
-                fullscope += scope;
+                ctx.scope.push_back(found->first);
                 auto cr = r.FromCurrent();
                 auto res = parse_on_vec(cr, found->second);
                 if (res > 0) {
@@ -89,8 +115,7 @@ namespace binred {
                     }
                     r.current = cr.current;
                 }
-                scope = tmp;
-                fullscope = tmp2;
+                ctx.scope.pop_back();
                 return res;
             }
 
@@ -253,7 +278,7 @@ namespace binred {
                     p.errmsg = "parser is broken";
                     return -1;
                 }
-                callback(pt.str, "NUMBER", false);
+                callback(r, pt.str, "NUMBER");
                 return true;
             }
 
@@ -285,7 +310,7 @@ namespace binred {
                         p.errmsg = "expect identifier but token is " + e->to_string();
                         return 0;
                     }
-                    callback(e->to_string(), "ID", false);
+                    callback(cr, e->to_string(), "ID");
                     cr.Consume();
                 }
                 else if (v->token->has_("INTEGER")) {
@@ -301,7 +326,7 @@ namespace binred {
                     if (!check_integer(e)) {
                         return 0;
                     }
-                    callback(e->to_string(), "INTEGER", false);
+                    callback(cr, e->to_string(), "INTEGER");
                     cr.Consume();
                 }
                 else if (v->token->has_("NUMBER")) {
@@ -334,7 +359,7 @@ namespace binred {
                     if (!e->has_(start)) {
                         p.errmsg = "expect " + start + " but token is " + e->to_string();
                     }
-                    callback(value, "STRING", false);
+                    callback(cr, value, "STRING");
                     cr.Consume();
                 }
                 else {
@@ -449,8 +474,8 @@ namespace binred {
                     p.errmsg = "need ROOT syntax element";
                     return false;
                 }
-                scope = "ROOT";
-                fullscope.clear();
+                ctx.scope.clear();
+                ctx.scope.push_back("ROOT");
                 auto r = p.get_reader();
                 auto res = parse_on_vec(r, found->second);
                 if (res > 0) {

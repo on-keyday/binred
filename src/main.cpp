@@ -136,8 +136,8 @@ int main(int argc, char** argv) {
         commonlib2::Reader stxr(commonlib2::FileReader("./test_syntax.txt"));
         m.p.parse(stxr);
     }
-    m.cb = [&](auto& fullscope, auto&, auto& elm, auto& tok, bool) {
-        std::cout << fullscope << "::" << elm << "::" << tok << "\n";
+    m.cb = [&](const binred::syntax::MatchingContext& ctx) {
+        std::cout <<
     };
     m.parse_follow_syntax();
     std::cout << m.p.errmsg;
