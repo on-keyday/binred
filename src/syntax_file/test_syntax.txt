@@ -1,0 +1,22 @@
+namespace binred {
+    struct A {
+        a int
+    }
+
+    func call(){
+
+    }
+
+    func Hey(name string) -> string {
+        if i = 0 ; i != 0 {
+            return 0
+        }
+
+        var a A
+
+        if a.a=1; a.a==1{
+            
+        }
+        return "Hey "+name+"!"
+    }
+}

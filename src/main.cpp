@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
     binred::syntax::SyntaxCompiler syntaxc;
     using File = commonlib2::Reader<commonlib2::FileReader>;
     {
-        File syntaxfile(commonlib2::FileReader("./syntax.txt"));
+        File syntaxfile(commonlib2::FileReader("src/syntax_file/syntax.txt"));
         if (!syntaxc.make_parser(syntaxfile)) {
             std::cout << "error: " << syntaxc.error();
         }
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
         std::cout << c.current() << ":" << c.get_type() << ":" << c.get_token() << "\n";
     };
     {
-        File testfile(commonlib2::FileReader("./test_syntax.txt"));
+        File testfile(commonlib2::FileReader("src/syntax_file/test_syntax.txt"));
         if (!syntaxc.parse(testfile)) {
             std::cout << "error: " << syntaxc.error();
         }

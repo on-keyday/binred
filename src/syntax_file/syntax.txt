@@ -1,0 +1,33 @@
+# # - コメント
+# * - 1回以上の繰り返し
+# ? - 存在する場合のみ
+# *? or ?* - 0回以上の繰り返し
+# [a|b] - aまたはb 
+# [a|b]$* - aまたはbの繰り返しで各要素は1回ずつ出現
+# ID - 識別子(定義の中に存在しないワード)
+# INTEGER - 整数(10進、16進(0x)) 
+# NUMBER - 実数(INTEGERを内包)
+# STRING - 文字列
+# ROOTから解析が始まる
+
+ROOT:=GLOBALSTMT*
+GLOBALSTMT:=[STRUCT|NAMESPACE]
+STRUCT:="struct" ID BASESTRUCT? "{" VARDEF?* "}"
+BASESTRUCT:= ":" VARDEF
+VARDEF:= ID TYPE
+TYPE:=["int"|"bit"|"byte"|"string"| ID] 
+EXPR:=ASSIGN
+ASSIGN:=EQ [["="] ASSIGN]*?
+EQ:=ADD [["=="|"!="|">"|"<"|">="|"<="] ADD]*?
+ADD:=PRIM [["+"|"-"|"&"|"|"] PRIM]*?
+PRIM:=[INTEGER|IDs|"(" EXPR ")"|STRING]
+IDs:=ID AFTER?
+AFTER:=["." ID|FUNCCALL]*
+NAMESPACE:="namespace" ID "{" STMT*? "}"
+STMT:=[VARSTMT|IFSTMT|RETURNSTMT|FUNCSTMT|STRUCT|NAMESPACE]
+FUNCSTMT:="func" ID "(" [VARDEF ["," VARDEF]*? ]? ")" FUNCRETURN? "{" STMT*? "}"
+FUNCRETURN:="->" TYPE
+IFSTMT:="if" EXPR [";" EXPR]? "{" STMT*? "}"
+RETURNSTMT:="return" EXPR
+FUNCCALL:="(" [EXPR ["," EXPR]*? ]?")"
+VARSTMT:="var" VARDEF
