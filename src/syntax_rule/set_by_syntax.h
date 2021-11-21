@@ -35,7 +35,20 @@ namespace binred {
                         return false;
                     }
                 };
-                if (ctx.is_type("ID")) {
+                if (ctx.is_type("KEYWORD")) {
+                    if (ctx.is_token("nil")) {
+                        kind = ExprKind::nil;
+                    }
+                    else if (ctx.is_token("true") || ctx.is_token("false")) {
+                        kind = ExprKind::boolean;
+                    }
+                    else {
+                        ctx.set_errmsg("unexpected keyword " + ctx.get_token());
+                        return false;
+                    }
+                    return to_prim();
+                }
+                else if (ctx.is_type("ID")) {
                     return to_prim();
                 }
                 else if (ctx.is_type("INTEGER") || ctx.is_type("NUMBER")) {
@@ -47,6 +60,9 @@ namespace binred {
                     return to_prim();
                 }
                 else if (ctx.is_type("SYMBOL")) {
+                    if (ctx.is_token("(") || ctx.is_token(")")) {
+                        return true;
+                    }
                     if (!e) {
                         set_to(e);
                     }
@@ -55,6 +71,10 @@ namespace binred {
                         set_to(tmp);
                         tmp->left = e;
                         e = tmp;
+                    }
+                    else {
+                        ctx.set_errmsg("unexpected keyword " + ctx.get_token());
+                        return false;
                     }
                 }
             }

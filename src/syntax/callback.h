@@ -15,6 +15,8 @@ namespace binred {
            private:
             struct Base {
                 virtual Ret operator()(Args&&...) const = 0;
+                virtual bool is_sametype(const std::type_info&) const = 0;
+                virtual void* get_rawptr() = 0;
                 virtual ~Base() {}
             };
 
@@ -30,6 +32,14 @@ namespace binred {
                 Ret operator()(Args&&... args) const override {
                     return static_cast<Ret>(f(std::forward<Args>(args)...));
                 }
+
+                bool is_sametype(const std::type_info& info) const override {
+                    return typeid(F) == info;
+                }
+
+                void* get_rawptr() override {
+                    return reinterpret_cast<void*>(std::addressof(f));
+                }
             };
 
             template <class F>
@@ -40,6 +50,14 @@ namespace binred {
                 Ret operator()(Args&&... args) const override {
                     f(std::forward<Args>(args)...);
                     return Ret();
+                }
+
+                bool is_sametype(const std::type_info& info) const override {
+                    return typeid(F) == info;
+                }
+
+                void* get_rawptr() override {
+                    return reinterpret_cast<void*>(std::addressof(f));
                 }
             };
 
@@ -70,6 +88,17 @@ namespace binred {
             template <class... CArg>
             Ret operator()(CArg&&... args) const {
                 return (*fn)(std::forward<CArg>(args)...);
+            }
+
+            template <class T>
+            T* get_rawfunc() {
+                if (!fn) {
+                    return nullptr;
+                }
+                if (!fn->is_sametype(typeid(T))) {
+                    return nullptr;
+                }
+                return reinterpret_cast<T*>(fn->get_rawptr());
             }
 
             ~Callback() {
