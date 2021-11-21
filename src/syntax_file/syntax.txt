@@ -8,6 +8,9 @@
 # INTEGER - 整数(10進、16進(0x)) 
 # NUMBER - 実数(INTEGERを内包)
 # STRING - 文字列
+# 空白及び行は自動で無視(よって、pythonとかの文法を解析できない)
+# (そのうち、LINE及びSPACEをつける予定)
+# エスケープシーケンスは無効(これもそのうち(略))
 # ROOTから解析が始まる
 
 ROOT:=GLOBALSTMT*
