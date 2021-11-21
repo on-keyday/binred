@@ -25,7 +25,7 @@ EXPR:=ASSIGN
 ASSIGN:=EQ [["="] ASSIGN]*?
 EQ:=ADD [["=="|"!="|">"|"<"|">="|"<="] ADD]*?
 ADD:=PRIM [["+"|"-"|"&"|"|"] PRIM]*?
-PRIM:=[INTEGER|IDs|"(" EXPR ")"|STRING]
+PRIM:=["true"|"false"|"nil"|INTEGER|IDs|"(" EXPR ")"|STRING]
 IDs:=ID AFTER?
 AFTER:=["." ID|FUNCCALL]*
 NAMESPACE:="namespace" ID "{" STMT*? "}"

@@ -36,6 +36,7 @@ namespace binred {
         call,
         nil,
         boolean,
+        str,
     };
 
     struct Expr {

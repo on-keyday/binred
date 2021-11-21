@@ -16,22 +16,49 @@ namespace binred {
 
         bool operator()(const syntax::MatchingContext& ctx) {
             if (ctx.is_under("EXPR")) {
-                if (ctx.is_type("ID")) {
+                ExprKind kind = ExprKind::ref;
+                auto set_to = [&](auto& ptr) {
+                    ptr = std::make_shared<Expr>();
+                    ptr->kind = kind;
+                    ptr->token = ctx.get_pos().lock();
+                    ptr->v = ctx.get_token();
+                };
+                auto to_prim = [&]() {
                     if (!e) {
-                        e = std::make_shared<Expr>();
-                        e->kind = ExprKind::ref;
-                        e->token = ctx.get_pos().lock();
+                        set_to(e);
                     }
                     else if (!e->right) {
-                        e->left = std::make_shared<Expr>();
-                        e->left->token = ctx.get_pos().lock();
+                        set_to(e->right);
                     }
                     else {
-                        ctx.set_errmsg("");
+                        ctx.set_errmsg("invalid tree structure");
                         return false;
+                    }
+                };
+                if (ctx.is_type("ID")) {
+                    return to_prim();
+                }
+                else if (ctx.is_type("INTEGER") || ctx.is_type("NUMBER")) {
+                    kind = ExprKind::number;
+                    return to_prim();
+                }
+                else if (ctx.is_type("STRING")) {
+                    kind = ExprKind::str;
+                    return to_prim();
+                }
+                else if (ctx.is_type("SYMBOL")) {
+                    if (!e) {
+                        set_to(e);
+                    }
+                    else if (!e->left) {
+                        std::shared_ptr<Expr> tmp;
+                        set_to(tmp);
+                        tmp->left = e;
+                        e = tmp;
                     }
                 }
             }
+            return true;
         }
     };
 }  // namespace binred
