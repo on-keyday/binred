@@ -468,7 +468,7 @@ namespace binred {
                 return 1;
             }
 
-            bool parse_follow_syntax() {
+            int parse_follow_syntax() {
                 auto found = p.syntax.find("ROOT");
                 if (found == p.syntax.end()) {
                     p.errmsg = "need ROOT syntax element";
