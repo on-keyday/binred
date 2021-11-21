@@ -6,16 +6,18 @@
 */
 
 #pragma once
-
-#include "../parser.h"
-#include "../parse_tree.h"
-
+#include <tokenparser/tokenparser.h>
+#include <string>
 #include <vector>
+#include <map>
 #include <set>
+#include <algorithm>
 
 namespace binred {
+    using namespace commonlib2::tokenparser;
     namespace syntax {
-        using Parser = TokenParser<std::vector<std::string>, std::string>;
+        using token_t = commonlib2::tokenparser::Token<std::string>;
+        using Parser = commonlib2::tokenparser::TokenParser<std::vector<std::string>, std::string>;
         enum class SyntaxType {
             literal,
             ref,

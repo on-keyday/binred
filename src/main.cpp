@@ -14,7 +14,7 @@
 #include <fstream>
 #include <optmap.h>
 #include <subcommand.h>
-#include "parse/parser/syntax/syntax.h"
+#include "syntax/syntax.h"
 
 void binred_test() {
     binred::TokenReader red;
