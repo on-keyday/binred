@@ -20,6 +20,10 @@ namespace binred {
                     if (!e) {
                         e = std::make_shared<Expr>();
                         e->kind = ExprKind::ref;
+                        e->token = ctx.get_pos().lock();
+                    }
+                    else if (!e->right) {
+                        e->left = std::make_shared<Expr>();
                     }
                 }
             }
