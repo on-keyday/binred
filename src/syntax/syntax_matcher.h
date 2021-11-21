@@ -67,6 +67,14 @@ namespace binred {
                 return false;
             }
 
+            bool is_type(const std::string& n) const {
+                return n == elm;
+            }
+
+            bool is_token(const std::string& n) const {
+                return n == token;
+            }
+
             const TokenReader& get_reader() const {
                 return *r;
             }

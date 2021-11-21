@@ -19,7 +19,8 @@ GLOBALSTMT:=[STRUCT|NAMESPACE]
 STRUCT:="struct" ID BASESTRUCT? "{" VARDEF?* "}"
 BASESTRUCT:= ":" VARDEF
 VARDEF:= ID TYPE
-TYPE:=["int"|"bit"|"byte"|"string"| ID] 
+TYPE:=["int"|"bit"|"byte"|"string"| ID]
+IDINIT:= ID ["," ID]*? ":=" EXPR 
 EXPR:=ASSIGN
 ASSIGN:=EQ [["="] ASSIGN]*?
 EQ:=ADD [["=="|"!="|">"|"<"|">="|"<="] ADD]*?
@@ -28,7 +29,7 @@ PRIM:=[INTEGER|IDs|"(" EXPR ")"|STRING]
 IDs:=ID AFTER?
 AFTER:=["." ID|FUNCCALL]*
 NAMESPACE:="namespace" ID "{" STMT*? "}"
-STMT:=[VARSTMT|IFSTMT|RETURNSTMT|FUNCSTMT|STRUCT|NAMESPACE]
+STMT:=[VARSTMT|IFSTMT|RETURNSTMT|FUNCSTMT|STRUCT|NAMESPACE|IDINIT|EXPR]
 FUNCSTMT:="func" ID "(" [VARDEF ["," VARDEF]*? ]? ")" FUNCRETURN? "{" STMT*? "}"
 FUNCRETURN:="->" TYPE
 IFSTMT:="if" EXPR [";" EXPR]? "{" STMT*? "}"

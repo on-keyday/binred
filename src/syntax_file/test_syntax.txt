@@ -18,5 +18,8 @@ namespace binred {
             
         }
         return "Hey "+name+"!"
+
+        i:=0
+        i + 2
     }
 }
