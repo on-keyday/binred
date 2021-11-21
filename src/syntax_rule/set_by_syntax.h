@@ -17,6 +17,10 @@ namespace binred {
         void operator()(const syntax::MatchingContext& ctx) {
             if (ctx.is_under("EXPR")) {
                 if (ctx.is_type("ID")) {
+                    if (!e) {
+                        e = std::make_shared<Expr>();
+                        e->kind = ExprKind::ref;
+                    }
                 }
             }
         }

@@ -17,6 +17,24 @@ namespace binred {
             std::shared_ptr<token_t> afterdot;
             std::shared_ptr<token_t> sign;
             std::shared_ptr<token_t> aftersign;
+
+            std::shared_ptr<token_t>& exists() {
+                if (beforedot) {
+                    return beforedot;
+                }
+                else if (dot) {
+                    return dot;
+                }
+                else if (afterdot) {
+                    return afterdot;
+                }
+                else if (sign) {
+                    return sign;
+                }
+                else {
+                    return aftersign;
+                }
+            }
         };
 
         struct MatchingContext {
@@ -27,6 +45,7 @@ namespace binred {
             std::string token;
             std::string elm;
             TokenReader* r;
+            std::weak_ptr<token_t> node;
 
             bool match_(const std::string& n) {
                 return false;
@@ -97,11 +116,12 @@ namespace binred {
             MatchingContext ctx;
 
            public:
-            void callback(TokenReader& r, const std::string& token, const std::string& elm) {
+            void callback(std::shared_ptr<token_t>& relnode, TokenReader& r, const std::string& token, const std::string& elm) {
                 if (cb) {
                     ctx.token = token;
                     ctx.elm = elm;
                     ctx.r = &r;
+                    ctx.node = relnode;
                     cb(ctx);
                 }
             }
@@ -117,7 +137,7 @@ namespace binred {
                     p.errmsg = "expected " + value + " but " + e->to_string();
                     return 0;
                 }
-                callback(r, value, e->is_(TokenKind::symbols) ? "SYMBOL" : "KEYWORD");
+                callback(e, r, value, e->is_(TokenKind::symbols) ? "SYMBOL" : "KEYWORD");
                 r.Consume();
                 return 1;
             }
@@ -249,6 +269,7 @@ namespace binred {
                         return -1;
                     }
                     r.current = pt.beforedot->get_next();
+                    callback(pt.exists(), r, pt.str, "INTEGER");
                     return 1;
                 }
                 if (pt.str[allowed] == '.') {
@@ -274,6 +295,7 @@ namespace binred {
                         p.errmsg = "parser is broken";
                         return -1;
                     }
+                    callback(pt.exists(), r, pt.str, "NUMBER");
                     return 1;
                 }
                 if (base == 16) {
@@ -320,7 +342,7 @@ namespace binred {
                     p.errmsg = "parser is broken";
                     return -1;
                 }
-                callback(r, pt.str, "NUMBER");
+                callback(pt.exists(), r, pt.str, "NUMBER");
                 return true;
             }
 
@@ -352,7 +374,7 @@ namespace binred {
                         p.errmsg = "expect identifier but token is " + e->to_string();
                         return 0;
                     }
-                    callback(cr, e->to_string(), "ID");
+                    callback(e, cr, e->to_string(), "ID");
                     cr.Consume();
                 }
                 else if (v->token->has_("INTEGER")) {
@@ -368,7 +390,7 @@ namespace binred {
                     if (!check_integer(e)) {
                         return 0;
                     }
-                    callback(cr, e->to_string(), "INTEGER");
+                    callback(e, cr, e->to_string(), "INTEGER");
                     cr.Consume();
                 }
                 else if (v->token->has_("NUMBER")) {
@@ -386,7 +408,8 @@ namespace binred {
                         p.errmsg = "expected string but token is " + e->to_string();
                         return 0;
                     }
-                    auto start = e->to_string();
+                    auto startvalue = e->to_string();
+                    auto start = e;
                     e = cr.ConsumeGetorEOF();
                     if (!e) {
                         p.errmsg = "unexpected EOF. expect string";
@@ -395,13 +418,13 @@ namespace binred {
                     auto value = e->to_string();
                     e = cr.ConsumeGetorEOF();
                     if (!e) {
-                        p.errmsg = "unexpected EOF. expect end of string " + start;
+                        p.errmsg = "unexpected EOF. expect end of string " + startvalue;
                         return 0;
                     }
-                    if (!e->has_(start)) {
-                        p.errmsg = "expect " + start + " but token is " + e->to_string();
+                    if (!e->has_(startvalue)) {
+                        p.errmsg = "expect " + startvalue + " but token is " + e->to_string();
                     }
-                    callback(cr, value, "STRING");
+                    callback(start, cr, value, "STRING");
                     cr.Consume();
                 }
                 else {
