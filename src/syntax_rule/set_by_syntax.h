@@ -34,6 +34,7 @@ namespace binred {
                         ctx.set_errmsg("invalid tree structure");
                         return false;
                     }
+                    return true;
                 };
                 if (ctx.is_type("KEYWORD")) {
                     if (ctx.is_token("nil")) {
