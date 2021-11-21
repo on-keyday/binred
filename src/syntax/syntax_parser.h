@@ -251,13 +251,7 @@ namespace binred {
                 auto& keywords = parser.GetKeyWords().reg;
                 auto& symbols = parser.GetSymbols().reg;
                 auto sorter = [](const std::string& a, const std::string& b) {
-                    if (a > b) {
-                        if (a.size() > b.size()) {
-                            return true;
-                        }
-                        return false;
-                    }
-                    return false;
+                    return a.size() > b.size();
                 };
                 std::sort(keywords.begin(), keywords.end(), sorter);
                 std::sort(symbols.begin(), symbols.end(), sorter);
