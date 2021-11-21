@@ -61,7 +61,7 @@ namespace binred {
             }
 
            public:
-            std::weak_ptr<token_t>& get_pos() {
+            const std::weak_ptr<token_t>& get_pos() const {
                 return node;
             }
 

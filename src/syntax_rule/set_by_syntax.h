@@ -24,6 +24,7 @@ namespace binred {
                     }
                     else if (!e->right) {
                         e->left = std::make_shared<Expr>();
+                        e->left->token = ctx.get_pos().lock();
                     }
                 }
             }
