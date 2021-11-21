@@ -397,6 +397,7 @@ namespace binred {
                     auto e = cr.Read();
                     if (e) {
                         p.errmsg = "expect EOF but token is " + e->to_string();
+                        return 0;
                     }
                     if (!callback(e, cr, e->to_string(), "EOF")) {
                         return -1;
