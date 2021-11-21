@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
         m.p.parse(stxr);
     }
     m.cb = [&](const binred::syntax::MatchingContext& ctx) {
-        std::cout <<
+        std::cout << ctx.current() << ":" << ctx.get_token();
     };
     m.parse_follow_syntax();
     std::cout << m.p.errmsg;
