@@ -14,7 +14,7 @@ namespace binred {
     struct TreeBySyntax {
         std::shared_ptr<Expr> e;
 
-        void operator()(const syntax::MatchingContext& ctx) {
+        bool operator()(const syntax::MatchingContext& ctx) {
             if (ctx.is_under("EXPR")) {
                 if (ctx.is_type("ID")) {
                     if (!e) {
@@ -25,6 +25,10 @@ namespace binred {
                     else if (!e->right) {
                         e->left = std::make_shared<Expr>();
                         e->left->token = ctx.get_pos().lock();
+                    }
+                    else {
+                        ctx.set_errmsg("");
+                        return false;
                     }
                 }
             }

@@ -65,7 +65,7 @@ namespace binred {
                 return node;
             }
 
-            void set_errmsg(const std::string& v) {
+            void set_errmsg(const std::string& v) const {
                 *err = v;
             }
 
