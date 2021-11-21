@@ -135,7 +135,7 @@ namespace binred {
                     ctx.r = &r;
                     ctx.node = relnode;
                     ctx.err = &p.errmsg;
-                    if (cb(ctx)) {
+                    if (!cb(ctx)) {
                         return false;
                     }
                 }
