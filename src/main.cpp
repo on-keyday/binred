@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
             std::cout << "error: " << syntaxc.error();
         }
     }
-    syntaxc.callback() = [](binred::syntax::MatchingContext& c) {
+    syntaxc.callback() = [](const binred::syntax::MatchingContext& c) {
         std::cout << c.current() << ":" << c.get_elm() << ":" << c.get_token() << "\n";
     };
     {
