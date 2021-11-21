@@ -47,7 +47,7 @@ namespace binred {
                 if (!err) {
                     return err;
                 }
-                if (!match.parse_follow_syntax() <= 0) {
+                if (match.parse_follow_syntax() <= 0) {
                     return false;
                 }
                 return true;
