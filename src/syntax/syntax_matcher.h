@@ -93,7 +93,7 @@ namespace binred {
                     else if (res < 0) {
                         return res;
                     }
-                    errs = p.errmsg + "\n";
+                    errs += p.errmsg + "\n";
                 }
                 p.errmsg = errs;
                 return 0;
