@@ -131,7 +131,9 @@ int main(int argc, char** argv) {
         }
     }
     syntaxc.callback() = [](const binred::syntax::MatchingContext& c) {
-        std::cout << c.current() << ":" << c.get_type() << ":" << c.get_token() << "\n";
+        if (c.is_under("EXPR")) {
+            std::cout << c.current() << ":" << c.get_type() << ":" << c.get_token() << "\n";
+        }
     };
     {
         File testfile(commonlib2::FileReader("src/syntax_file/test_syntax.txt"));

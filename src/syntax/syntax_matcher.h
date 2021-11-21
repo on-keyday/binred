@@ -28,9 +28,43 @@ namespace binred {
             std::string elm;
             TokenReader* r;
 
+            bool match_(const std::string& n) {
+                return false;
+            }
+
+            template <class Str, class... Args>
+            bool match_(const std::string& n, const Str& str, const Args&... a) {
+                if (n == str) {
+                    return true;
+                }
+                return match_(n, a...);
+            }
+
            public:
             const std::string& current() const {
                 return scope[scope.size() - 1];
+            }
+
+            template <class String, class... Str>
+            bool is_under_and_not(const String& n, const Str&... a) {
+                for (auto i = scope.size() - 1; i < scope.size(); i--) {
+                    if (scope[i] == n) {
+                        return true;
+                    }
+                    if (match_(n, a...)) {
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            bool is_under(const std::string& n) const {
+                for (auto i = scope.size() - 1; i < scope.size(); i--) {
+                    if (scope[i] == n) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             const TokenReader& get_reader() const {
