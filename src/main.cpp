@@ -122,5 +122,19 @@ int main(int argc, char** argv) {
         !err.first) {
         std::cout << "binred: error: " << msg << commonlib2::error_message(err.first);
     }
+    binred::syntax::SyntaxCompiler syntaxc;
+    using File = commonlib2::Reader<commonlib2::FileReader>;
+    {
+        File syntaxfile(commonlib2::FileReader("./syntax.txt"));
+        if (!syntaxc.make_parser(syntaxfile)) {
+            std::cout << "error: " << syntaxc.error();
+        }
+    }
+    {
+        File testfile(commonlib2::FileReader("./test_syntax.txt"));
+        if (!syntaxc.make_parser(testfile)) {
+            std::cout << "error: " << syntaxc.error();
+        }
+    }
     //binred_test();
 }

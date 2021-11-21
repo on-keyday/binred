@@ -21,14 +21,20 @@ namespace binred {
                 return match.cb;
             }
 
+            const std::string& error() const {
+                return match.p.errmsg;
+            }
+
             template <class Reader>
             MergeErr make_parser(Reader& r) {
                 auto err = pm.parse(r);
                 if (!err) {
+                    match.p.errmsg = "parse token error";
                     return err;
                 }
                 auto compile = pm.get_compiler();
                 if (!compile()) {
+                    match.p.errmsg = compile.errmsg;
                     return false;
                 }
                 match.p = std::move(compile);
