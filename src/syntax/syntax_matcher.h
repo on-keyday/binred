@@ -46,6 +46,7 @@ namespace binred {
             std::string elm;
             TokenReader* r;
             std::weak_ptr<token_t> node;
+            std::string* err;
 
             bool match_(const std::string& n) {
                 return false;
@@ -60,6 +61,10 @@ namespace binred {
             }
 
            public:
+            void set_errmsg(const std::string& v) {
+                *err = v;
+            }
+
             const std::string& current() const {
                 return scope[scope.size() - 1];
             }
@@ -107,23 +112,34 @@ namespace binred {
             }
         };
 
+        enum class MatchingError {
+            none,
+            error,
+        };
+
+        using MatchingErr = commonlib2::EnumWrap<MatchingError, MatchingError::none, MatchingError::error, MatchingError::none>;
+
         struct SyntaxMatching {
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             SyntaxParser p;
-            Callback<void, const MatchingContext&> cb;
+            Callback<MatchingErr, const MatchingContext&> cb;
 
            private:
             MatchingContext ctx;
 
            public:
-            void callback(std::shared_ptr<token_t>& relnode, TokenReader& r, const std::string& token, const std::string& elm) {
+            bool callback(std::shared_ptr<token_t>& relnode, TokenReader& r, const std::string& token, const std::string& elm) {
                 if (cb) {
                     ctx.token = token;
                     ctx.elm = elm;
                     ctx.r = &r;
                     ctx.node = relnode;
-                    cb(ctx);
+                    ctx.err = &p.errmsg;
+                    if (cb(ctx)) {
+                        return false;
+                    }
                 }
+                return true;
             }
 
             int parse_literal(TokenReader& r, std::shared_ptr<Syntax>& v) {
@@ -137,7 +153,9 @@ namespace binred {
                     p.errmsg = "expected " + value + " but " + e->to_string();
                     return 0;
                 }
-                callback(e, r, value, e->is_(TokenKind::symbols) ? "SYMBOL" : "KEYWORD");
+                if (!callback(e, r, value, e->is_(TokenKind::symbols) ? "SYMBOL" : "KEYWORD")) {
+                    return -1;
+                }
                 r.Consume();
                 return 1;
             }
@@ -269,7 +287,9 @@ namespace binred {
                         return -1;
                     }
                     r.current = pt.beforedot->get_next();
-                    callback(pt.exists(), r, pt.str, "INTEGER");
+                    if (!callback(pt.exists(), r, pt.str, "INTEGER")) {
+                        return -1;
+                    }
                     return 1;
                 }
                 if (pt.str[allowed] == '.') {
@@ -295,7 +315,9 @@ namespace binred {
                         p.errmsg = "parser is broken";
                         return -1;
                     }
-                    callback(pt.exists(), r, pt.str, "NUMBER");
+                    if (!callback(pt.exists(), r, pt.str, "NUMBER")) {
+                        return -1;
+                    }
                     return 1;
                 }
                 if (base == 16) {
@@ -342,7 +364,9 @@ namespace binred {
                     p.errmsg = "parser is broken";
                     return -1;
                 }
-                callback(pt.exists(), r, pt.str, "NUMBER");
+                if (!callback(pt.exists(), r, pt.str, "NUMBER")) {
+                    return -1;
+                }
                 return true;
             }
 
@@ -374,7 +398,9 @@ namespace binred {
                         p.errmsg = "expect identifier but token is " + e->to_string();
                         return 0;
                     }
-                    callback(e, cr, e->to_string(), "ID");
+                    if (!callback(e, cr, e->to_string(), "ID")) {
+                        return -1;
+                    }
                     cr.Consume();
                 }
                 else if (v->token->has_("INTEGER")) {
@@ -390,7 +416,9 @@ namespace binred {
                     if (!check_integer(e)) {
                         return 0;
                     }
-                    callback(e, cr, e->to_string(), "INTEGER");
+                    if (!callback(e, cr, e->to_string(), "INTEGER")) {
+                        return -1;
+                    }
                     cr.Consume();
                 }
                 else if (v->token->has_("NUMBER")) {
@@ -424,7 +452,9 @@ namespace binred {
                     if (!e->has_(startvalue)) {
                         p.errmsg = "expect " + startvalue + " but token is " + e->to_string();
                     }
-                    callback(start, cr, value, "STRING");
+                    if (!callback(start, cr, value, "STRING")) {
+                        return -1;
+                    }
                     cr.Consume();
                 }
                 else {
