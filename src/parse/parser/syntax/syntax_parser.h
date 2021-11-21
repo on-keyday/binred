@@ -178,6 +178,9 @@ namespace binred {
                     }
                     while (true) {
                         e = r.Read();
+                        if (!e) {
+                            break;
+                        }
                         if (!ptr->ifexists && e->has_("?")) {
                             ptr->ifexists = true;
                             r.Consume();
