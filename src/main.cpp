@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
         }
     }
     syntaxc.callback() = [](const binred::syntax::MatchingContext& c) {
-        std::cout << c.current() << ":" << c.get_elm() << ":" << c.get_token() << "\n";
+        std::cout << c.current() << ":" << c.get_type() << ":" << c.get_token() << "\n";
     };
     {
         File testfile(commonlib2::FileReader("./test_syntax.txt"));

@@ -41,7 +41,7 @@ namespace binred {
                 return token;
             }
 
-            const std::string& get_elm() const {
+            const std::string& get_type() const {
                 return elm;
             }
         };
