@@ -12,6 +12,23 @@
 namespace binred {
     using SyntaxCb = Callback<syntax::MatchingErr, const syntax::MatchingContext&>;
 
+    template <class Stmt>
+    struct InvokeProxy {
+        Stmt* stmt;
+
+        InvokeProxy() {
+            stmt = new Stmt();
+        }
+
+        bool operator()(const syntax::MatchingContext& ctx) {
+            return (*stmt)(ctx);
+        }
+
+        ~InvokeProxy() {
+            delete stmt;
+        }
+    };
+
     struct TreeBySyntax {
         std::shared_ptr<Expr> e;
 
@@ -86,23 +103,6 @@ namespace binred {
         }
     };
 
-    template <class Stmt>
-    struct InvokeProxy {
-        Stmt* stmt;
-
-        InvokeProxy() {
-            stmt = new Stmt();
-        }
-
-        bool operator()(const syntax::MatchingContext& ctx) {
-            return (*stmt)(ctx);
-        }
-
-        ~InvokeProxy() {
-            delete stmt;
-        }
-    };
-
     struct Stmts;
 
     struct IfStmt {
@@ -148,7 +148,10 @@ namespace binred {
                 }
                 else if (ctx.is_token("}")) {
                     auto stmts = cb.get_rawfunc<InvokeProxy<Stmts>>();
-                    stmts->stmt;
+                }
+                else {
+                    ctx.set_errmsg("unexpected symbol " + ctx.get_token() + ". expect ; or {");
+                    return false;
                 }
             }
             else {
