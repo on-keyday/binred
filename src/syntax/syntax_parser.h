@@ -40,9 +40,11 @@ namespace binred {
             bool once_each = false;
         };
 
-        struct TokenReader : TokenReaderBase<std::string> {
-            using TokenReaderBase<std::string>::TokenReaderBase;
+        struct TokenReader : TokenReaderBase<std::string, false, true> {
+            using TokenReaderBase<std::string, false, true>::TokenReaderBase;
             bool igline = true;
+            size_t countbase = 0;
+            size_t count = 0;
             void SetIgnoreLine(bool t) {
                 igline = t;
             }
@@ -53,9 +55,20 @@ namespace binred {
                 return is_DefaultIgnore() || current->has_("#");
             }
 
+            void ConsumeHook(bool to_root) override {
+                if (to_root) {
+                    count = countbase;
+                }
+                else {
+                    count++;
+                }
+            }
+
             TokenReader FromCurrent() {
                 TokenReader ret(current);
                 ret.igline = igline;
+                ret.countbase = count;
+                ret.count = count;
                 return ret;
             }
         };

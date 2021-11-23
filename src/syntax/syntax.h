@@ -25,16 +25,20 @@ namespace binred {
                 return match.p.errmsg;
             }
 
+            const std::string& mostreacherror() const {
+                return match.mosterr();
+            }
+
             template <class Reader>
             MergeErr make_parser(Reader& r) {
                 auto err = pm.parse(r);
                 if (!err) {
-                    match.p.errmsg = "parse token error";
+                    match.report(nullptr, "parse token error");
                     return err;
                 }
                 auto compile = pm.get_compiler();
                 if (!compile()) {
-                    match.p.errmsg = compile.errmsg;
+                    match.report(nullptr, compile.errmsg);
                     return false;
                 }
                 match.p = std::move(compile);

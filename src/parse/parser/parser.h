@@ -121,11 +121,11 @@ namespace binred {
         unimplemented,
     };
 
-    struct TokenReader : TokenReaderBase<std::string> {
+    struct TokenReader : TokenReaderBase<std::string,true> {
         ErrorCode code = ErrorCode::none;
         const char* additional = nullptr;
 
-        using TokenReaderBase<std::string>::TokenReaderBase;
+        using TokenReaderBase<std::string,true>::TokenReaderBase;
 
         void SetError(ErrorCode code, const char* addtional = nullptr) {
             this->code = code;
