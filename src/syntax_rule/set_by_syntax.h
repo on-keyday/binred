@@ -35,6 +35,7 @@ namespace binred {
     struct VarInitStmt;
 
     struct Stmt {
+        SyntaxCb cb;
         bool ended = false;
         bool end_stmt() const {
             return ended;
@@ -121,6 +122,7 @@ namespace binred {
         SyntaxCb cb;
         std::shared_ptr<Expr> init;
         std::shared_ptr<Expr> cond;
+        std::shared_ptr<Stmts> stmts;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (!keyword) {
                 if (ctx.is_current("IFSTMT") && ctx.is_type(syntax::MatchingType::keyword) && ctx.is_token("if")) {
@@ -157,7 +159,17 @@ namespace binred {
                     cb = InvokeProxy<Stmts>();
                 }
                 else if (ctx.is_token("}")) {
-                    auto stmts = cb.get_rawfunc<InvokeProxy<Stmts>>();
+                    auto tmp = cb.move_from_rawfunc<InvokeProxy<Stmts>>([](auto&& v) {
+                        auto ret = v.stmt;
+                        v.stmt = nullptr;
+                        return std::shared_ptr<Stmts>(v.stmt);
+                    });
+                    if (!tmp) {
+                        ctx.set_errmsg("syntax parser is broken");
+                        return false;
+                    }
+                    stmts = std::move(tmp);
+                    ended = true;
                 }
                 else {
                     ctx.set_errmsg("unexpected symbol " + ctx.get_token() + ". expect ; or {");
@@ -174,6 +186,25 @@ namespace binred {
         }
     };
 
+    struct VarInitStmt : Stmt {
+        std::vector<std::string> varname;
+        bool syminit = false;
+        bool operator()(const syntax::MatchingContext& ctx) {
+            if (!syminit) {
+                if (ctx.is_current("VARINIT")) {
+                    if (ctx.is_token(":=")) {
+                        if (varname.size() == 0) {
+                            ctx.set_errmsg("syntax parser is broken at varinit");
+                            return false;
+                        }
+                        syminit = true;
+                        return true;
+                    }
+                }
+            }
+        }
+    };
+
     struct Stmts : Stmt {
         static Stmt* borrow_ptr(SyntaxCb& cb) {
             return cb.get_rawfunc<Stmt, Stmts, IfStmt>();
@@ -184,15 +215,18 @@ namespace binred {
         }
 
         std::vector<std::shared_ptr<Stmt>> stmts;
-        SyntaxCb cb;
+
         bool operator()(const syntax::MatchingContext& ctx) {
             if (cb) {
                 auto ret = cb(ctx);
                 if (auto ptr = borrow_ptr(cb)) {
                     if (ptr->end_stmt()) {
-                        stmts.push_back(get_ptr(cb));
+                        if (ret) {
+                            stmts.push_back(get_ptr(cb));
+                        }
                         cb = nullptr;
                     }
+                    return ret;
                 }
                 else {
                     ctx.set_errmsg("invalid stmt structure");
@@ -203,6 +237,8 @@ namespace binred {
             else {
                 if (ctx.is_current("IFSTMT")) {
                     cb = IfStmt();
+                }
+                else if (ctx.is_current("VARINIT")) {
                 }
             }
             return true;

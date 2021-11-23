@@ -20,7 +20,7 @@ STRUCT:="struct" ID BASESTRUCT? "{" VARDEF?* "}"
 BASESTRUCT:= ":" VARDEF
 VARDEF:= ID TYPE
 TYPE:=["int"|"bit"|"byte"|"string"| ID]
-IDINIT:= ID ["," ID]*? ":=" EXPR 
+VARINIT:= ID ["," ID]*? ":=" EXPR 
 EXPR:=ASSIGN
 ASSIGN:=EQ [["="] ASSIGN]*?
 EQ:=ADD [["=="|"!="|">"|"<"|">="|"<="] ADD]*?
