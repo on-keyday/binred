@@ -50,6 +50,11 @@ namespace binred {
             }
         };
 
+        struct MatchingStackInfo {
+            size_t stackptr = 0;
+            size_t rootpos = 0;
+        };
+
         struct MatchingContext {
             friend struct SyntaxMatching;
 
@@ -79,7 +84,7 @@ namespace binred {
                 return reach;
             }
 
-            size_t get_pos() const {
+            size_t get_tokpos() const {
                 return r->count;
             }
 
@@ -92,7 +97,18 @@ namespace binred {
             }
 
             const std::string& current() const {
-                return scope[scope.size() - 1];
+                return scope[get_stackptr()];
+            }
+
+            size_t get_stackptr() const {
+                return scope.size() - 1;
+            }
+
+            MatchingStackInfo get_stack() const {
+                return MatchingStackInfo{
+                    get_stackptr(),
+                    get_tokpos(),
+                };
             }
 
             bool is_current(const std::string& n) const {

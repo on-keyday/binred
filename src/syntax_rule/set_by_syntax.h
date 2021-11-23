@@ -10,6 +10,7 @@
 #include "../syntax/syntax.h"
 
 namespace binred {
+    using SyntaxCb = syntax::Callback<syntax::MatchingErr, const syntax::MatchingContext&>;
 
     struct TreeBySyntax {
         std::shared_ptr<Expr> e;
@@ -85,16 +86,23 @@ namespace binred {
 
     struct IfStmt {
         bool keyword = false;
+        syntax::MatchingStackInfo stack;
+        std::shared_ptr<Expr> expr;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (!keyword) {
                 if (ctx.is_current("IFSTMT") && ctx.is_type("KEYWORD") && ctx.is_token("if")) {
                     keyword = true;
+                    stack = ctx.get_stack();
                 }
                 else {
                     ctx.set_errmsg("expect if statement but not");
                     return false;
                 }
                 return true;
+            }
+            if (stack.rootpos < ctx.get_tokpos()) {
+                ctx.set_errmsg("unexpected rollback. if statement expected.");
+                return false;
             }
         }
     };
