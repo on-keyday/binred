@@ -153,6 +153,7 @@ namespace binred {
                     ctx.set_errmsg("unexpected symbol " + ctx.get_token() + ". expect ; or {");
                     return false;
                 }
+                return true;
             }
             else {
                 if (!cb) {
