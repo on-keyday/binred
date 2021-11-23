@@ -54,7 +54,7 @@ namespace PROJECT_NAME {
         struct throw_exception_if_Ret_is_ref<true> {
             static Ret get_Ret() {
                     throw std::logic_error("Ret is reference type,"
-                                             " but callback returned what is not castable to Ret"));
+                                           " but callback returned what is not castable to Ret"));
             }
         };
 
