@@ -91,6 +91,10 @@ namespace binred {
                 return scope[scope.size() - 1];
             }
 
+            bool is_current(const std::string& n) const {
+                return current() == n;
+            }
+
             template <class String, class... Str>
             bool is_under_and_not(const String& n, const Str&... a) {
                 for (auto i = scope.size() - 1; i < scope.size(); i--) {

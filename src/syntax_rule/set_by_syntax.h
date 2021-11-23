@@ -84,6 +84,10 @@ namespace binred {
     };
 
     struct IfStmt {
-        bool norollback = false;
+        bool keyword = false;
+        bool operator()(const syntax::MatchingContext& ctx) {
+            if (!keyword) {
+            }
+        }
     };
 }  // namespace binred

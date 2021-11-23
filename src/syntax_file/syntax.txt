@@ -39,5 +39,5 @@ VARSTMT:="var" VARDEF
 
 
 #S式
-SEXPR:=[ID|SLIST|"("SEXPR "." SEXPR ")"]
+SEXPR:=[ID|"("SEXPR "." SEXPR ")"|SLIST]
 SLIST:="(" SEXPR SEXPR*? ")" 
