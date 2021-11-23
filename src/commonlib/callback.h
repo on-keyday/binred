@@ -53,7 +53,7 @@ namespace PROJECT_NAME {
         template <>
         struct throw_exception_if_Ret_is_ref<true> {
             static Ret get_Ret() {
-                    throw std::runtime_error("Ret is reference type,"
+                    throw std::logic_error("Ret is reference type,"
                                              " but callback returned what is not castable to Ret"));
             }
         };
