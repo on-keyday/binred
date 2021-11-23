@@ -33,12 +33,12 @@ namespace binred {
             MergeErr make_parser(Reader& r) {
                 auto err = pm.parse(r);
                 if (!err) {
-                    match.report(nullptr, "parse token error");
+                    match.report(nullptr, nullptr, nullptr, "parse token error");
                     return err;
                 }
                 auto compile = pm.get_compiler();
                 if (!compile()) {
-                    match.report(nullptr, compile.errmsg);
+                    match.report(nullptr, nullptr, nullptr, compile.errmsg);
                     return false;
                 }
                 match.p = std::move(compile);

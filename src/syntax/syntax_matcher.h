@@ -37,6 +37,19 @@ namespace binred {
             }
         };
 
+        struct MostReachInfo {
+            size_t pos = 0;
+            std::string errmsg;
+            std::weak_ptr<token_t> token;
+            std::weak_ptr<Syntax> syntax;
+            void clear() {
+                pos = 0;
+                errmsg.clear();
+                token.reset();
+                syntax.reset();
+            }
+        };
+
         struct MatchingContext {
             friend struct SyntaxMatching;
 
@@ -47,8 +60,7 @@ namespace binred {
             TokenReader* r;
             std::weak_ptr<token_t> node;
             std::string* err;
-            size_t mostreached = 0;
-            std::string mostreachedmsg;
+            MostReachInfo reach;
 
             bool match_(const std::string& n) {
                 return false;
@@ -135,14 +147,16 @@ namespace binred {
 
            public:
             const std::string& mosterr() const {
-                return ctx.mostreachedmsg;
+                return ctx.reach.errmsg;
             }
 
-            void report(TokenReader* r, const std::string& msg) {
+            void report(TokenReader* r, const std::shared_ptr<token_t>& e, const std::shared_ptr<Syntax>& v, const std::string& msg) {
                 p.errmsg = msg;
-                if (r && ctx.mostreached < r->count) {
-                    ctx.mostreached = r->count;
-                    ctx.mostreachedmsg = msg;
+                if (r && ctx.reach.pos < r->count) {
+                    ctx.reach.pos = r->count;
+                    ctx.reach.errmsg = msg;
+                    ctx.reach.token = e;
+                    ctx.reach.syntax = v;
                 }
             }
 
@@ -163,12 +177,12 @@ namespace binred {
             int parse_literal(TokenReader& r, std::shared_ptr<Syntax>& v) {
                 auto e = r.ReadorEOF();
                 if (!e) {
-                    report(&r, "unexpected EOF. expect " + v->token->to_string());
+                    report(&r, e, v, "unexpected EOF. expect " + v->token->to_string());
                     return 0;
                 }
                 auto value = v->token->to_string();
                 if (!e->has_(value)) {
-                    report(&r, "expected " + value + " but " + e->to_string());
+                    report(&r, e, v, "expected " + value + " but " + e->to_string());
                     return 0;
                 }
                 if (!callback(e, r, value, e->is_(TokenKind::symbols) ? "SYMBOL" : "KEYWORD")) {
@@ -193,14 +207,14 @@ namespace binred {
                     }
                     errs += p.errmsg + "\n";
                 }
-                report(&r, errs);
+                report(&r, nullptr, v, errs);
                 return 0;
             }
 
             int parse_ref(TokenReader& r, std::shared_ptr<Syntax>& v) {
                 auto found = p.syntax.find(v->token->to_string());
                 if (found == p.syntax.end()) {
-                    report(&r, "syntax " + v->token->to_string() + " is not defined");
+                    report(&r, nullptr, v, "syntax " + v->token->to_string() + " is not defined");
                     return -1;
                 }
                 ctx.scope.push_back(found->first);
@@ -208,7 +222,7 @@ namespace binred {
                 auto res = parse_on_vec(cr, found->second);
                 if (res > 0) {
                     if (r.current == cr.current) {
-                        report(&r, "infinity loop detected. please fix definitions especially around ? or *");
+                        report(&r, nullptr, v, "infinity loop detected. please fix definitions especially around ? or *");
                         return -1;
                     }
                     r.current = cr.current;
@@ -275,23 +289,23 @@ namespace binred {
                 }
             }
 
-            int parse_float(TokenReader& r) {
+            int parse_float(TokenReader& r, std::shared_ptr<Syntax>& v) {
                 auto cr = r.FromCurrent();
                 FloatReadPoint pt;
                 get_floatpoint(cr, pt);
                 if (pt.str.size() == 0) {
-                    report(&r, "expected number but not");
+                    report(&r, pt.exists(), v, "expected number but not");
                     return 0;
                 }
                 int base = 10;
                 int i = 0;
                 if (pt.dot && !pt.beforedot && !pt.afterdot) {
-                    report(&r, "invalid float number format");
+                    report(&r, pt.exists(), v, "invalid float number format");
                     return 0;
                 }
                 if (pt.str.starts_with("0x") || pt.str.starts_with("0X")) {
                     if (pt.str.size() >= 3 && pt.str[2] == '.' && !pt.afterdot) {
-                        report(&r, "invalid hex float fromat. token is " + pt.str);
+                        report(&r, pt.exists(), v, "invalid hex float fromat. token is " + pt.str);
                         return 0;
                     }
                     base = 16;
@@ -301,7 +315,7 @@ namespace binred {
                 check_int_str(pt.str, i, base, allowed);
                 if (pt.str.size() == allowed) {
                     if (!pt.beforedot || pt.dot || pt.sign) {
-                        report(&r, "parser is broken");
+                        report(&r, pt.exists(), v, "parser is broken");
                         return -1;
                     }
                     r.current = pt.beforedot->get_next();
@@ -312,7 +326,7 @@ namespace binred {
                 }
                 if (pt.str[allowed] == '.') {
                     if (!pt.dot) {
-                        report(&r, "parser is broken");
+                        report(&r, pt.exists(), v, "parser is broken");
                         return -1;
                     }
                     i = allowed + 1;
@@ -320,7 +334,7 @@ namespace binred {
                 check_int_str(pt.str, i, base, allowed);
                 if (pt.str.size() == allowed) {
                     if (pt.sign) {
-                        report(&r, "parser is broken");
+                        report(&r, pt.exists(), v, "parser is broken");
                         return -1;
                     }
                     if (pt.afterdot) {
@@ -330,7 +344,7 @@ namespace binred {
                         r.current = pt.dot->get_next();
                     }
                     else {
-                        report(&r, "parser is broken");
+                        report(&r, pt.exists(), v, "parser is broken");
                         return -1;
                     }
                     if (!callback(pt.exists(), r, pt.str, "NUMBER")) {
@@ -340,13 +354,13 @@ namespace binred {
                 }
                 if (base == 16) {
                     if (pt.str[allowed] != 'p' && pt.str[allowed] != 'P') {
-                        report(&r, "invalid hex float format. token is " + pt.str);
+                        report(&r, pt.exists(), v, "invalid hex float format. token is " + pt.str);
                         return 0;
                     }
                 }
                 else {
                     if (pt.str[allowed] != 'e' && pt.str[allowed] != 'E') {
-                        report(&r, "invalid float format. token is " + pt.str);
+                        report(&r, pt.exists(), v, "invalid float format. token is " + pt.str);
                         return 0;
                     }
                 }
@@ -354,19 +368,19 @@ namespace binred {
                 if (pt.str.size() > i) {
                     if (pt.str[i] == '+' || pt.str[i] == '-') {
                         if (!pt.sign) {
-                            report(&r, "parser is broken");
+                            report(&r, pt.exists(), v, "parser is broken");
                             return -1;
                         }
                         i++;
                     }
                 }
                 if (pt.str.size() <= i) {
-                    report(&r, "invalid float format. token is " + pt.str);
+                    report(&r, pt.exists(), v, "invalid float format. token is " + pt.str);
                     return 0;
                 }
                 check_int_str(pt.str, i, 10, allowed);
                 if (pt.str.size() != allowed) {
-                    report(&r, "invalid float format. token is " + pt.str);
+                    report(&r, pt.exists(), v, "invalid float format. token is " + pt.str);
                     return 0;
                 }
                 if (pt.aftersign) {
@@ -379,7 +393,7 @@ namespace binred {
                     r.current = pt.beforedot->get_next();
                 }
                 else {
-                    report(&r, "parser is broken");
+                    report(&r, pt.exists(), v, "parser is broken");
                     return -1;
                 }
                 if (!callback(pt.exists(), r, pt.str, "NUMBER")) {
@@ -402,7 +416,7 @@ namespace binred {
                     int allowed = 0;
                     check_int_str(idv, i, base, allowed);
                     if (idv.size() != allowed) {
-                        report(&r, "invalid integer." + idv);
+                        report(&r, e, v, "invalid integer." + idv);
                         return false;
                     }
                     return true;
@@ -410,7 +424,7 @@ namespace binred {
                 if (v->token->has_("EOF")) {
                     auto e = cr.Read();
                     if (e) {
-                        report(&r, "expect EOF but token is " + e->to_string());
+                        report(&r, e, v, "expect EOF but token is " + e->to_string());
                         return 0;
                     }
                     if (!callback(e, cr, e->to_string(), "EOF")) {
@@ -422,11 +436,11 @@ namespace binred {
                     auto e = r.ReadorEOF();
                     cr.SetIgnoreLine(true);
                     if (!e) {
-                        report(&r, "unexpected EOF. expect EOL but not");
+                        report(&r, e, v, "unexpected EOF. expect EOL but not");
                         return 0;
                     }
                     if (!e->is_(TokenKind::line)) {
-                        report(&r, "expect EOL but token is " + e->to_string());
+                        report(&r, e, v, "expect EOL but token is " + e->to_string());
                         return 0;
                     }
                     if (!callback(e, cr, e->to_string(), "EOL")) {
@@ -437,10 +451,10 @@ namespace binred {
                 else if (v->token->has_("ID")) {
                     auto e = cr.ReadorEOF();
                     if (!e) {
-                        report(&r, "unexpected EOF. expect identifier");
+                        report(&r, e, v, "unexpected EOF. expect identifier");
                     }
                     if (!e->is_(TokenKind::identifiers)) {
-                        report(&r, "expect identifier but token is " + e->to_string());
+                        report(&r, e, v, "expect identifier but token is " + e->to_string());
                         return 0;
                     }
                     if (!callback(e, cr, e->to_string(), "ID")) {
@@ -451,11 +465,11 @@ namespace binred {
                 else if (v->token->has_("INTEGER")) {
                     auto e = cr.ReadorEOF();
                     if (!e) {
-                        report(&r, "unexpected EOF. expect integer");
+                        report(&r, e, v, "unexpected EOF. expect integer");
                         return 0;
                     }
                     if (!e->is_(TokenKind::identifiers)) {
-                        report(&r, "expect integer but token is " + e->to_string());
+                        report(&r, e, v, "expect integer but token is " + e->to_string());
                         return 0;
                     }
                     if (!check_integer(e)) {
@@ -467,35 +481,35 @@ namespace binred {
                     cr.Consume();
                 }
                 else if (v->token->has_("NUMBER")) {
-                    if (auto res = parse_float(cr); res <= 0) {
+                    if (auto res = parse_float(cr, v); res <= 0) {
                         return res;
                     }
                 }
                 else if (v->token->has_("STRING")) {
                     auto e = cr.ReadorEOF();
                     if (!e) {
-                        report(&r, "unexpected EOF. expect string");
+                        report(&r, e, v, "unexpected EOF. expect string");
                         return 0;
                     }
                     if (!e->has_("\"") && !e->has_("'") && !e->has_("`")) {
-                        report(&r, "expected string but token is " + e->to_string());
+                        report(&r, e, v, "expected string but token is " + e->to_string());
                         return 0;
                     }
                     auto startvalue = e->to_string();
                     auto start = e;
                     e = cr.ConsumeGetorEOF();
                     if (!e) {
-                        report(&r, "unexpected EOF. expect string");
+                        report(&r, e, v, "unexpected EOF. expect string");
                         return 0;
                     }
                     auto value = e->to_string();
                     e = cr.ConsumeGetorEOF();
                     if (!e) {
-                        report(&r, "unexpected EOF. expect end of string " + startvalue);
+                        report(&r, e, v, "unexpected EOF. expect end of string " + startvalue);
                         return 0;
                     }
                     if (!e->has_(startvalue)) {
-                        report(&r, "expect " + startvalue + " but token is " + e->to_string());
+                        report(&r, e, v, "expect " + startvalue + " but token is " + e->to_string());
                     }
                     if (!callback(start, cr, value, "STRING")) {
                         return -1;
@@ -503,7 +517,7 @@ namespace binred {
                     cr.Consume();
                 }
                 else {
-                    report(&r, "unimplemented " + v->token->to_string());
+                    report(&r, nullptr, v, "unimplemented " + v->token->to_string());
                     return -1;
                 }
                 r.current = cr.current;
@@ -576,7 +590,7 @@ namespace binred {
                                             auto res = parse_or(r, v, index);
                                             if (res > 0) {
                                                 if (!already_set.insert(index).second) {
-                                                    report(&r, "index " + std::to_string(index) + " is already set");
+                                                    report(&r, nullptr, v, "index " + std::to_string(index) + " is already set");
                                                     return -1;
                                                 }
                                             }
@@ -601,7 +615,7 @@ namespace binred {
                             break;
                         }
                         default:
-                            report(&r, "unimplemented");
+                            report(&r, nullptr, v, "unimplemented");
                             return -1;
                     }
                 }
@@ -611,13 +625,12 @@ namespace binred {
             int parse_follow_syntax() {
                 auto found = p.syntax.find("ROOT");
                 if (found == p.syntax.end()) {
-                    report(nullptr, "need ROOT syntax element");
+                    report(nullptr, nullptr, nullptr, "need ROOT syntax element");
                     return false;
                 }
                 ctx.scope.clear();
                 ctx.scope.push_back("ROOT");
-                ctx.mostreached = 0;
-                ctx.mostreachedmsg.clear();
+                ctx.reach.clear();
                 auto r = p.get_reader();
                 auto res = parse_on_vec(r, found->second);
                 if (res > 0) {
