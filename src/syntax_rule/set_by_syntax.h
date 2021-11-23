@@ -147,6 +147,8 @@ namespace binred {
                     cb = InvokeProxy<Stmts>();
                 }
                 else if (ctx.is_token("}")) {
+                    auto stmts = cb.get_rawfunc<InvokeProxy<Stmts>>();
+                    stmts->stmt;
                 }
             }
             else {
