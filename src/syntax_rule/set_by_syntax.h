@@ -84,5 +84,6 @@ namespace binred {
     };
 
     struct IfStmt {
+        bool norollback = false;
     };
 }  // namespace binred

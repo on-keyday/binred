@@ -161,10 +161,11 @@ namespace binred {
                     ctx.reach.errmsg = msg;
                     ctx.reach.token = e;
                     ctx.reach.syntax = v;
+                    callback(e, *r, e ? e->to_string() : "", "ERROR");
                 }
             }
 
-            bool callback(std::shared_ptr<token_t>& relnode, TokenReader& r, const std::string& token, const std::string& elm) {
+            bool callback(const std::shared_ptr<token_t>& relnode, TokenReader& r, const std::string& token, const std::string& elm) {
                 if (cb) {
                     ctx.token = token;
                     ctx.elm = elm;
