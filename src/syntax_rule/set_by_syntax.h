@@ -175,24 +175,34 @@ namespace binred {
     };
 
     struct Stmts : Stmt {
+        static Stmt* borrow_ptr(SyntaxCb& cb) {
+            return cb.get_rawfunc<Stmt, Stmts, IfStmt>();
+        }
+
         static std::shared_ptr<Stmt> get_ptr(SyntaxCb& cb) {
             return cb.move_from_rawfunc<Stmt, Stmts, IfStmt>(move_to_shared<Stmt>());
         }
 
+        std::vector<std::shared_ptr<Stmt>> stmts;
         SyntaxCb cb;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (cb) {
                 auto ret = cb(ctx);
-                if (auto ptr = get_ptr(cb)) {
+                if (auto ptr = borrow_ptr(cb)) {
                     if (ptr->end_stmt()) {
+                        stmts.push_back(get_ptr(cb));
                         cb = nullptr;
                     }
                 }
                 else {
+                    ctx.set_errmsg("invalid stmt structure");
+                    return false;
                 }
+                return ret;
             }
             else {
                 if (ctx.is_current("IFSTMT")) {
+                    cb = IfStmt();
                 }
             }
             return true;
