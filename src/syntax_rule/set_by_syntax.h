@@ -39,10 +39,6 @@ namespace binred {
         bool end_stmt() const {
             return ended;
         }
-
-        static std::shared_ptr<Stmt> get_ptr(SyntaxCb& cb) {
-            return cb.move_from_rawfunc<Stmt, Stmts, IfStmt>(move_to_shared<Stmt>());
-        }
     };
 
     struct TreeBySyntax {
@@ -179,11 +175,15 @@ namespace binred {
     };
 
     struct Stmts : Stmt {
+        static std::shared_ptr<Stmt> get_ptr(SyntaxCb& cb) {
+            return cb.move_from_rawfunc<Stmt, Stmts, IfStmt>(move_to_shared<Stmt>());
+        }
+
         SyntaxCb cb;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (cb) {
                 auto ret = cb(ctx);
-                if (auto ptr = Stmt::get_ptr(cb)) {
+                if (auto ptr = get_ptr(cb)) {
                     if (ptr->end_stmt()) {
                         cb = nullptr;
                     }
