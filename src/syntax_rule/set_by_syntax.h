@@ -10,7 +10,7 @@
 #include "../syntax/syntax.h"
 
 namespace binred {
-    using SyntaxCb = syntax::Callback<syntax::MatchingErr, const syntax::MatchingContext&>;
+    using SyntaxCb = Callback<syntax::MatchingErr, const syntax::MatchingContext&>;
 
     struct TreeBySyntax {
         std::shared_ptr<Expr> e;

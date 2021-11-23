@@ -7,7 +7,7 @@
 
 #pragma once
 #include "syntax_parser.h"
-#include "callback.h"
+#include <callback.h>
 #include <enumext.h>
 namespace binred {
     namespace syntax {
