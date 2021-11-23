@@ -100,6 +100,23 @@ namespace PROJECT_NAME {
             }
         };
 
+#define CB_MEMBER(STNAME, ...)                                \
+    template <class F, class Res, class... MArg>              \
+    struct STNAME {                                           \
+        using Member = Res (F::*)(MArg...) __VA_ARGS__;       \
+        __VA_ARGS__ F* ptr = nullptr;                         \
+        Member member = nullptr;                              \
+                                                              \
+        STNAME(__VA_ARGS__ F* p, Member memb)                 \
+            : ptr(p), member(memb) {}                         \
+                                                              \
+        Res operator()(Args&&... args) __VA_ARGS__ {          \
+            return ptr->*member(std::forward<Args>(args)...); \
+        }                                                     \
+    };
+        CB_MEMBER(MemberFunc)
+        CB_MEMBER(ConstMemberFunc, const)
+#undef CB_MEMBER
 #undef CB_COMMON_METHOD
        public:
         constexpr Callback() {}
@@ -120,9 +137,26 @@ namespace PROJECT_NAME {
             return *this;
         }
 
+       private:
+        template <class F>
+        void make_fn(F&& f) {
+            fn = new Impl<std::decay_t<F>>(std::forward<std::decay_t<F>>(f));
+        }
+
+       public:
         template <class F>
         Callback(F&& f) {
-            fn = new Impl<std::decay_t<F>>(std::forward<std::decay_t<F>>(f));
+            make_fn(std::forward<F>(f));
+        }
+
+        template <class F, class Res, class... MArg>
+        Callback(F* ptr, Res (F::*member)(MArg...)) {
+            make_fn(MemberFunc(ptr, member));
+        }
+
+        template <class F, class Res, class... MArg>
+        Callback(const F* ptr, Res (F::*member)(MArg...) const) {
+            make_fn(ConstMemberFunc(ptr, member));
         }
 
         template <class... CArg>

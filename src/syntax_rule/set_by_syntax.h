@@ -88,9 +88,18 @@ namespace binred {
 
     template <class Stmt>
     struct InvokeProxy {
-        Stmt stmt;
+        Stmt* stmt;
+
+        InvokeProxy() {
+            stmt = new Stmt();
+        }
+
         bool operator()(const syntax::MatchingContext& ctx) {
-            return stmt(ctx);
+            return (*stmt)(ctx);
+        }
+
+        ~InvokeProxy() {
+            delete stmt;
         }
     };
 
@@ -135,7 +144,7 @@ namespace binred {
                         return false;
                     }
                     cond = std::move(tree->e);
-                    // cb = InvokeProxy<Stmts>();
+                    cb = InvokeProxy<Stmts>();
                 }
                 else if (ctx.is_token("}")) {
                 }
@@ -150,5 +159,7 @@ namespace binred {
     };
 
     struct Stmts {
+        bool operator()(const syntax::MatchingContext& ctx) {
+        }
     };
 }  // namespace binred
