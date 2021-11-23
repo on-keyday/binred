@@ -123,6 +123,8 @@ namespace PROJECT_NAME {
        public:
         constexpr Callback() {}
 
+        constexpr Callback(std::nullptr_t) {}
+
         constexpr operator bool() const {
             return fn != nullptr;
         }

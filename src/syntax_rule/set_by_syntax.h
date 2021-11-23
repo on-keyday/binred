@@ -29,10 +29,19 @@ namespace binred {
         }
     };
 
+    struct Stmts;
+    struct IfStmt;
+    struct FuncStmt;
+    struct VarInitStmt;
+
     struct Stmt {
         bool ended = false;
         bool end_stmt() const {
             return ended;
+        }
+
+        static Stmt* get_ptr(SyntaxCb& cb) {
+            return cb.get_rawfunc<Stmt, Stmts, IfStmt>();
         }
     };
 
@@ -110,9 +119,7 @@ namespace binred {
         }
     };
 
-    struct Stmts;
-
-    struct IfStmt {
+    struct IfStmt : Stmt {
         bool keyword = false;
         syntax::MatchingStackInfo stack;
         SyntaxCb cb;
@@ -171,8 +178,17 @@ namespace binred {
         }
     };
 
-    struct Stmts {
+    struct Stmts : Stmt {
+        SyntaxCb cb;
         bool operator()(const syntax::MatchingContext& ctx) {
+            if (cb) {
+                auto ret = cb(ctx);
+                if (auto ptr = Stmt::get_ptr(cb)) {
+                }
+            }
+            else {
+                Stmt::get_ptr(cb);
+            }
         }
     };
 }  // namespace binred
