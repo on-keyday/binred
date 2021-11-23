@@ -75,6 +75,10 @@ namespace binred {
             }
 
            public:
+            const MostReachInfo& get_mostreach() const {
+                return reach;
+            }
+
             const std::weak_ptr<token_t>& get_pos() const {
                 return node;
             }
