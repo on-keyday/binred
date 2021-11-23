@@ -191,6 +191,10 @@ namespace binred {
         bool syminit = false;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (!syminit) {
+                if (ctx.is_type(syntax::MatchingType::error)) {
+                    ended = true;
+                    return false;
+                }
                 if (ctx.is_current("VARINIT")) {
                     if (ctx.is_token(":=")) {
                         if (varname.size() == 0) {
@@ -200,8 +204,19 @@ namespace binred {
                         syminit = true;
                         return true;
                     }
+                    else if (ctx.is_token(",")) {
+                        return true;
+                    }
+                    else if (ctx.is_type(syntax::MatchingType::identifier)) {
+                        varname.push_back(ctx.get_token());
+                        return true;
+                    }
+                    ctx.set_errmsg("syntax parser is broken at varinit");
+                    return false;
                 }
             }
+            ctx.set_errmsg("unimplemented");
+            return false;
         }
     };
 
