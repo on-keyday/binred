@@ -8,6 +8,7 @@
 #pragma once
 #include "syntax_parser.h"
 #include "callback.h"
+#include <enumext.h>
 namespace binred {
     namespace syntax {
         struct FloatReadPoint {
@@ -55,13 +56,36 @@ namespace binred {
             size_t rootpos = 0;
         };
 
+        enum class MatchingType {
+            number,
+            integer,
+            identifier,
+            eof,
+            eol,
+            string,
+            symbol,
+            keyword,
+            error,
+        };
+
+        BEGIN_ENUM_STRING_MSG(MatchingType, type_str)
+        ENUM_STRING_MSG(MatchingType::number, "NUMBER")
+        ENUM_STRING_MSG(MatchingType::integer, "INTEGER")
+        ENUM_STRING_MSG(MatchingType::identifier, "ID")
+        ENUM_STRING_MSG(MatchingType::eof, "EOF")
+        ENUM_STRING_MSG(MatchingType::eol, "EOL")
+        ENUM_STRING_MSG(MatchingType::string, "STRING")
+        ENUM_STRING_MSG(MatchingType::symbol, "SYMBOL")
+        ENUM_STRING_MSG(MatchingType::keyword, "KEYWORD")
+        END_ENUM_STRING_MSG("error");
+
         struct MatchingContext {
             friend struct SyntaxMatching;
 
            private:
             std::vector<std::string> scope;
             std::string token;
-            std::string elm;
+            MatchingType type;
             TokenReader* r;
             std::weak_ptr<token_t> node;
             std::string* err;
@@ -111,6 +135,10 @@ namespace binred {
                 };
             }
 
+            bool is_rollbacked(const MatchingStackInfo& st) const {
+                return st.rootpos >= get_tokpos();
+            }
+
             bool is_current(const std::string& n) const {
                 return current() == n;
             }
@@ -137,8 +165,8 @@ namespace binred {
                 return false;
             }
 
-            bool is_type(const std::string& n) const {
-                return n == elm;
+            bool is_type(MatchingType ty) const {
+                return ty == type;
             }
 
             bool is_token(const std::string& n) const {
@@ -153,8 +181,8 @@ namespace binred {
                 return token;
             }
 
-            const std::string& get_type() const {
-                return elm;
+            MatchingType get_type() const {
+                return type;
             }
         };
 
@@ -185,14 +213,14 @@ namespace binred {
                     ctx.reach.errmsg = msg;
                     ctx.reach.token = e;
                     ctx.reach.syntax = v;
-                    callback(e, *r, e ? e->to_string() : "", "ERROR");
+                    callback(e, *r, e ? e->to_string() : "", MatchingType::error);
                 }
             }
 
-            bool callback(const std::shared_ptr<token_t>& relnode, TokenReader& r, const std::string& token, const std::string& elm) {
+            bool callback(const std::shared_ptr<token_t>& relnode, TokenReader& r, const std::string& token, MatchingType type) {
                 if (cb) {
                     ctx.token = token;
-                    ctx.elm = elm;
+                    ctx.type = type;
                     ctx.r = &r;
                     ctx.node = relnode;
                     ctx.err = &p.errmsg;
@@ -214,7 +242,7 @@ namespace binred {
                     report(&r, e, v, "expected " + value + " but " + e->to_string());
                     return 0;
                 }
-                if (!callback(e, r, value, e->is_(TokenKind::symbols) ? "SYMBOL" : "KEYWORD")) {
+                if (!callback(e, r, value, e->is_(TokenKind::symbols) ? MatchingType::symbol : MatchingType::keyword)) {
                     return -1;
                 }
                 r.Consume();
@@ -348,7 +376,7 @@ namespace binred {
                         return -1;
                     }
                     r.current = pt.beforedot->get_next();
-                    if (!callback(pt.exists(), r, pt.str, "INTEGER")) {
+                    if (!callback(pt.exists(), r, pt.str, MatchingType::integer)) {
                         return -1;
                     }
                     return 1;
@@ -376,7 +404,7 @@ namespace binred {
                         report(&r, pt.exists(), v, "parser is broken");
                         return -1;
                     }
-                    if (!callback(pt.exists(), r, pt.str, "NUMBER")) {
+                    if (!callback(pt.exists(), r, pt.str, MatchingType::number)) {
                         return -1;
                     }
                     return 1;
@@ -425,7 +453,7 @@ namespace binred {
                     report(&r, pt.exists(), v, "parser is broken");
                     return -1;
                 }
-                if (!callback(pt.exists(), r, pt.str, "NUMBER")) {
+                if (!callback(pt.exists(), r, pt.str, MatchingType::number)) {
                     return -1;
                 }
                 return true;
@@ -456,7 +484,7 @@ namespace binred {
                         report(&r, e, v, "expect EOF but token is " + e->to_string());
                         return 0;
                     }
-                    if (!callback(e, cr, e->to_string(), "EOF")) {
+                    if (!callback(e, cr, e->to_string(), MatchingType::eof)) {
                         return -1;
                     }
                 }
@@ -472,7 +500,7 @@ namespace binred {
                         report(&r, e, v, "expect EOL but token is " + e->to_string());
                         return 0;
                     }
-                    if (!callback(e, cr, e->to_string(), "EOL")) {
+                    if (!callback(e, cr, e->to_string(), MatchingType::eol)) {
                         return -1;
                     }
                     cr.Consume();
@@ -486,7 +514,7 @@ namespace binred {
                         report(&r, e, v, "expect identifier but token is " + e->to_string());
                         return 0;
                     }
-                    if (!callback(e, cr, e->to_string(), "ID")) {
+                    if (!callback(e, cr, e->to_string(), MatchingType::identifier)) {
                         return -1;
                     }
                     cr.Consume();
@@ -504,7 +532,7 @@ namespace binred {
                     if (!check_integer(e)) {
                         return 0;
                     }
-                    if (!callback(e, cr, e->to_string(), "INTEGER")) {
+                    if (!callback(e, cr, e->to_string(), MatchingType::integer)) {
                         return -1;
                     }
                     cr.Consume();
@@ -540,7 +568,7 @@ namespace binred {
                     if (!e->has_(startvalue)) {
                         report(&r, e, v, "expect " + startvalue + " but token is " + e->to_string());
                     }
-                    if (!callback(start, cr, value, "STRING")) {
+                    if (!callback(start, cr, value, MatchingType::string)) {
                         return -1;
                     }
                     cr.Consume();

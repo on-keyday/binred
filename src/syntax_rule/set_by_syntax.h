@@ -37,7 +37,7 @@ namespace binred {
                     }
                     return true;
                 };
-                if (ctx.is_type("KEYWORD")) {
+                if (ctx.is_type(syntax::MatchingType::keyword)) {
                     if (ctx.is_token("nil")) {
                         kind = ExprKind::nil;
                     }
@@ -50,18 +50,18 @@ namespace binred {
                     }
                     return to_prim();
                 }
-                else if (ctx.is_type("ID")) {
+                else if (ctx.is_type(syntax::MatchingType::identifier)) {
                     return to_prim();
                 }
-                else if (ctx.is_type("INTEGER") || ctx.is_type("NUMBER")) {
+                else if (ctx.is_type(syntax::MatchingType::integer) || ctx.is_type(syntax::MatchingType::number)) {
                     kind = ExprKind::number;
                     return to_prim();
                 }
-                else if (ctx.is_type("STRING")) {
+                else if (ctx.is_type(syntax::MatchingType::string)) {
                     kind = ExprKind::str;
                     return to_prim();
                 }
-                else if (ctx.is_type("SYMBOL")) {
+                else if (ctx.is_type(syntax::MatchingType::symbol)) {
                     if (ctx.is_token("(") || ctx.is_token(")")) {
                         return true;
                     }
@@ -90,7 +90,7 @@ namespace binred {
         std::shared_ptr<Expr> expr;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (!keyword) {
-                if (ctx.is_current("IFSTMT") && ctx.is_type("KEYWORD") && ctx.is_token("if")) {
+                if (ctx.is_current("IFSTMT") && ctx.is_type(syntax::MatchingType::keyword) && ctx.is_token("if")) {
                     keyword = true;
                     stack = ctx.get_stack();
                 }
