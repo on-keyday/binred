@@ -139,6 +139,10 @@ namespace binred {
                 return st.rootpos >= get_tokpos();
             }
 
+            bool is_current(const MatchingStackInfo& st) const {
+                return st.stackptr == get_stackptr();
+            }
+
             bool is_current(const std::string& n) const {
                 return current() == n;
             }

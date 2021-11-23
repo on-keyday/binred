@@ -79,15 +79,29 @@ namespace binred {
                         return false;
                     }
                 }
+                return true;
             }
-            return true;
+            ctx.set_errmsg("expected expr but not");
+            return false;
         }
     };
+
+    template <class Stmt>
+    struct InvokeProxy {
+        Stmt stmt;
+        bool operator()(const syntax::MatchingContext& ctx) {
+            return stmt(ctx);
+        }
+    };
+
+    struct Stmts;
 
     struct IfStmt {
         bool keyword = false;
         syntax::MatchingStackInfo stack;
-        std::shared_ptr<Expr> expr;
+        SyntaxCb cb;
+        std::shared_ptr<Expr> init;
+        std::shared_ptr<Expr> cond;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (!keyword) {
                 if (ctx.is_current("IFSTMT") && ctx.is_type(syntax::MatchingType::keyword) && ctx.is_token("if")) {
@@ -100,10 +114,41 @@ namespace binred {
                 }
                 return true;
             }
-            if (stack.rootpos < ctx.get_tokpos()) {
+            if (ctx.is_rollbacked(stack)) {
                 ctx.set_errmsg("unexpected rollback. if statement expected.");
                 return false;
             }
+            if (ctx.is_current(stack)) {
+                if (ctx.is_token(";")) {
+                    auto tree = cb.get_rawfunc<TreeBySyntax>();
+                    if (!tree) {
+                        ctx.set_errmsg("syntax parser is broken");
+                        return false;
+                    }
+                    init = std::move(tree->e);
+                    return true;
+                }
+                else if (ctx.is_token("{")) {
+                    auto tree = cb.get_rawfunc<TreeBySyntax>();
+                    if (!tree) {
+                        ctx.set_errmsg("syntax parser is broken");
+                        return false;
+                    }
+                    cond = std::move(tree->e);
+                    // cb = InvokeProxy<Stmts>();
+                }
+                else if (ctx.is_token("}")) {
+                }
+            }
+            else {
+                if (!cb) {
+                    cb = TreeBySyntax();
+                }
+                return cb(ctx);
+            }
         }
+    };
+
+    struct Stmts {
     };
 }  // namespace binred
