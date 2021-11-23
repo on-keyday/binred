@@ -9,6 +9,7 @@
 #include "project_name.h"
 #include "callback_invoker.h"
 #include <stdexcept>
+#include <memory>
 
 namespace PROJECT_NAME {
     template <class Ret, class... Args>
@@ -130,8 +131,8 @@ namespace PROJECT_NAME {
         }
 
         Callback(Callback&& in) noexcept {
-            fn = in.f;
-            in.f = nullptr;
+            fn = in.fn;
+            in.fn = nullptr;
         }
 
         Callback& operator=(Callback&& in) noexcept {
@@ -205,6 +206,21 @@ namespace PROJECT_NAME {
             return find_derived<Base, DerivedOne, Derived...>();
         }
 
+        template <class Type, class... Other, class Func>
+        auto move_from_rawfunc(Func&& make) {
+            using Result = decltype(std::declval<Func>()(std::declval<Type>()));
+            auto ptr = get_rawfunc<Type>();
+            if (ptr) {
+                return make(std::move(*ptr));
+            }
+            if CONSTEXPRIF (sizeof...(Other) > 1) {
+                return move_from_rawfunc<Other...>(std::forward<Func>(make));
+            }
+            else {
+                return Result(nullptr);
+            }
+        }
+
         bool is_const_callable() const {
             return fn ? fn->const_callable() : false;
         }
@@ -213,5 +229,19 @@ namespace PROJECT_NAME {
             delete fn;
         }
     };
+
+    template <class Base>
+    auto move_to_shared() {
+        return [](auto&& v) -> std::shared_ptr<Base> {
+            return std::make_shared<std::remove_cvref_t<decltype(v)>>(std::move(v));
+        };
+    }
+
+    template <class Base>
+    auto move_to_ptr() {
+        return [](auto&& v) -> Base* {
+            return new std::remove_cvref_t<decltype(v)>(std::move(v));
+        };
+    }
 
 }  // namespace PROJECT_NAME

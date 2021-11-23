@@ -40,8 +40,8 @@ namespace binred {
             return ended;
         }
 
-        static Stmt* get_ptr(SyntaxCb& cb) {
-            return cb.get_rawfunc<Stmt, Stmts, IfStmt>();
+        static std::shared_ptr<Stmt> get_ptr(SyntaxCb& cb) {
+            return cb.move_from_rawfunc<Stmt, Stmts, IfStmt>(move_to_shared<Stmt>());
         }
     };
 
@@ -184,11 +184,18 @@ namespace binred {
             if (cb) {
                 auto ret = cb(ctx);
                 if (auto ptr = Stmt::get_ptr(cb)) {
+                    if (ptr->end_stmt()) {
+                        cb = nullptr;
+                    }
+                }
+                else {
                 }
             }
             else {
-                Stmt::get_ptr(cb);
+                if (ctx.is_current("IFSTMT")) {
+                }
             }
+            return true;
         }
     };
 }  // namespace binred
