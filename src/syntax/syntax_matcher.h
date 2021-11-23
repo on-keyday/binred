@@ -134,7 +134,7 @@ namespace binred {
             MatchingContext ctx;
 
            public:
-            const std::string& mosterr() {
+            const std::string& mosterr() const {
                 return ctx.mostreachedmsg;
             }
 
