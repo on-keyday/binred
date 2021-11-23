@@ -20,7 +20,7 @@ namespace binred {
                 auto set_to = [&](auto& ptr) {
                     ptr = std::make_shared<Expr>();
                     ptr->kind = kind;
-                    ptr->token = ctx.get_pos().lock();
+                    ptr->token = ctx.get_tokloc().lock();
                     ptr->v = ctx.get_token();
                 };
                 auto to_prim = [&]() {
@@ -87,6 +87,14 @@ namespace binred {
         bool keyword = false;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (!keyword) {
+                if (ctx.is_current("IFSTMT") && ctx.is_type("KEYWORD") && ctx.is_token("if")) {
+                    keyword = true;
+                }
+                else {
+                    ctx.set_errmsg("expect if statement but not");
+                    return false;
+                }
+                return true;
             }
         }
     };

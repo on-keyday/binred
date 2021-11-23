@@ -79,7 +79,11 @@ namespace binred {
                 return reach;
             }
 
-            const std::weak_ptr<token_t>& get_pos() const {
+            size_t get_pos() const {
+                return r->count;
+            }
+
+            const std::weak_ptr<token_t>& get_tokloc() const {
                 return node;
             }
 
