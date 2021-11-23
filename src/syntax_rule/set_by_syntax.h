@@ -29,6 +29,13 @@ namespace binred {
         }
     };
 
+    struct Stmt {
+        bool ended = false;
+        bool end_stmt() const {
+            return ended;
+        }
+    };
+
     struct TreeBySyntax {
         std::shared_ptr<Expr> e;
 
