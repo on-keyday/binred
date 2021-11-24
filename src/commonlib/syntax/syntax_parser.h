@@ -299,11 +299,15 @@ namespace PROJECT_NAME {
                 return true;
             }
 
-            template <class Reader>
-            tkpsr::MergeErr parse(Reader& r) {
+            static tkpsr::MergeRule<std::string> default_comment() {
                 tkpsr::MergeRule<std::string> rule;
                 rule.oneline_comment = "#";
                 rule.string_symbol[0].symbol = '"';
+                return rule;
+            }
+
+            template <class Reader>
+            tkpsr::MergeErr parse(Reader& r, const tkpsr::MergeRule<std::string>& rule = default_comment()) {
                 return parser.ReadAndMerge(r, rule);
             }
 
