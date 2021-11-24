@@ -430,6 +430,9 @@ namespace binred {
                 else if (ctx.is_current("EXPRSTMT")) {
                     cb = ExprStmt();
                 }
+                else if (ctx.is_type(syntax::MatchingType::eof)) {
+                    return true;
+                }
                 else {
                     ctx.set_errmsg("unknown stmt " + ctx.current());
                     return false;
