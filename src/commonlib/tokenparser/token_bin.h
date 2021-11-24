@@ -104,5 +104,91 @@ namespace PROJECT_NAME {
                 return target.read_byte(str, size);
             }
         };
+
+        template <class Map>
+        struct TokenWriteContext {
+            Map keyword;
+            Map symbol;
+            size_t count = 0;
+            Map id;
+            template <class String>
+            size_t getid(const String& v) {
+                if (auto found = id.find(v); found != id.end()) {
+                    return found->second;
+                }
+                id[v] = count;
+                count++;
+                return count - 1;
+            }
+        };
+
+        struct TokenWriter {
+            template <class Reg, class Map>
+            void set_mapping(Registry<Reg>& reg, Map& map) {
+                size_t count = 0;
+                for (auto& v : reg.reg) {
+                    map.insert({v, count});
+                    count++;
+                }
+            }
+
+            template <class Buf, class String, class Map>
+            bool write_token(Serializer<Buf>& target, Token<String>& token, TokenWriteContext<Map>& ctx) {
+                auto kind = token.get_kind();
+                if (!BinaryIO::write_num(target, size_t(kind))) {
+                    return false;
+                }
+                switch (kind) {
+                    case TokenKind::line: {
+                        Line<String>* line = token.line();
+                        if (!BinaryIO::write_num(target, size_t(line->get_linekind()))) {
+                            return false;
+                        }
+                        if (!BinaryIO::write_num(target, size_t(line->get_linecount()))) {
+                            return false;
+                        }
+                        return true;
+                    }
+                    case TokenKind::spaces: {
+                        Spaces<String>* space = token.space();
+                        if (!BinaryIO::write_num(target, size_t(space->get_spacechar()))) {
+                            return false;
+                        }
+                        if (!BinaryIO::write_num(target, size_t(line->get_spacecount()))) {
+                            return false;
+                        }
+                        return true;
+                    }
+                    case TokenKind::keyword:
+                    case TokenKind::weak_keyword: {
+                        RegistryRead<String>* keyword = token.registry();
+                        auto found = ctx.keyword.find(keyword->get_token());
+                        if (found == ctx.keyword.end()) {
+                            return false;
+                        }
+                        if (!BinaryIO::write_num(target, size_t(found->second))) {
+                            return false;
+                        }
+                        return true;
+                    }
+                    case TokenKind::symbols: {
+                        RegistryRead<String>* symbol = token.registry();
+                        auto found = ctx.symbol.find(symbol->get_token());
+                        if (found == ctx.symbol.end()) {
+                            return false;
+                        }
+                        if (!BinaryIO::write_num(target, size_t(found->second))) {
+                            return false;
+                        }
+                        return true;
+                    }
+                    case TokenKind::identifiers: {
+                    }
+                    case TokenKind::root: {
+                        return true;
+                    }
+                }
+            }
+        };
     }  // namespace tokenparser
 }  // namespace PROJECT_NAME
