@@ -39,7 +39,7 @@ namespace binred {
         return [](auto&& v) -> std::shared_ptr<Base> {
             auto ret = v.stmt;
             v.stmt = nullptr;
-            return std::shared_ptr<Base>(v.stmt);
+            return std::shared_ptr<Base>(ret);
         };
     };
 
