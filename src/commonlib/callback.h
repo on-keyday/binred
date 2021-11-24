@@ -20,27 +20,31 @@ namespace PROJECT_NAME {
             virtual Ret operator()(Args&&...) const = 0;
             virtual bool is_sametype(const std::type_info&) const = 0;
             virtual void* get_rawptr() = 0;
-            virtual bool const_callable() const = 0;
-            virtual bool nothrow_callable() const = 0;
+            virtual bool get_cond(int i) const = 0;
             virtual ~Base() {}
         };
 
-#define CB_COMMON_METHOD()                                        \
-    F f;                                                          \
-    Impl(F&& in)                                                  \
-        : f(std::forward<F>(in)) {}                               \
-    bool is_sametype(const std::type_info& info) const override { \
-        return typeid(F) == info;                                 \
-    }                                                             \
-                                                                  \
-    void* get_rawptr() override {                                 \
-        return reinterpret_cast<void*>(std::addressof(f));        \
-    }                                                             \
-    bool const_callable() const override {                        \
-        return has_const_call<F>::value;                          \
-    }                                                             \
-    bool nothrow_callable() const override {                      \
-        return !return_void_v<F> || !std::is_reference_v<Ret>;    \
+#define CB_COMMON_METHOD()                                             \
+    F f;                                                               \
+    Impl(F&& in)                                                       \
+        : f(std::forward<F>(in)) {}                                    \
+    bool is_sametype(const std::type_info& info) const override {      \
+        return typeid(F) == info;                                      \
+    }                                                                  \
+                                                                       \
+    void* get_rawptr() override {                                      \
+        return reinterpret_cast<void*>(std::addressof(f));             \
+    }                                                                  \
+                                                                       \
+    bool get_cond(int i) const override {                              \
+        switch (i) {                                                   \
+            case 0:                                                    \
+                return has_const_call<F>::value;                       \
+            case 1:                                                    \
+                return !return_void_v<F> || !std::is_reference_v<Ret>; \
+            default:                                                   \
+                return std::is_nothrow_invocable_v<F, Args...>;        \
+        }                                                              \
     }
 
         Base* fn = nullptr;
@@ -229,17 +233,21 @@ namespace PROJECT_NAME {
         }
 
         bool is_const_callable() const {
-            return fn ? fn->const_callable() : false;
+            return fn ? fn->get_cond(0) : false;
         }
 
-        bool is_nothrow_callable() const {
-            return fn ? fn->nothrow_callable() : false;
+        bool is_noexcept_after_call() const {
+            return fn ? fn->get_cond(1) : false;
+        }
+
+        bool is_noexcept_invokeable() const {
+            return fn ? fn->get_cond(2) : false;
         }
 
         ~Callback() {
             delete fn;
         }
-    };
+    };  // namespace PROJECT_NAME
 
     template <class Base>
     constexpr auto move_to_shared() {
