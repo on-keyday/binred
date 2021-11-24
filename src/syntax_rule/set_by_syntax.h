@@ -29,6 +29,10 @@ namespace binred {
             return (*stmt)(ctx);
         }
 
+        void release() {
+            stmt->release();
+        }
+
         ~InvokeProxy() {
             delete stmt;
         }
@@ -39,6 +43,7 @@ namespace binred {
         return [](auto&& v) -> std::shared_ptr<Base> {
             auto ret = v.stmt;
             v.stmt = nullptr;
+            ret->release();
             return std::shared_ptr<Base>(ret);
         };
     };
@@ -305,6 +310,10 @@ namespace binred {
         }
 #undef STMTLIST
         std::vector<std::shared_ptr<Stmt>> stmts;
+
+        void release() {
+            cb = nullptr;
+        }
 
         bool operator()(const syntax::MatchingContext& ctx) {
             if (cb) {
