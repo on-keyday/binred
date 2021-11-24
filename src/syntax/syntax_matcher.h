@@ -608,7 +608,7 @@ namespace binred {
                     report(&r, nullptr, v, "unimplemented " + v->token->to_string());
                     return -1;
                 }
-                r.current = cr.current;
+                r.SeekTo(cr);
                 return 1;
             }
 
