@@ -81,7 +81,7 @@ namespace binred {
         ENUM_STRING_MSG(MatchingType::symbol, "SYMBOL")
         ENUM_STRING_MSG(MatchingType::keyword, "KEYWORD")
         ENUM_STRING_MSG(MatchingType::eos, "EOS")
-        ENUM_STRING_MSG(MatchingType::bos, "KEYWORD")
+        ENUM_STRING_MSG(MatchingType::bos, "BOS")
         END_ENUM_STRING_MSG("ERROR");
 
         struct MatchingContext {

@@ -213,7 +213,7 @@ namespace PROJECT_NAME {
             if (ptr) {
                 return make(std::move(*ptr));
             }
-            if CONSTEXPRIF (sizeof...(Other) > 1) {
+            if CONSTEXPRIF (sizeof...(Other) > 0) {
                 return move_from_rawfunc<Other...>(std::forward<Func>(make));
             }
             else {
