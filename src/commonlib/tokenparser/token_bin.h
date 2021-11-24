@@ -20,7 +20,7 @@ namespace PROJECT_NAME {
             static constexpr size_t limit32 = 0x3fffffff;
             static constexpr std::uint32_t mask32 = 0x80000000;
             static constexpr size_t limit64 = 0x3fffffffffffffff;
-            static constexpr std::uint8_t mask64 = 0xC000000000000000;
+            static constexpr std::uint64_t mask64 = 0xC000000000000000;
         };
 
         template <class String>
