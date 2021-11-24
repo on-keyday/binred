@@ -506,7 +506,7 @@ namespace binred {
                     auto e = cr.GetorEOF();
                     if (!v->adjacent) {
                         cr.SetIgnoreLine(false);
-                        e = r.ReadorEOF();
+                        e = cr.ReadorEOF();
                         cr.SetIgnoreLine(true);
                     }
                     if (!e) {
@@ -525,7 +525,7 @@ namespace binred {
                 else if (v->token->has_("ID")) {
                     auto e = cr.GetorEOF();
                     if (!v->adjacent) {
-                        e = r.ReadorEOF();
+                        e = cr.ReadorEOF();
                     }
                     if (!e) {
                         report(&r, e, v, "unexpected EOF. expect identifier");
@@ -542,7 +542,7 @@ namespace binred {
                 else if (v->token->has_("INTEGER")) {
                     auto e = cr.GetorEOF();
                     if (!v->adjacent) {
-                        e = r.ReadorEOF();
+                        e = cr.ReadorEOF();
                     }
                     if (!e) {
                         report(&r, e, v, "unexpected EOF. expect integer");
@@ -568,7 +568,7 @@ namespace binred {
                 else if (v->token->has_("STRING")) {
                     auto e = cr.GetorEOF();
                     if (!v->adjacent) {
-                        e = r.ReadorEOF();
+                        e = cr.ReadorEOF();
                     }
                     if (!e) {
                         report(&r, e, v, "unexpected EOF. expect string");
