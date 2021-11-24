@@ -227,7 +227,7 @@ namespace binred {
                             r.Consume();
                             continue;
                         }
-                        else if (!ptr->fatal && e->has_("&")) {
+                        else if (!ptr->fatal && e->has_("!")) {
                             ptr->fatal = true;
                             r.Consume();
                             continue;
