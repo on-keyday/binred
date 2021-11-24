@@ -355,6 +355,7 @@ namespace binred {
                         return false;
                     }
                     stmts = std::move(tmp);
+                    cb = nullptr;
                     ended = true;
                 }
                 else {
@@ -364,18 +365,16 @@ namespace binred {
                 return true;
             }
             else {
-                if (cb) {
+                if (!cb) {
                     cb = VarInitStmt();
                 }
                 auto res = cb(ctx);
                 auto ptr = cb.get_rawfunc<Stmt, ExprStmt, VarInitStmt>();
-                if (!ptr) {
-                    ctx.set_errmsg("parser broken");
-                    return false;
-                }
-                if (ptr->end_stmt() && !res) {
-                    cb = ExprStmt();
-                    return cb(ctx);
+                if (ptr) {
+                    if (ptr->end_stmt() && !res) {
+                        cb = ExprStmt();
+                        return cb(ctx);
+                    }
                 }
                 return res;
             }
