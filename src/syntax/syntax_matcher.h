@@ -256,7 +256,7 @@ namespace binred {
                 }
                 auto value = v->token->to_string();
                 if (!e->has_(value)) {
-                    report(&r, e, v, "expect " + value + " but token is" + e->to_string());
+                    report(&r, e, v, "expect " + value + " but token is " + e->to_string());
                     return 0;
                 }
                 if (!callback(e, r, value, e->is_(TokenKind::symbols) ? MatchingType::symbol : MatchingType::keyword)) {
@@ -588,7 +588,7 @@ namespace binred {
                         return 0;
                     }
                     if (!e->has_("\"") && !e->has_("'") && !e->has_("`")) {
-                        report(&r, e, v, "expected string but token is " + e->to_string());
+                        report(&r, e, v, "expect string but token is " + e->to_string());
                         return 0;
                     }
                     auto startvalue = e->to_string();
