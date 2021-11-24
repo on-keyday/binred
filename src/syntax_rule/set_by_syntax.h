@@ -29,6 +29,15 @@ namespace binred {
         }
     };
 
+    template <class Base>
+    auto move_from_InvokeProxy() {
+        return [](auto&& v) -> std::shared_ptr<Base> {
+            auto ret = v.stmt;
+            v.stmt = nullptr;
+            return std::shared_ptr<Base>(v.stmt);
+        };
+    };
+
     struct Stmts;
     struct IfStmt;
     struct FuncStmt;
@@ -160,11 +169,7 @@ namespace binred {
                     cb = InvokeProxy<Stmts>();
                 }
                 else if (ctx.is_token("}")) {
-                    auto tmp = cb.move_from_rawfunc<InvokeProxy<Stmts>>([](auto&& v) {
-                        auto ret = v.stmt;
-                        v.stmt = nullptr;
-                        return std::shared_ptr<Stmts>(v.stmt);
-                    });
+                    auto tmp = cb.move_from_rawfunc<InvokeProxy<Stmts>>(move_from_InvokeProxy<Stmts>());
                     if (!tmp) {
                         ctx.set_errmsg("syntax parser is broken");
                         return false;
@@ -189,7 +194,7 @@ namespace binred {
 
     struct VarInitStmt : Stmt {
         std::vector<std::string> varname;
-        std::shared_ptr<Expr> expr;
+        std::shared_ptr<Expr> init;
         bool syminit = false;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (!syminit) {
@@ -230,6 +235,7 @@ namespace binred {
                     ctx.set_errmsg("syntax parser is broken");
                     return false;
                 }
+                init=std::move(tree->e);
                 ended = true;
                 return true;
             }

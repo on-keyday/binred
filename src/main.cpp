@@ -141,5 +141,6 @@ int main(int argc, char** argv) {
             std::cout << "error: " << syntaxc.error();
         }
     }
+    binred::SyntaxCb cb = binred::Stmts();
     //binred_test();
 }
