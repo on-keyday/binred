@@ -80,6 +80,8 @@ namespace binred {
         ENUM_STRING_MSG(MatchingType::string, "STRING")
         ENUM_STRING_MSG(MatchingType::symbol, "SYMBOL")
         ENUM_STRING_MSG(MatchingType::keyword, "KEYWORD")
+        ENUM_STRING_MSG(MatchingType::eos, "EOS")
+        ENUM_STRING_MSG(MatchingType::bos, "KEYWORD")
         END_ENUM_STRING_MSG("ERROR");
 
         struct MatchingContext {
