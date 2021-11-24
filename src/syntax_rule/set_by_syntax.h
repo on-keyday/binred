@@ -197,10 +197,6 @@ namespace binred {
                     ended = true;
                     return false;
                 }
-                else if (ctx.is_type(syntax::MatchingType::eos)) {
-                    ended = true;
-                    return true;
-                }
                 else if (ctx.is_current("VARINIT")) {
                     if (ctx.is_token(":=")) {
                         if (varname.size() == 0) {
@@ -228,6 +224,15 @@ namespace binred {
                 ctx.set_errmsg("unexpected rollback. expect varinit");
                 return false;
             }
+            if (ctx.is_current(stack) && ctx.is_type(syntax::MatchingType::eos)) {
+                auto tree = cb.get_rawfunc<TreeBySyntax>();
+                if (!tree) {
+                    ctx.set_errmsg("syntax parser is broken");
+                    return false;
+                }
+                ended = true;
+                return true;
+            }
             if (!cb) {
                 cb = TreeBySyntax();
             }
@@ -241,7 +246,7 @@ namespace binred {
         }
 
         static std::shared_ptr<Stmt> get_ptr(SyntaxCb& cb) {
-            return cb.move_from_rawfunc<Stmt, Stmts, IfStmt>(move_to_shared<Stmt>());
+            return cb.move_from_rawfunc<Stmt, Stmts, IfStmt, VarInitStmt>(move_to_shared<Stmt>());
         }
 
         std::vector<std::shared_ptr<Stmt>> stmts;
@@ -269,6 +274,7 @@ namespace binred {
                     cb = IfStmt();
                 }
                 else if (ctx.is_current("VARINIT")) {
+                    cb = VarInitStmt();
                 }
             }
             return true;
