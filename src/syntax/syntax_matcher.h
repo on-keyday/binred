@@ -79,7 +79,7 @@ namespace binred {
         ENUM_STRING_MSG(MatchingType::string, "STRING")
         ENUM_STRING_MSG(MatchingType::symbol, "SYMBOL")
         ENUM_STRING_MSG(MatchingType::keyword, "KEYWORD")
-        END_ENUM_STRING_MSG("error");
+        END_ENUM_STRING_MSG("ERROR");
 
         struct MatchingContext {
             friend struct SyntaxMatching;

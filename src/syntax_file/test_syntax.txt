@@ -1,4 +1,4 @@
-(hello (hello (1 2 3) ) ) 
+(hello (hello (1 2 3).(4 5 6) ) ) 
 
 namespace binred {
     struct A {
