@@ -58,6 +58,7 @@ namespace binred {
         stmts,
         expr,
         varinit,
+        funccall,
     };
 
     struct Stmt {
@@ -66,16 +67,82 @@ namespace binred {
         StmtType type;
         SyntaxCb cb;
         syntax::MatchingStackInfo stack;
+        bool firstcall = true;
         bool ended = false;
         bool end_stmt() const {
             return ended;
         }
     };
 
+    template <class T>
+    std::shared_ptr<Expr> get_expr(SyntaxCb& cb) {
+        auto ptr = cb.template get_rawfunc<InvokeProxy<T>>();
+        if (ptr) {
+            return std::move(ptr->stmt->e);
+        }
+        return nullptr;
+    }
+
+    struct TreeBySyntax;
+
+    struct FuncCall : Stmt {
+        std::vector<std::shared_ptr<Expr>> args;
+        FuncCall()
+            : Stmt(StmtType::funccall) {}
+        bool operator()(const syntax::MatchingContext& ctx) {
+            if (firstcall) {
+                stack = ctx.get_stack();
+                firstcall = false;
+                return true;
+            }
+            if (ctx.is_current(stack)) {
+                if (ctx.is_token(",")) {
+                    args.push_back(get_expr<TreeBySyntax>(cb));
+                    return true;
+                }
+                else if (ctx.is_token(")")) {
+                    args.push_back(get_expr<TreeBySyntax>(cb));
+                    ended = true;
+                    return true;
+                }
+                ctx.set_errmsg("parser broken");
+                return false;
+            }
+            else {
+                if (!cb) {
+                    cb = InvokeProxy<TreeBySyntax>();
+                }
+                return cb(ctx);
+            }
+        }
+    };
+
     struct TreeBySyntax {
+        SyntaxCb cb;
         std::shared_ptr<Expr> e;
 
         bool operator()(const syntax::MatchingContext& ctx) {
+            if (cb) {
+                auto ret = cb(ctx);
+                auto ptr = cb.get_rawfunc<FuncCall>();
+                if (!ptr) {
+                    ctx.set_errmsg("syntax parser is broken");
+                    return false;
+                }
+                if (ptr->end_stmt()) {
+                    auto func = cb.move_from_rawfunc<FuncCall>(move_to_shared<FuncCall>());
+                    if (!func) {
+                        ctx.set_errmsg("syntax parser is broken");
+                        return false;
+                    }
+                    cb = nullptr;
+                    auto call = std::make_shared<CallExpr>();
+                    call->args = func->args;
+                    call->left = e;
+                    e = call;
+                    return true;
+                }
+            }
             if (ctx.is_under("EXPR")) {
                 ExprKind kind = ExprKind::ref;
                 auto set_to = [&](auto& ptr) {
@@ -122,6 +189,10 @@ namespace binred {
                     return to_prim();
                 }
                 else if (ctx.is_type(syntax::MatchingType::symbol)) {
+                    if (ctx.is_current("FUNCCALL")) {
+                        cb = FuncCall();
+                        return cb(ctx);
+                    }
                     if (ctx.is_token("(") || ctx.is_token(")")) {
                         return true;
                     }
@@ -214,9 +285,8 @@ namespace binred {
             : Stmt(StmtType::varinit) {}
         std::vector<std::string> varname;
         std::shared_ptr<Expr> init;
-        bool syminit = false;
         bool operator()(const syntax::MatchingContext& ctx) {
-            if (!syminit) {
+            if (firstcall) {
                 if (ctx.is_rollbacked(stack)) {
                     ended = true;
                     return false;
@@ -227,7 +297,7 @@ namespace binred {
                             ctx.set_errmsg("syntax parser is broken at varinit");
                             return false;
                         }
-                        syminit = true;
+                        firstcall = false;
                         return true;
                     }
                     else if (ctx.is_token(",")) {
@@ -268,12 +338,11 @@ namespace binred {
     struct ExprStmt : Stmt {
         ExprStmt()
             : Stmt(StmtType::expr) {}
-        bool first = false;
         std::shared_ptr<Expr> expr;
         bool operator()(const syntax::MatchingContext& ctx) {
-            if (!first) {
+            if (firstcall) {
                 stack = ctx.get_stack();
-                first = true;
+                firstcall = false;
                 return true;
             }
             if (ctx.is_rollbacked(stack)) {
