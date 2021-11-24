@@ -1,23 +1,24 @@
 /*
-    binred - binary I/O code generator
+    commonlib - common utility library
     Copyright (c) 2021 on-keyday (https://github.com/on-keyday)
     Released under the MIT license
     https://opensource.org/licenses/mit-license.php
 */
 
 #pragma once
-#include <tokenparser/tokenparser.h>
+#include "../tokenparser/tokenparser.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <set>
 #include <algorithm>
 
-namespace binred {
-    using namespace commonlib2::tokenparser;
+namespace PROJECT_NAME {
+
     namespace syntax {
-        using token_t = commonlib2::tokenparser::Token<std::string>;
-        using Parser = commonlib2::tokenparser::TokenParser<std::vector<std::string>, std::string>;
+        namespace tkpsr = commonlib2::tokenparser;
+        using token_t = tkpsr::Token<std::string>;
+        using Parser = tkpsr::TokenParser<std::vector<std::string>, std::string>;
         enum class SyntaxType {
             literal,
             ref,
@@ -44,8 +45,8 @@ namespace binred {
             bool once_each = false;
         };
 
-        struct TokenReader : TokenReaderBase<std::string, false, true> {
-            using TokenReaderBase<std::string, false, true>::TokenReaderBase;
+        struct TokenReader : tokenparser::TokenReaderBase<std::string, false, true> {
+            using tokenparser::TokenReaderBase<std::string, false, true>::TokenReaderBase;
             bool igline = true;
             size_t countbase = 0;
             size_t count = 0;
@@ -53,7 +54,7 @@ namespace binred {
                 igline = t;
             }
             bool is_IgnoreToken() override {
-                if (!igline && current->is_(TokenKind::line)) {
+                if (!igline && current->is_(tkpsr::TokenKind::line)) {
                     return false;
                 }
                 return is_DefaultIgnore() || current->has_("#");
@@ -107,7 +108,7 @@ namespace binred {
                     auto e = r.ReadorEOF();
                     r.SetIgnoreLine(false);
                     std::shared_ptr<Syntax> ptr;
-                    if (!e || e->is_(TokenKind::line)) {
+                    if (!e || e->is_(tkpsr::TokenKind::line)) {
                         r.SetIgnoreLine(true);
                         break;
                     }
@@ -120,7 +121,7 @@ namespace binred {
                             errmsg = "unexpected EOF, expect string";
                             return false;
                         }
-                        if (!e->is_(TokenKind::comments)) {
+                        if (!e->is_(tkpsr::TokenKind::comments)) {
                             errmsg = "parser is broken";
                             return false;
                         }
@@ -145,7 +146,7 @@ namespace binred {
                             }
                         }
                     }
-                    else if (e->is_(TokenKind::keyword)) {
+                    else if (e->is_(tkpsr::TokenKind::keyword)) {
                         ptr = std::make_shared<Syntax>(SyntaxType::keyword);
                         ptr->token = e;
                         if (ptr->token->has_("BOS")) {
@@ -156,7 +157,7 @@ namespace binred {
                         }
                         r.Consume();
                     }
-                    else if (e->is_(TokenKind::identifiers)) {
+                    else if (e->is_(tkpsr::TokenKind::identifiers)) {
                         ptr = std::make_shared<Syntax>(SyntaxType::ref);
                         ptr->token = e;
                         r.Consume();
@@ -180,7 +181,7 @@ namespace binred {
                                 errmsg = "unexpected EOF. expect | or ]";
                                 return false;
                             }
-                            if (e->is_(TokenKind::line)) {
+                            if (e->is_(tkpsr::TokenKind::line)) {
                                 errmsg = "unexpected EOL, expect | or ]";
                                 return false;
                             }
@@ -244,7 +245,7 @@ namespace binred {
                 if (!e) {
                     return false;
                 }
-                if (!e->is_(TokenKind::identifiers)) {
+                if (!e->is_(tkpsr::TokenKind::identifiers)) {
                     errmsg = "expect identifier for syntax name but " + e->to_string();
                     return false;
                 }
@@ -299,8 +300,8 @@ namespace binred {
             }
 
             template <class Reader>
-            MergeErr parse(Reader& r) {
-                MergeRule<std::string> rule;
+            tkpsr::MergeErr parse(Reader& r) {
+                tkpsr::MergeRule<std::string> rule;
                 rule.oneline_comment = "#";
                 rule.string_symbol[0].symbol = '"';
                 return parser.ReadAndMerge(r, rule);
@@ -343,8 +344,8 @@ namespace binred {
             }
 
             template <class Reader>
-            MergeErr parse(Reader& r) {
-                MergeRule<std::string> rule;
+            tkpsr::MergeErr parse(Reader& r) {
+                tkpsr::MergeRule<std::string> rule;
                 rule.oneline_comment = "#";
                 rule.string_symbol[0].symbol = '"';
                 return parser.ReadAndMerge(r, rule);
@@ -359,4 +360,4 @@ namespace binred {
             }
         };
     }  // namespace syntax
-}  // namespace binred
+}  // namespace PROJECT_NAME

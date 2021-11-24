@@ -7,7 +7,7 @@
 
 #pragma once
 #include "../parse/struct/element.h"
-#include "../syntax/syntax.h"
+#include <syntax/syntax.h>
 
 namespace binred {
     using SyntaxCb = Callback<syntax::MatchingErr, const syntax::MatchingContext&>;

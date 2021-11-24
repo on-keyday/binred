@@ -1,5 +1,5 @@
 /*
-    binred - binary I/O code generator
+    commonlib - common utility library
     Copyright (c) 2021 on-keyday (https://github.com/on-keyday)
     Released under the MIT license
     https://opensource.org/licenses/mit-license.php
@@ -7,9 +7,9 @@
 
 #pragma once
 #include "syntax_parser.h"
-#include <callback.h>
-#include <enumext.h>
-namespace binred {
+#include "../callback.h"
+#include "../enumext.h"
+namespace PROJECT_NAME {
     namespace syntax {
         struct FloatReadPoint {
             std::string str;
@@ -259,7 +259,7 @@ namespace binred {
                     report(&r, e, v, "expect " + value + " but token is " + e->to_string());
                     return 0;
                 }
-                if (!callback(e, r, value, e->is_(TokenKind::symbols) ? MatchingType::symbol : MatchingType::keyword)) {
+                if (!callback(e, r, value, e->is_(tkpsr::TokenKind::symbols) ? MatchingType::symbol : MatchingType::keyword)) {
                     return -1;
                 }
                 r.Consume();
@@ -345,7 +345,7 @@ namespace binred {
                         cr.Consume();
                         continue;
                     }
-                    if (!e->is_(TokenKind::identifiers)) {
+                    if (!e->is_(tkpsr::TokenKind::identifiers)) {
                         break;
                     }
                     if (!pt.dot && !pt.sign && !pt.beforedot) {
@@ -525,7 +525,7 @@ namespace binred {
                         report(&r, e, v, "unexpected EOF. expect EOL but not");
                         return 0;
                     }
-                    if (!e->is_(TokenKind::line)) {
+                    if (!e->is_(tkpsr::TokenKind::line)) {
                         report(&r, e, v, "expect EOL but token is " + e->to_string());
                         return 0;
                     }
@@ -543,7 +543,7 @@ namespace binred {
                         report(&r, e, v, "unexpected EOF. expect identifier");
                         return 0;
                     }
-                    if (!e->is_(TokenKind::identifiers)) {
+                    if (!e->is_(tkpsr::TokenKind::identifiers)) {
                         report(&r, e, v, "expect identifier but token is " + e->to_string());
                         return 0;
                     }
@@ -561,7 +561,7 @@ namespace binred {
                         report(&r, e, v, "unexpected EOF. expect integer");
                         return 0;
                     }
-                    if (!e->is_(TokenKind::identifiers)) {
+                    if (!e->is_(tkpsr::TokenKind::identifiers)) {
                         report(&r, e, v, "expect integer but token is " + e->to_string());
                         return 0;
                     }
@@ -745,4 +745,4 @@ namespace binred {
             }
         };
     }  // namespace syntax
-}  // namespace binred
+}  // namespace PROJECT_NAME

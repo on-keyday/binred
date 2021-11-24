@@ -4,7 +4,7 @@
 #include "syntax_parser.h"
 #include "syntax_matcher.h"
 
-namespace binred {
+namespace PROJECT_NAME {
     namespace syntax {
         struct SyntaxCompiler {
            private:
@@ -30,7 +30,7 @@ namespace binred {
             }
 
             template <class Reader>
-            MergeErr make_parser(Reader& r) {
+            tkpsr::MergeErr make_parser(Reader& r) {
                 auto err = pm.parse(r);
                 if (!err) {
                     match.report(nullptr, nullptr, nullptr, "parse token error");
@@ -46,7 +46,7 @@ namespace binred {
             }
 
             template <class Reader>
-            MergeErr parse(Reader& r) {
+            tkpsr::MergeErr parse(Reader& r) {
                 auto err = match.p.parse(r);
                 if (!err) {
                     return err;
@@ -58,4 +58,4 @@ namespace binred {
             }
         };
     }  // namespace syntax
-}  // namespace binred
+}  // namespace PROJECT_NAME
