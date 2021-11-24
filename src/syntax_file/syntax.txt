@@ -15,8 +15,9 @@
 # 以下callback用の機能
 # BOS - Begining Of Statement
 # EOS - End Of Statement 
-# (かっこなどで閉じられておらず、終了の判定の難しいものなどに便宜的に使う)
-# (本当に初めの位置または終わりの位置にある必要はない。)
+# (かっこなどで閉じられておらず、開始・終了の判定の難しいものなどに便宜的に使う)
+# (本当に初めの位置または終わりの位置にある必要はない。
+# しかし、途中においてあってもたいして役に立たない)
 # 空白は自動で無視(よって、pythonとかの文法を解析できない)
 # 改行はEOLで検出可能
 # エスケープシーケンスは無効(これもそのうち(略))
@@ -37,14 +38,14 @@ PRIM:=["true"|"false"|"nil"|INTEGER|IDs|"(" EXPR ")"|STRING]
 IDs:=ID AFTER?
 AFTER:=["." ID|FUNCCALL]*
 NAMESPACE:="namespace" ID "{" STMT*? "}"
-STMT:=[VARSTMT|IFSTMT|RETURNSTMT|FUNCSTMT|STRUCT|NAMESPACE|IDINIT|EXPR]
+STMT:=[VARSTMT|IFSTMT|RETURNSTMT|FUNCSTMT|STRUCT|NAMESPACE|IDINIT|EXPRSTMT]
 FUNCSTMT:="func" ID "(" [VARDEF ["," VARDEF]*? ]? ")" FUNCRETURN? "{" STMT*? "}"
 FUNCRETURN:="->" TYPE
 IFSTMT:="if" EXPR [";" EXPR]? "{" STMT*? "}"
 RETURNSTMT:="return" EXPR
 FUNCCALL:="(" [EXPR ["," EXPR]*? ]?")"
 VARSTMT:="var" VARDEF
-
+EXPRSTMT:=BOS EXPR EOS
 
 #S式
 SEXPR:=[ID|"("SEXPR "." SEXPR ")"|SLIST]
