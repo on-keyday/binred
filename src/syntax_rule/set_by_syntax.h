@@ -128,8 +128,6 @@ namespace binred {
 
     struct IfStmt : Stmt {
         bool keyword = false;
-
-        SyntaxCb cb;
         std::shared_ptr<Expr> init;
         std::shared_ptr<Expr> cond;
         std::shared_ptr<Stmts> stmts;
@@ -198,7 +196,7 @@ namespace binred {
         bool syminit = false;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (!syminit) {
-                if (ctx.is_type(syntax::MatchingType::error)) {
+                if (ctx.is_rollbacked(stack)) {
                     ended = true;
                     return false;
                 }
@@ -235,7 +233,7 @@ namespace binred {
                     ctx.set_errmsg("syntax parser is broken");
                     return false;
                 }
-                init=std::move(tree->e);
+                init = std::move(tree->e);
                 ended = true;
                 return true;
             }
@@ -246,9 +244,15 @@ namespace binred {
         }
     };
 
+    struct ExprStmt : Stmt {
+        std::shared_ptr<Expr> expr;
+        bool operator()() {
+        }
+    };
+
     struct Stmts : Stmt {
         static Stmt* borrow_ptr(SyntaxCb& cb) {
-            return cb.get_rawfunc<Stmt, Stmts, IfStmt>();
+            return cb.get_rawfunc<Stmt, Stmts, IfStmt, VarInitStmt>();
         }
 
         static std::shared_ptr<Stmt> get_ptr(SyntaxCb& cb) {
@@ -266,21 +270,27 @@ namespace binred {
                             stmts.push_back(get_ptr(cb));
                         }
                         cb = nullptr;
+                        if (ret) {
+                            return ret;
+                        }
                     }
-                    return ret;
+                    else {
+                        return ret;
+                    }
                 }
                 else {
                     ctx.set_errmsg("invalid stmt structure");
                     return false;
                 }
-                return ret;
             }
-            else {
+            if (!cb) {
                 if (ctx.is_current("IFSTMT")) {
                     cb = IfStmt();
                 }
                 else if (ctx.is_current("VARINIT")) {
                     cb = VarInitStmt();
+                }
+                else if (ctx.is_current("EXPRSTMT")) {
                 }
             }
             return true;

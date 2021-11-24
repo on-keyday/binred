@@ -231,14 +231,14 @@ namespace PROJECT_NAME {
     };
 
     template <class Base>
-    auto move_to_shared() {
+    constexpr auto move_to_shared() {
         return [](auto&& v) -> std::shared_ptr<Base> {
             return std::make_shared<std::remove_cvref_t<decltype(v)>>(std::move(v));
         };
     }
 
     template <class Base>
-    auto move_to_ptr() {
+    constexpr auto move_to_ptr() {
         return [](auto&& v) -> Base* {
             return new std::remove_cvref_t<decltype(v)>(std::move(v));
         };
