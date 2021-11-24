@@ -65,7 +65,7 @@ namespace PROJECT_NAME {
                     throw std::logic_error("Ret is reference type,"
                                            " but callback returned what is not castable to Ret"
                                            " or failed to call."
-                                           "please check is_noexcept_after_call() is true before call"));
+                                           " please check is_noexcept_after_call() is true before call"));
             }
         };
 
