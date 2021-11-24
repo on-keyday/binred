@@ -65,7 +65,7 @@ namespace PROJECT_NAME {
                     throw std::logic_error("Ret is reference type,"
                                            " but callback returned what is not castable to Ret"
                                            " or failed to call."
-                                           "please check  is true before call"));
+                                           "please check is_noexcept_after_call() is true before call"));
             }
         };
 
@@ -240,8 +240,12 @@ namespace PROJECT_NAME {
             return fn ? fn->get_cond(1) : false;
         }
 
-        bool is_noexcept_invokeable() const {
+        bool is_noexcept_invocable() const {
             return fn ? fn->get_cond(2) : false;
+        }
+
+        bool has_noexcept() const {
+            return is_noexcept_after_call() && is_noexcept_invocable();
         }
 
         ~Callback() {
