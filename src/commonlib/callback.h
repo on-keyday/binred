@@ -54,7 +54,7 @@ namespace PROJECT_NAME {
         template <>
         struct throw_exception_if_Ret_is_ref<true> {
             static Ret get_Ret() {
-                    throw std::logic_error("Ret is reference type and callback is const value,"
+                    throw std::logic_error("Ret is reference type,"
                                            " but callback returned what is not castable to Ret"
                                            " or failed to call."
                                            "please check is_const_callable() is true before call"));
