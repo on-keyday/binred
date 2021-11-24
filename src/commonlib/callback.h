@@ -217,19 +217,26 @@ namespace PROJECT_NAME {
             return find_derived<Base, DerivedOne, Derived...>();
         }
 
-        template <class Type, class... Other, class Func>
-        auto move_from_rawfunc(Func&& make) {
-            using Result = decltype(std::declval<Func>()(std::declval<Type>()));
+       private:
+        template <class Result, class Func>
+        Result move_from_rawfunc_impl(Func&&) {
+            return Result(nullptr);
+        }
+
+        template <class Result, class Func, class Type, class... Other>
+        Result move_from_rawfunc_impl(Func&& make) {
             auto ptr = get_rawfunc<Type>();
             if (ptr) {
                 return make(std::move(*ptr));
             }
-            if CONSTEXPRIF (sizeof...(Other) > 0) {
-                return move_from_rawfunc<Other...>(std::forward<Func>(make));
-            }
-            else {
-                return Result(nullptr);
-            }
+            return move_from_rawfunc_impl<Result, Func, Other...>(std::forward<Func>(make));
+        }
+
+       public:
+        template <class Type, class... Other, class Func>
+        auto move_from_rawfunc(Func&& make) {
+            using Result = decltype(std::declval<Func>()(std::declval<Type>()));
+            return move_from_rawfunc_impl<Result, Func, Type, Other...>(std::forward<Func>(make));
         }
 
         bool is_const_callable() const {
