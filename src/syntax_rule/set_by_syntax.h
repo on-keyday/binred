@@ -261,9 +261,9 @@ namespace binred {
         bool first = false;
         std::shared_ptr<Expr> expr;
         bool operator()(const syntax::MatchingContext& ctx) {
-            if (first) {
+            if (!first) {
                 stack = ctx.get_stack();
-                first = false;
+                first = true;
                 return true;
             }
             if (ctx.is_rollbacked(stack)) {
