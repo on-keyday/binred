@@ -115,18 +115,15 @@ namespace binred {
                     if (ctx.is_token("(") || ctx.is_token(")")) {
                         return true;
                     }
+                    kind = ExprKind::op;
                     if (!e) {
                         set_to(e);
                     }
-                    else if (!e->left) {
+                    else {
                         std::shared_ptr<Expr> tmp;
                         set_to(tmp);
                         tmp->left = e;
                         e = tmp;
-                    }
-                    else {
-                        ctx.set_errmsg("unexpected keyword " + ctx.get_token());
-                        return false;
                     }
                 }
                 return true;
