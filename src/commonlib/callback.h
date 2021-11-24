@@ -21,6 +21,7 @@ namespace PROJECT_NAME {
             virtual bool is_sametype(const std::type_info&) const = 0;
             virtual void* get_rawptr() = 0;
             virtual bool const_callable() const = 0;
+            virtual bool nothrow_callable() const = 0;
             virtual ~Base() {}
         };
 
@@ -37,6 +38,9 @@ namespace PROJECT_NAME {
     }                                                             \
     bool const_callable() const override {                        \
         return has_const_call<F>::value;                          \
+    }                                                             \
+    bool nothrow_callable() const override {                      \
+        return std::is_reference_v<Ret>;                          \
     }
 
         Base* fn = nullptr;
@@ -57,7 +61,7 @@ namespace PROJECT_NAME {
                     throw std::logic_error("Ret is reference type,"
                                            " but callback returned what is not castable to Ret"
                                            " or failed to call."
-                                           "please check is_const_callable() is true before call"));
+                                           "please check  is true before call"));
             }
         };
 
@@ -75,7 +79,10 @@ namespace PROJECT_NAME {
             }
         };
 
-        template <class F, bool ret_void = std::disjunction_v<std::is_same<Ret, void>, std::negation<return_Ret<F>>>>
+        template <class F>
+        static constexpr bool return_void_v = std::disjunction_v<std::is_same<Ret, void>, std::negation<return_Ret<F>>>;
+
+        template <class F, bool ret_void = return_void_v<F>>
         struct Impl : Base {
             CB_COMMON_METHOD()
 
