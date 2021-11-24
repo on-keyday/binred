@@ -118,6 +118,7 @@ namespace PROJECT_NAME {
         template <class String>
         struct Token {
            private:
+            friend struct TokenIO;
             TokenKind kind = TokenKind::unknown;
             std::shared_ptr<Token> next = nullptr;
             Token* prev = nullptr;
@@ -232,6 +233,7 @@ namespace PROJECT_NAME {
         template <class String>
         struct Spaces : Token<String> {
            private:
+            friend struct TokenIO;
             size_t numsp = 0;
             char16_t spchar = 0;
 
@@ -381,6 +383,7 @@ namespace PROJECT_NAME {
         template <class String>
         struct Line : Token<String> {
            private:
+            friend struct TokenIO;
             LineKind linekind = LineKind::none;
             size_t numline = 0;
 
@@ -458,6 +461,7 @@ namespace PROJECT_NAME {
         template <class String>
         struct Comment : Token<String> {
            private:
+            friend struct TokenIO;
             String comments;
             bool oneline = false;
 
@@ -550,6 +554,7 @@ namespace PROJECT_NAME {
         template <class String>
         struct RegistryRead : Token<String> {
            private:
+            friend struct TokenIO;
             String token;
 
            public:
@@ -629,6 +634,7 @@ namespace PROJECT_NAME {
         template <class String>
         struct Identifier : Token<String> {
            private:
+            friend struct TokenIO;
             String id;
 
            public:

@@ -122,13 +122,40 @@ namespace PROJECT_NAME {
             }
         };
 
-        struct TokenWriter {
+        struct TokenIO {
             template <class Reg, class Map>
             void set_mapping(Registry<Reg>& reg, Map& map) {
                 size_t count = 0;
                 for (auto& v : reg.reg) {
                     map.insert({v, count});
                     count++;
+                }
+            }
+
+            template <class Buf, class String, class Map>
+            bool read_token(Deserializer<Buf>& target, Token<String>& token, TokenWriteContext<Map>& ctx) {
+                TokenKind kind;
+                size_t tmpsize = 0;
+                if (!BinaryIO::read_num(target, tmpsize)) {
+                    return false;
+                }
+                kind = TokenKind(tmpsize);
+                switch (kind) {
+                    case TokenKind::line: {
+                        std::shared_ptr<Line<String>> line = std::make_shared<Line<String>>();
+                        //to type on editor easily
+                        Line<String>* ptr = line.get();
+                        if (!BinaryIO::read_num(target, tmpsize) {
+                            return false;
+                        }
+                        ptr->linekind = LineKind(tmpsize);
+                        if (!BinaryIO::read_num(target, tmpsize) {
+                            return false;
+                        }
+                        ptr->numline = tmpsize;
+                        token=line;
+                        return true;
+                    }
                 }
             }
 
