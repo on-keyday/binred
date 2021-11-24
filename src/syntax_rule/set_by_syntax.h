@@ -287,7 +287,7 @@ namespace binred {
         VarInitStmt()
             : Stmt(StmtType::varinit) {}
         std::vector<std::string> varname;
-        std::shared_ptr<Expr> init;
+        std::vector<std::shared_ptr<Expr>> init;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (firstcall) {
                 if (ctx.is_rollbacked(stack)) {
@@ -318,17 +318,19 @@ namespace binred {
                 }
             }
             if (ctx.is_rollbacked(stack)) {
-                ctx.set_errmsg("unexpected rollback. expect varinit");
+                ctx.set_errmsg("unexpected rollback. expect var init");
                 return false;
             }
-            if (ctx.is_current(stack) && ctx.is_type(syntax::MatchingType::eos)) {
+            if (ctx.is_current(stack)) {
                 auto tree = cb.get_rawfunc<TreeBySyntax>();
                 if (!tree) {
                     ctx.set_errmsg("syntax parser is broken");
                     return false;
                 }
-                init = std::move(tree->e);
-                ended = true;
+                init.push_back(std::move(tree->e));
+                if (ctx.is_type(syntax::MatchingType::eos)) {
+                    ended = true;
+                }
                 return true;
             }
             if (!cb) {

@@ -35,6 +35,7 @@ namespace binred {
             bool repeat = false;
             bool ifexists = false;
             bool adjacent = false;
+            bool fatal = false;
         };
 
         struct OrSyntax : Syntax {
@@ -223,6 +224,11 @@ namespace binred {
                         }
                         else if (!ptr->adjacent && e->has_("&")) {
                             ptr->adjacent = true;
+                            r.Consume();
+                            continue;
+                        }
+                        else if (!ptr->fatal && e->has_("&")) {
+                            ptr->fatal = true;
                             r.Consume();
                             continue;
                         }
