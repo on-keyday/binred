@@ -291,16 +291,17 @@ namespace binred {
     };
 
     struct Stmts : Stmt {
+#define STMTLIST Stmt, Stmts, IfStmt, VarInitStmt, ExprStmt
         Stmts()
             : Stmt(StmtType::stmts) {}
         static Stmt* borrow_ptr(SyntaxCb& cb) {
-            return cb.get_rawfunc<Stmt, Stmts, IfStmt, VarInitStmt>();
+            return cb.get_rawfunc<STMTLIST>();
         }
 
         static std::shared_ptr<Stmt> get_ptr(SyntaxCb& cb) {
-            return cb.move_from_rawfunc<Stmt, Stmts, IfStmt, VarInitStmt>(move_to_shared<Stmt>());
+            return cb.move_from_rawfunc<STMTLIST>(move_to_shared<Stmt>());
         }
-
+#undef STMTLIST
         std::vector<std::shared_ptr<Stmt>> stmts;
 
         bool operator()(const syntax::MatchingContext& ctx) {
