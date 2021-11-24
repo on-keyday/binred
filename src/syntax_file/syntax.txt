@@ -9,8 +9,14 @@
 # INTEGER - 整数(10進、16進(0x)) 
 # NUMBER - 実数(INTEGERを内包)
 # STRING - 文字列
-# 空白及び行は自動で無視(よって、pythonとかの文法を解析できない)
-# (そのうち、LINE及びSPACEをつける予定)
+# EOL - End Of Line
+# EOF - End Of File
+# BOS - Begining Of Statement
+# EOS - End Of Statement 
+# (かっこなどで閉じられておらず、終了の判定の難しいものに便宜的に使う)
+# (本当に初めの位置または終わりの位置にある必要はない。)
+# 空白は自動で無視(よって、pythonとかの文法を解析できない)
+# 改行はEOLで検出可能
 # エスケープシーケンスは無効(これもそのうち(略))
 # ROOTから解析が始まる
 
@@ -20,7 +26,7 @@ STRUCT:="struct" ID BASESTRUCT? "{" VARDEF?* "}"
 BASESTRUCT:= ":" VARDEF
 VARDEF:= ID TYPE
 TYPE:=["int"|"bit"|"byte"|"string"| ID]
-VARINIT:= ID ["," ID]*? ":=" EXPR 
+VARINIT:= ID ["," ID]*? ":=" EXPR EOS
 EXPR:=ASSIGN
 ASSIGN:=EQ [["="] ASSIGN]*?
 EQ:=ADD [["=="|"!="|">"|"<"|">="|"<="] ADD]*?

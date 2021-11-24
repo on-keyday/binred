@@ -23,8 +23,8 @@ namespace binred {
             ref,
             keyword,
             or_,
-            eos,  //end of statment
-            bos,  //begining of statment
+            eos,  //end of statement
+            bos,  //begining of statement
         };
 
         struct Syntax {
