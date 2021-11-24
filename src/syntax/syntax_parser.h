@@ -23,6 +23,8 @@ namespace binred {
             ref,
             keyword,
             or_,
+            eos,  //end of statment
+            bos,  //begining of statment
         };
 
         struct Syntax {
@@ -139,6 +141,12 @@ namespace binred {
                     else if (e->is_(TokenKind::keyword)) {
                         ptr = std::make_shared<Syntax>(SyntaxType::keyword);
                         ptr->token = e;
+                        if (ptr->token->has_("BOS")) {
+                            ptr->type = SyntaxType::bos;
+                        }
+                        else if (ptr->token->has_("EOS")) {
+                            ptr->type = SyntaxType::eos;
+                        }
                         r.Consume();
                     }
                     else if (e->is_(TokenKind::identifiers)) {
@@ -315,6 +323,8 @@ namespace binred {
                         "STRING",
                         "EOL",
                         "EOF",
+                        "EOS",
+                        "BOS",
                     });
             }
 

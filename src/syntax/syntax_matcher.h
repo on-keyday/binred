@@ -66,7 +66,8 @@ namespace binred {
             symbol,
             keyword,
             error,
-            endstmt,
+            eos,
+            bos,
         };
 
         BEGIN_ENUM_STRING_MSG(MatchingType, type_str)
@@ -627,7 +628,8 @@ namespace binred {
                     }
                     return 1;
                 };
-                for (auto& v : vec) {
+                for (size_t i = 0; i < vec.size(); i++) {
+                    auto& v = vec[i];
                     switch (v->type) {
                         case SyntaxType::literal: {
                             if (auto e = call_v(
@@ -694,6 +696,11 @@ namespace binred {
                                 e <= 0) {
                                 return e;
                             }
+                            break;
+                        }
+                        case SyntaxType::bos:
+                        case SyntaxType::eos: {
+                            callback(nullptr, r, "", v->type == SyntaxType::bos ? MatchingType::bos : MatchingType::eos);
                             break;
                         }
                         default:
