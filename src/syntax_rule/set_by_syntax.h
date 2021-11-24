@@ -261,7 +261,11 @@ namespace binred {
                 auto tree = cb.get_rawfunc<TreeBySyntax>();
                 if (!tree) {
                     ctx.set_errmsg("invalid syntax parser");
+                    return false;
                 }
+                expr = std::move(tree->e);
+                ended = true;
+                return true;
             }
         }
     };
