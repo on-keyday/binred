@@ -219,7 +219,7 @@ namespace binred {
                     ctx.reach.errmsg = msg;
                     ctx.reach.token = e;
                     ctx.reach.syntax = v;
-                    callback(e, *r, e ? e->to_string() : "", MatchingType::error);
+                    //callback(e, *r, e ? e->to_string() : "", MatchingType::error);
                 }
             }
 
