@@ -536,6 +536,7 @@ namespace binred {
                     }
                     if (!e) {
                         report(&r, e, v, "unexpected EOF. expect identifier");
+                        return 0;
                     }
                     if (!e->is_(TokenKind::identifiers)) {
                         report(&r, e, v, "expect identifier but token is " + e->to_string());
