@@ -183,9 +183,25 @@ namespace PROJECT_NAME {
                         return true;
                     }
                     case TokenKind::identifiers: {
-                    }
-                    case TokenKind::root: {
+                        Identifier<String>* id = token.identifier();
+                        if(!BinaryIO::write_num(target,ctx.getid(id->get_identifier())){
+                            return false;
+                        }
                         return true;
+                    }
+                    case TokenKind::comments: {
+                        Comment<String>* comment = token.comment();
+                        if (!BinaryIO::write_string(target, comment->get_comment())) {
+                            return false;
+                        }
+                        return true;
+                    }
+                    case TokenKind::root:
+                    case TokenKind::identifiers: {
+                        return true;
+                    }
+                    default: {
+                        return false;
                     }
                 }
             }
