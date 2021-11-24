@@ -101,7 +101,10 @@ namespace binred {
                     return true;
                 }
                 else if (ctx.is_token(")")) {
-                    args.push_back(get_expr<TreeBySyntax>(cb));
+                    auto e = get_expr<TreeBySyntax>(cb);
+                    if (e) {
+                        args.push_back(std::move(e));
+                    }
                     ended = true;
                     return true;
                 }
@@ -140,8 +143,8 @@ namespace binred {
                     call->args = func->args;
                     call->left = e;
                     e = call;
-                    return true;
                 }
+                return true;
             }
             if (ctx.is_under("EXPR")) {
                 ExprKind kind = ExprKind::ref;
