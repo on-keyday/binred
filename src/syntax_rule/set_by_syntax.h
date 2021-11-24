@@ -400,6 +400,10 @@ namespace binred {
         }
 
         bool operator()(const syntax::MatchingContext& ctx) {
+            if (ctx.is_type(syntax::MatchingType::eof)) {
+                cb = nullptr;
+                return true;
+            }
             if (cb) {
                 auto ret = cb(ctx);
                 auto ptr = borrow_ptr(cb);
@@ -429,9 +433,6 @@ namespace binred {
                 }
                 else if (ctx.is_current("EXPRSTMT")) {
                     cb = ExprStmt();
-                }
-                else if (ctx.is_type(syntax::MatchingType::eof)) {
-                    return true;
                 }
                 else {
                     ctx.set_errmsg("unknown stmt " + ctx.current());
