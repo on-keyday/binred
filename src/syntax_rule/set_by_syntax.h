@@ -22,7 +22,7 @@ namespace binred {
 
         InvokeProxy(InvokeProxy&& v) noexcept {
             stmt = v.stmt;
-            stmt = nullptr;
+            v.stmt = nullptr;
         }
 
         bool operator()(const syntax::MatchingContext& ctx) {
