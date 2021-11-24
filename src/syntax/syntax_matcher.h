@@ -256,7 +256,7 @@ namespace binred {
                 }
                 auto value = v->token->to_string();
                 if (!e->has_(value)) {
-                    report(&r, e, v, "expected " + value + " but " + e->to_string());
+                    report(&r, e, v, "expect " + value + " but token is" + e->to_string());
                     return 0;
                 }
                 if (!callback(e, r, value, e->is_(TokenKind::symbols) ? MatchingType::symbol : MatchingType::keyword)) {

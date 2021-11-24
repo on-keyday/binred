@@ -35,9 +35,9 @@ VARDEF:= ID TYPE
 TYPE:=["int"|"bit"|"byte"|"string"| ID]
 VARINIT:= ID ["," ID!]*? ":=" EXPR ["," EXPR]*? EOS
 EXPR:=ASSIGN
-ASSIGN:=EQ [["="] ASSIGN]*?
-EQ:=ADD [["=="|"!="|">"|"<"|">="|"<="] ADD]*?
-ADD:=PRIM [["+"|"-"|"&"|"|"] PRIM]*?
+ASSIGN:=EQ [["="] ASSIGN!]*?
+EQ:=ADD [["=="|"!="|">"|"<"|">="|"<="] ADD!]*?
+ADD:=PRIM [["+"|"-"|"&"|"|"] PRIM!]*?
 PRIM:=["true"|"false"|"nil"|INTEGER|IDs|"(" EXPR ")"|STRING]
 IDs:=ID AFTER?
 AFTER:=["." ID!|FUNCCALL]*
