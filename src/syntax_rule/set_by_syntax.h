@@ -189,6 +189,7 @@ namespace binred {
 
     struct VarInitStmt : Stmt {
         std::vector<std::string> varname;
+        std::shared_ptr<Expr> expr;
         bool syminit = false;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (!syminit) {
@@ -196,7 +197,11 @@ namespace binred {
                     ended = true;
                     return false;
                 }
-                if (ctx.is_current("VARINIT")) {
+                else if (ctx.is_type(syntax::MatchingType::eos)) {
+                    ended = true;
+                    return true;
+                }
+                else if (ctx.is_current("VARINIT")) {
                     if (ctx.is_token(":=")) {
                         if (varname.size() == 0) {
                             ctx.set_errmsg("syntax parser is broken at varinit");
