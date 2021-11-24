@@ -43,7 +43,17 @@ namespace binred {
     struct FuncStmt;
     struct VarInitStmt;
 
+    enum class StmtType {
+        if_,
+        stmts,
+        expr,
+        varinit,
+    };
+
     struct Stmt {
+        constexpr Stmt(StmtType t)
+            : type(t) {}
+        StmtType type;
         SyntaxCb cb;
         syntax::MatchingStackInfo stack;
         bool ended = false;
@@ -127,6 +137,8 @@ namespace binred {
     };
 
     struct IfStmt : Stmt {
+        constexpr IfStmt()
+            : Stmt(StmtType::if_) {}
         bool keyword = false;
         std::shared_ptr<Expr> init;
         std::shared_ptr<Expr> cond;
@@ -191,6 +203,8 @@ namespace binred {
     };
 
     struct VarInitStmt : Stmt {
+        VarInitStmt()
+            : VarInitStmt(StmtType::varinit) {}
         std::vector<std::string> varname;
         std::shared_ptr<Expr> init;
         bool syminit = false;
@@ -245,6 +259,8 @@ namespace binred {
     };
 
     struct ExprStmt : Stmt {
+        ExprStmt()
+            : Stmt(StmtType::expr) {}
         bool first = false;
         std::shared_ptr<Expr> expr;
         bool operator()(const syntax::MatchingContext& ctx) {
