@@ -14,10 +14,15 @@ namespace binred {
 
     template <class Stmt>
     struct InvokeProxy {
-        Stmt* stmt;
+        Stmt* stmt = nullptr;
 
         InvokeProxy() {
             stmt = new Stmt();
+        }
+
+        InvokeProxy(InvokeProxy&& v) noexcept {
+            stmt = v.stmt;
+            stmt = nullptr;
         }
 
         bool operator()(const syntax::MatchingContext& ctx) {
