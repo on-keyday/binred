@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
         return stmts(c);
     };
     {
-        File testfile(commonlib2::FileReader("src/syntax_file/test_syntax.txt"));
+        File testfile(commonlib2::FileReader("src/syntax_file/test_syntax2.txt"));
         if (!syntaxc.parse(testfile)) {
             std::cout << "error: " << syntaxc.error();
         }

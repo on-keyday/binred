@@ -18,6 +18,7 @@ namespace binred {
             std::shared_ptr<token_t> afterdot;
             std::shared_ptr<token_t> sign;
             std::shared_ptr<token_t> aftersign;
+            size_t stack = 0;
 
             std::shared_ptr<token_t>& exists() {
                 if (beforedot) {
@@ -265,7 +266,7 @@ namespace binred {
                     auto res = parse_on_vec(cr, v->syntax[i]);
                     if (res > 0) {
                         idx = i;
-                        r.current = cr.current;
+                        r.SeekTo(cr);
                         return 1;
                     }
                     else if (res < 0) {
@@ -291,7 +292,7 @@ namespace binred {
                         report(&r, nullptr, v, "infinity loop detected. please fix definitions especially around ? or *");
                         return -1;
                     }
-                    r.current = cr.current;
+                    r.SeekTo(cr);
                 }
                 ctx.scope.pop_back();
                 return res;
@@ -355,6 +356,7 @@ namespace binred {
                     pt.str += e->to_string();
                     cr.Consume();
                 }
+                pt.stack = cr.count;
             }
 
             int parse_float(TokenReader& r, std::shared_ptr<Syntax>& v) {
@@ -387,6 +389,7 @@ namespace binred {
                         return -1;
                     }
                     r.current = pt.beforedot->get_next();
+                    r.count = pt.stack;
                     if (!callback(pt.exists(), r, pt.str, MatchingType::integer)) {
                         return -1;
                     }
@@ -415,6 +418,7 @@ namespace binred {
                         report(&r, pt.exists(), v, "parser is broken");
                         return -1;
                     }
+                    r.count = pt.stack;
                     if (!callback(pt.exists(), r, pt.str, MatchingType::number)) {
                         return -1;
                     }
@@ -464,6 +468,7 @@ namespace binred {
                     report(&r, pt.exists(), v, "parser is broken");
                     return -1;
                 }
+                r.count = pt.stack;
                 if (!callback(pt.exists(), r, pt.str, MatchingType::number)) {
                     return -1;
                 }

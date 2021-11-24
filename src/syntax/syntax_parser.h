@@ -74,6 +74,12 @@ namespace binred {
                 ret.count = count;
                 return ret;
             }
+
+            void SeekTo(TokenReader& r) {
+                current = r.current;
+                count = r.count;
+                igline = r.igline;
+            }
         };
 
         struct SyntaxParser {
