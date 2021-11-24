@@ -40,7 +40,7 @@ namespace PROJECT_NAME {
         return has_const_call<F>::value;                          \
     }                                                             \
     bool nothrow_callable() const override {                      \
-        return std::is_reference_v<Ret>;                          \
+        return !return_void_v<F> || !std::is_reference_v<Ret>;    \
     }
 
         Base* fn = nullptr;
@@ -230,6 +230,10 @@ namespace PROJECT_NAME {
 
         bool is_const_callable() const {
             return fn ? fn->const_callable() : false;
+        }
+
+        bool is_nothrow_callable() const {
+            return fn ? fn->nothrow_callable() : false;
         }
 
         ~Callback() {
