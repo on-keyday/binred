@@ -625,6 +625,9 @@ namespace binred {
                     bool repeating = false;
                     while (true) {
                         if (auto res = f(r, v); res == 0) {
+                            if (v->fatal) {
+                                return -1;
+                            }
                             if (!repeating && !v->ifexists) {
                                 return 0;
                             }
