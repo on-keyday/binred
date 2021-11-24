@@ -251,7 +251,7 @@ namespace PROJECT_NAME {
         ~Callback() {
             delete fn;
         }
-    };  // namespace PROJECT_NAME
+    };
 
     template <class Base>
     constexpr auto move_to_shared() {
