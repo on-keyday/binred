@@ -333,6 +333,10 @@ namespace binred {
                 else if (ctx.is_current("EXPRSTMT")) {
                     cb = ExprStmt();
                 }
+                else {
+                    ctx.set_errmsg("unknown stmt " + ctx.current());
+                    return false;
+                }
                 return cb(ctx);
             }
             return true;
