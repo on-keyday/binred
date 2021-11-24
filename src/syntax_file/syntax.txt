@@ -32,7 +32,7 @@ STRUCT:="struct" ID BASESTRUCT? "{" VARDEF?* "}"
 BASESTRUCT:= ":" VARDEF
 VARDEF:= ID TYPE
 TYPE:=["int"|"bit"|"byte"|"string"| ID]
-VARINIT:= ID ["," ID]*? ":=" EXPR ["," EXPR]*? EOS
+VARINIT:= ID ["," ID!]*? ":=" EXPR ["," EXPR]*? EOS
 EXPR:=ASSIGN
 ASSIGN:=EQ [["="] ASSIGN]*?
 EQ:=ADD [["=="|"!="|">"|"<"|">="|"<="] ADD]*?
