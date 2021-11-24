@@ -142,7 +142,7 @@ namespace PROJECT_NAME {
                 kind = TokenKind(tmpsize);
                 switch (kind) {
                     case TokenKind::line: {
-                        std::shared_ptr<Line<String>> line = std::make_shared<Line<String>>();
+                        auto line = std::make_shared<Line<String>>();
                         //to type on editor easily
                         Line<String>* ptr = line.get();
                         if (!BinaryIO::read_num(target, tmpsize) {
@@ -154,6 +154,21 @@ namespace PROJECT_NAME {
                         }
                         ptr->numline = tmpsize;
                         token=line;
+                        return true;
+                    }
+                    case TokenKind::spaces: {
+                        auto space = std::make_shared<Spaces<String>>();
+                        //to type on editor easily
+                        Spaces<String>* ptr = space.get();
+                        if (!BinaryIO::read_num(target, tmpsize)) {
+                            return false;
+                        }
+                        ptr->spchar = char32_t(tmpsize);
+                        if (!BinaryIO::write_num(target, tmpsize)) {
+                            return false;
+                        }
+                        ptr->numsp = tmpsize;
+                        token = space;
                         return true;
                     }
                 }
