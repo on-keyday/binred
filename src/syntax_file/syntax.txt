@@ -3,7 +3,8 @@
 # * - 1回以上の繰り返し
 # ? - 存在する場合のみ
 # & - ひとつ前の要素に隣接する(空白等を認めない)(for literal or keyword)
-# ! - ない場合致命的なエラー
+# ! - 失敗すると致命的なエラー 
+# & > ! > ? > * > $ の順番で評価される 
 # *? or ?* - 0回以上の繰り返し
 # [a|b] - aまたはb 
 # [a|b]$* - aまたはbの繰り返しで各要素は1回ずつ出現
@@ -29,7 +30,7 @@ ROOT:=[IFSTMT|VARINIT|EXPRSTMT]*
 
 GLOBALSTMT:=[STRUCT|NAMESPACE]
 STRUCT:="struct" ID BASESTRUCT? "{" VARDEF?* "}"
-BASESTRUCT:= ":" VARDEF
+BASESTRUCT:= ":" VARDEF!
 VARDEF:= ID TYPE
 TYPE:=["int"|"bit"|"byte"|"string"| ID]
 VARINIT:= ID ["," ID!]*? ":=" EXPR ["," EXPR]*? EOS
@@ -39,12 +40,12 @@ EQ:=ADD [["=="|"!="|">"|"<"|">="|"<="] ADD]*?
 ADD:=PRIM [["+"|"-"|"&"|"|"] PRIM]*?
 PRIM:=["true"|"false"|"nil"|INTEGER|IDs|"(" EXPR ")"|STRING]
 IDs:=ID AFTER?
-AFTER:=["." ID|FUNCCALL]*
+AFTER:=["." ID!|FUNCCALL]*
 NAMESPACE:="namespace" ID "{" STMT*? "}"
 STMT:=[VARSTMT|IFSTMT|RETURNSTMT|FUNCSTMT|STRUCT|NAMESPACE|VARINIT|EXPRSTMT]
-FUNCSTMT:="func" ID "(" [VARDEF ["," VARDEF]*? ]? ")" FUNCRETURN? "{" STMT*? "}"
-FUNCRETURN:="->" TYPE
-IFSTMT:="if" EXPR [";" EXPR]? "{" ROOT? "}"
+FUNCSTMT:="func" ID ["(" [VARDEF ["," VARDEF]*? ]? ")" FUNCRETURN? "{" STMT*? "}"]!
+FUNCRETURN:="->" TYPE!
+IFSTMT:="if" EXPR [";" EXPR!]? "{" ROOT? "}"
 RETURNSTMT:="return" EXPR
 FUNCCALL:="(" [EXPR ["," EXPR]*? ]?")"
 VARSTMT:="var" VARDEF
