@@ -204,7 +204,7 @@ namespace binred {
 
     struct VarInitStmt : Stmt {
         VarInitStmt()
-            : VarInitStmt(StmtType::varinit) {}
+            : Stmt(StmtType::varinit) {}
         std::vector<std::string> varname;
         std::shared_ptr<Expr> init;
         bool syminit = false;
@@ -291,6 +291,8 @@ namespace binred {
     };
 
     struct Stmts : Stmt {
+        Stmts()
+            : Stmt(StmtType::stmts) {}
         static Stmt* borrow_ptr(SyntaxCb& cb) {
             return cb.get_rawfunc<Stmt, Stmts, IfStmt, VarInitStmt>();
         }
