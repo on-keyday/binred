@@ -10,6 +10,7 @@
 #include "tokendef.h"
 
 #include "../serializer.h"
+#include "../utfreader.h"
 
 namespace PROJECT_NAME {
     namespace tokenparser {
@@ -26,9 +27,9 @@ namespace PROJECT_NAME {
             static constexpr std::uint8_t mask64_8 = 0xC0;
         };
 
-        template <class String>
         struct BinaryIO {
-            static bool read_num(Deserializer<String>& target, size_t& size) {
+            template <class Buf>
+            static bool read_num(Deserializer<Buf>& target, size_t& size) {
                 std::uint8_t e = target.base_reader().achar();
                 std::uint8_t masked = e & CodeLimit::mask64_8;
                 auto set_v = [&](auto& v) {
@@ -56,7 +57,8 @@ namespace PROJECT_NAME {
                 }
             }
 
-            static bool write_num(Serializer<String>& target, size_t size) {
+            template <class Buf>
+            static bool write_num(Serializer<Buf>& target, size_t size) {
                 if (size <= CodeLimit::limit8) {
                     target.write_hton(std::uint8_t(size));
                 }
@@ -72,7 +74,34 @@ namespace PROJECT_NAME {
                     std::uint64_t v = std::uint64_t(size) | CodeLimit::mask64;
                     target.write_hton(v);
                 }
-                return false;
+                else {
+                    return false;
+                }
+                return true;
+            }
+
+            template <class Buf, class String>
+            static bool write_string(Serializer<Buf>& target, String& str) {
+                OptUTF8<String&> buf(str);
+                if (buf.size() == 0) {
+                    return false;
+                }
+                if (!write_num(target, buf.size())) {
+                    return false;
+                }
+                for (size_t i = 0; i < buf.size(); i++) {
+                    target.write(buf[i]);
+                }
+                return true;
+            }
+
+            template <class Buf, class String>
+            static bool read_string(Deserializer<Buf>& target, String& str) {
+                size_t size = 0;
+                if (!read_num(target, size)) {
+                    return false;
+                }
+                return target.read_byte(str, size);
             }
         };
     }  // namespace tokenparser
