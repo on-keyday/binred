@@ -371,7 +371,7 @@ namespace binred {
                 FloatReadPoint pt;
                 get_floatpoint(cr, v, pt);
                 if (pt.str.size() == 0) {
-                    report(&r, pt.exists(), v, "expected number but not");
+                    report(&r, pt.exists(), v, "expect number but not");
                     return 0;
                 }
                 int base = 10;

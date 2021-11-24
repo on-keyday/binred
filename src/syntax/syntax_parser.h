@@ -132,7 +132,7 @@ namespace binred {
                             return false;
                         }
                         if (!e->has_("\"")) {
-                            errmsg = "expected \" but token is" + e->to_string();
+                            errmsg = "expected \" but token is " + e->to_string();
                             return false;
                         }
                         r.Consume();
