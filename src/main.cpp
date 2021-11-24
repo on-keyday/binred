@@ -16,6 +16,9 @@
 #include <subcommand.h>
 #include "syntax/syntax.h"
 #include "syntax_rule/set_by_syntax.h"
+#include <coutwrapper.h>
+
+auto& cout = commonlib2::cout_wrapper();
 
 void binred_test() {
     binred::TokenReader red;
@@ -37,7 +40,7 @@ void binred_test() {
     }
     {
         std::ofstream fs("D:/MiniTools/binred/generated/test.hpp");
-        std::cout << ctx.buffer;
+        cout << ctx.buffer;
         fs << "/*license*/\n#pragma once\n#include<cstdint>\n#include<string>\n";
         fs << binred::cpp::error_enum_class(ctx);
         fs << ctx.buffer;
@@ -45,21 +48,23 @@ void binred_test() {
 }
 
 int main(int argc, char** argv) {
+    commonlib2::IOWrapper::Init();
+
     commonlib2::SubCmdDispatch disp(std::string("binred"));
     disp.set_helpstr("binary I/O generator");
     disp.set_usage("binred [<option>] <subcommand>");
     disp.set_callback([](decltype(disp)::result_t& r) {
         if (r.get_current()->get_cmdname() == "binred") {
             if (auto arg = r.get_layer(0)->has_(":arg")) {
-                std::cout << r.errorln(arg->arg()->at(0) + ": no such subcommand exists\ntry `binred help` for more info");
+                cout << r.errorln(arg->arg()->at(0) + ": no such subcommand exists\ntry `binred help` for more info");
             }
             else {
-                std::cout << r.errorln("need subcommand\ntry `binred help` for more info");
+                cout << r.errorln("need subcommand\ntry `binred help` for more info");
             }
             return -1;
         }
         else {
-            std::cout << r.errorln("command not implemented");
+            cout << r.errorln("command not implemented");
         }
         return 0;
     });
@@ -73,16 +78,16 @@ int main(int argc, char** argv) {
                 auto arg = r.get_layer("help")->has_(":arg");
                 auto base = r.get_current()->get_parent();
                 if (!arg) {
-                    std::cout << r.help(base, "usage:", "subcommand:", 3);
+                    cout << r.help(base, "usage:", "subcommand:", 3);
                     return 0;
                 }
                 auto& key = arg->arg()->at(0);
                 auto c = base->get_subcmd(key);
                 if (!c) {
-                    std::cout << r.errorln(key + ": no such subcommand exists");
+                    cout << r.errorln(key + ": no such subcommand exists");
                     return 1;
                 }
-                std::cout << r.help(c, "usage:", "subcommand:", 3);
+                cout << r.help(c, "usage:", "subcommand:", 3);
                 return 0;
             })
         ->set_usage("binred help <command>");
@@ -90,7 +95,7 @@ int main(int argc, char** argv) {
             "hello", "say hello",
             {},
             [](decltype(disp)::result_t& r) {
-                std::cout << r.errorln("Hello!");
+                cout << r.errorln("Hello!");
                 return std::pair{0, false};
             })
         ->set_usage("binred hello");
@@ -116,33 +121,33 @@ int main(int argc, char** argv) {
                                     msg = "-" + op + ": ";
                                 }
                                 else {
-                                    std::cout << "binred: warning: unknown option -" + op + " ignored\n";
+                                    cout << "binred: warning: unknown option -" + op + " ignored\n";
                                 }
                                 return true;
                             });
         !err.first) {
-        std::cout << "binred: error: " << msg << commonlib2::error_message(err.first);
+        cout << "binred: error: " << msg << commonlib2::error_message(err.first);
     }
     binred::syntax::SyntaxCompiler syntaxc;
     using File = commonlib2::Reader<commonlib2::FileReader>;
     {
         File syntaxfile(commonlib2::FileReader("src/syntax_file/syntax.txt"));
         if (!syntaxc.make_parser(syntaxfile)) {
-            std::cout << "error: " << syntaxc.error();
+            cout << "error: " << syntaxc.error();
         }
     }
     binred::Stmts stmts;
     syntaxc.callback() = [&](const binred::syntax::MatchingContext& c) {
         if (!c.is_invisible_type()) {
-            std::cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
+            cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
         }
         return stmts(c);
     };
     {
         File testfile(commonlib2::FileReader("src/syntax_file/test_syntax2.txt"));
         if (!syntaxc.parse(testfile)) {
-            std::cout << "error:\n"
-                      << syntaxc.error();
+            cout << "error:\n"
+                 << syntaxc.error();
         }
     }
 

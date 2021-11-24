@@ -2,8 +2,17 @@ a().b()
 A,B,C,D:=E,F,G,H
 A+10-2
 D:=0
-1+
+1+true-(1+1)
 if A=2;A==2 {
     A!=0
     a().a.B()
+}
+
+はげ=ばか+ばか=google
+A(
+a,v,c
+).a
+
+if a:=root {
+
 }

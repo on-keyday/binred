@@ -217,72 +217,6 @@ namespace binred {
         }
     };
 
-    struct IfStmt : Stmt {
-        constexpr IfStmt()
-            : Stmt(StmtType::if_) {}
-        bool keyword = false;
-        std::shared_ptr<Expr> init;
-        std::shared_ptr<Expr> cond;
-        std::shared_ptr<Stmts> stmts;
-        bool operator()(const syntax::MatchingContext& ctx) {
-            if (!keyword) {
-                if (ctx.is_current("IFSTMT") && ctx.is_type(syntax::MatchingType::keyword) && ctx.is_token("if")) {
-                    keyword = true;
-                    stack = ctx.get_stack();
-                }
-                else {
-                    ctx.set_errmsg("expect if statement but not");
-                    return false;
-                }
-                return true;
-            }
-            if (ctx.is_rollbacked(stack)) {
-                ctx.set_errmsg("unexpected rollback. if statement expected.");
-                return false;
-            }
-            if (ctx.is_current(stack)) {
-                if (ctx.is_token(";")) {
-                    auto tree = cb.get_rawfunc<TreeBySyntax>();
-                    if (!tree) {
-                        ctx.set_errmsg("syntax parser is broken");
-                        return false;
-                    }
-                    init = std::move(tree->e);
-                    return true;
-                }
-                else if (ctx.is_token("{")) {
-                    auto tree = cb.get_rawfunc<TreeBySyntax>();
-                    if (!tree) {
-                        ctx.set_errmsg("syntax parser is broken");
-                        return false;
-                    }
-                    cond = std::move(tree->e);
-                    cb = InvokeProxy<Stmts>();
-                }
-                else if (ctx.is_token("}")) {
-                    auto tmp = cb.move_from_rawfunc<InvokeProxy<Stmts>>(move_from_InvokeProxy<Stmts>());
-                    if (!tmp) {
-                        ctx.set_errmsg("syntax parser is broken");
-                        return false;
-                    }
-                    stmts = std::move(tmp);
-                    ended = true;
-                }
-                else {
-                    ctx.set_errmsg("unexpected symbol " + ctx.get_token() + ". expect ; or {");
-                    return false;
-                }
-                return true;
-            }
-            else {
-                if (!cb) {
-                    cb = TreeBySyntax();
-                }
-                return cb(ctx);
-            }
-        }
-    };
-
     struct VarInitStmt : Stmt {
         VarInitStmt()
             : Stmt(StmtType::varinit) {}
@@ -371,6 +305,83 @@ namespace binred {
         }
     };
 
+    struct IfStmt : Stmt {
+        constexpr IfStmt()
+            : Stmt(StmtType::if_) {}
+
+        std::shared_ptr<Stmt> init;
+        std::shared_ptr<Stmt> cond;
+        std::shared_ptr<Stmts> stmts;
+        bool operator()(const syntax::MatchingContext& ctx) {
+            if (firstcall) {
+                if (ctx.is_current("IFSTMT") && ctx.is_type(syntax::MatchingType::keyword) && ctx.is_token("if")) {
+                    firstcall = false;
+                    stack = ctx.get_stack();
+                }
+                else {
+                    ctx.set_errmsg("expect if statement but not");
+                    return false;
+                }
+                return true;
+            }
+            if (ctx.is_rollbacked(stack)) {
+                ctx.set_errmsg("unexpected rollback. if statement expected.");
+                return false;
+            }
+            if (ctx.is_current(stack)) {
+                if (ctx.is_token(";")) {
+                    auto tree = cb.move_from_rawfunc<ExprStmt, VarInitStmt>(move_to_shared<Stmt>());
+                    if (!tree) {
+                        ctx.set_errmsg("parser is broken");
+                        return false;
+                    }
+                    init = std::move(tree);
+                    cb = ExprStmt();
+                    return true;
+                }
+                else if (ctx.is_token("{")) {
+                    auto tree = cb.move_from_rawfunc<ExprStmt, VarInitStmt>(move_to_shared<Stmt>());
+                    if (!tree) {
+                        ctx.set_errmsg("syntax parser is broken");
+                        return false;
+                    }
+                    cond = std::move(tree);
+                    cb = InvokeProxy<Stmts>();
+                }
+                else if (ctx.is_token("}")) {
+                    auto tmp = cb.move_from_rawfunc<InvokeProxy<Stmts>>(move_from_InvokeProxy<Stmts>());
+                    if (!tmp) {
+                        ctx.set_errmsg("syntax parser is broken");
+                        return false;
+                    }
+                    stmts = std::move(tmp);
+                    ended = true;
+                }
+                else {
+                    ctx.set_errmsg("unexpected symbol " + ctx.get_token() + ". expect ; or {");
+                    return false;
+                }
+                return true;
+            }
+            else {
+                if (cb) {
+                    cb = VarInitStmt();
+                }
+                auto res = cb(ctx);
+                auto ptr = cb.get_rawfunc<Stmt, ExprStmt, VarInitStmt>();
+                if (!ptr) {
+                    ctx.set_errmsg("parser broken");
+                    return false;
+                }
+                if (ptr->end_stmt() && !res) {
+                    cb = ExprStmt();
+                    return cb(ctx);
+                }
+                return res;
+            }
+        }
+    };
+
     struct Stmts : Stmt {
 #define STMTLIST Stmt, Stmts, IfStmt, VarInitStmt, ExprStmt
         Stmts()
@@ -392,23 +403,22 @@ namespace binred {
         bool operator()(const syntax::MatchingContext& ctx) {
             if (cb) {
                 auto ret = cb(ctx);
-                if (auto ptr = borrow_ptr(cb)) {
-                    if (ptr->end_stmt()) {
-                        if (ret) {
-                            stmts.push_back(get_ptr(cb));
-                        }
-                        cb = nullptr;
-                        if (ret) {
-                            return ret;
-                        }
+                auto ptr = borrow_ptr(cb);
+                if (!ptr) {
+                    ctx.set_errmsg("invalid stmt structure");
+                    return false;
+                }
+                if (ptr->end_stmt()) {
+                    if (ret) {
+                        stmts.push_back(get_ptr(cb));
                     }
-                    else {
+                    cb = nullptr;
+                    if (ret) {
                         return ret;
                     }
                 }
                 else {
-                    ctx.set_errmsg("invalid stmt structure");
-                    return false;
+                    return ret;
                 }
             }
             if (!cb) {
