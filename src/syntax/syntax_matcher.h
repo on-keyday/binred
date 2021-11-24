@@ -77,11 +77,11 @@ namespace binred {
         ENUM_STRING_MSG(MatchingType::identifier, "ID")
         ENUM_STRING_MSG(MatchingType::eof, "EOF")
         ENUM_STRING_MSG(MatchingType::eol, "EOL")
+        ENUM_STRING_MSG(MatchingType::eos, "EOS")
+        ENUM_STRING_MSG(MatchingType::bos, "BOS")
         ENUM_STRING_MSG(MatchingType::string, "STRING")
         ENUM_STRING_MSG(MatchingType::symbol, "SYMBOL")
         ENUM_STRING_MSG(MatchingType::keyword, "KEYWORD")
-        ENUM_STRING_MSG(MatchingType::eos, "EOS")
-        ENUM_STRING_MSG(MatchingType::bos, "BOS")
         END_ENUM_STRING_MSG("ERROR");
 
         struct MatchingContext {
@@ -176,6 +176,11 @@ namespace binred {
 
             bool is_type(MatchingType ty) const {
                 return ty == type;
+            }
+
+            bool is_invisible_type() const {
+                return type == MatchingType::bos || type == MatchingType::eos ||
+                       type == MatchingType::eol || type == MatchingType::eof;
             }
 
             bool is_token(const std::string& n) const {

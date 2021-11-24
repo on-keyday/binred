@@ -133,7 +133,9 @@ int main(int argc, char** argv) {
     }
     binred::Stmts stmts;
     syntaxc.callback() = [&](const binred::syntax::MatchingContext& c) {
-        std::cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
+        if (c.is_invisible_type()) {
+            std::cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
+        }
         return stmts(c);
     };
     {
