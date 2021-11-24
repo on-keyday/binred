@@ -32,6 +32,7 @@ namespace binred {
             std::shared_ptr<token_t> token;
             bool repeat = false;
             bool ifexists = false;
+            bool adjacent = false;
         };
 
         struct OrSyntax : Syntax {
@@ -203,6 +204,11 @@ namespace binred {
                         }
                         else if (!ptr->repeat && e->has_("*")) {
                             ptr->repeat = true;
+                            r.Consume();
+                            continue;
+                        }
+                        else if (!ptr->adjacent && e->has_("&")) {
+                            ptr->adjacent = true;
                             r.Consume();
                             continue;
                         }

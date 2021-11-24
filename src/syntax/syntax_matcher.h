@@ -66,6 +66,7 @@ namespace binred {
             symbol,
             keyword,
             error,
+            endstmt,
         };
 
         BEGIN_ENUM_STRING_MSG(MatchingType, type_str)
@@ -236,7 +237,10 @@ namespace binred {
             }
 
             int parse_literal(TokenReader& r, std::shared_ptr<Syntax>& v) {
-                auto e = r.ReadorEOF();
+                auto e = r.GetorEOF();
+                if (!v->adjacent) {
+                    e = r.ReadorEOF();
+                }
                 if (!e) {
                     report(&r, e, v, "unexpected EOF. expect " + v->token->to_string());
                     return 0;
@@ -311,8 +315,10 @@ namespace binred {
                 return true;
             }
 
-            void get_floatpoint(TokenReader& cr, FloatReadPoint& pt) {
-                cr.Read();
+            void get_floatpoint(TokenReader& cr, std::shared_ptr<Syntax>& v, FloatReadPoint& pt) {
+                if (!v->adjacent) {
+                    cr.Read();
+                }
                 while (true) {
                     auto e = cr.Get();
                     if (!e) {
@@ -353,7 +359,7 @@ namespace binred {
             int parse_float(TokenReader& r, std::shared_ptr<Syntax>& v) {
                 auto cr = r.FromCurrent();
                 FloatReadPoint pt;
-                get_floatpoint(cr, pt);
+                get_floatpoint(cr, v, pt);
                 if (pt.str.size() == 0) {
                     report(&r, pt.exists(), v, "expected number but not");
                     return 0;
@@ -483,7 +489,10 @@ namespace binred {
                     return true;
                 };
                 if (v->token->has_("EOF")) {
-                    auto e = cr.Read();
+                    auto e = cr.Get();
+                    if (!v->adjacent) {
+                        e = cr.Read();
+                    }
                     if (e) {
                         report(&r, e, v, "expect EOF but token is " + e->to_string());
                         return 0;
@@ -493,9 +502,12 @@ namespace binred {
                     }
                 }
                 else if (v->token->has_("EOL")) {
-                    cr.SetIgnoreLine(false);
-                    auto e = r.ReadorEOF();
-                    cr.SetIgnoreLine(true);
+                    auto e = cr.GetorEOF();
+                    if (!v->adjacent) {
+                        cr.SetIgnoreLine(false);
+                        e = r.ReadorEOF();
+                        cr.SetIgnoreLine(true);
+                    }
                     if (!e) {
                         report(&r, e, v, "unexpected EOF. expect EOL but not");
                         return 0;
@@ -510,7 +522,10 @@ namespace binred {
                     cr.Consume();
                 }
                 else if (v->token->has_("ID")) {
-                    auto e = cr.ReadorEOF();
+                    auto e = cr.GetorEOF();
+                    if (!v->adjacent) {
+                        e = r.ReadorEOF();
+                    }
                     if (!e) {
                         report(&r, e, v, "unexpected EOF. expect identifier");
                     }
@@ -524,7 +539,10 @@ namespace binred {
                     cr.Consume();
                 }
                 else if (v->token->has_("INTEGER")) {
-                    auto e = cr.ReadorEOF();
+                    auto e = cr.GetorEOF();
+                    if (!v->adjacent) {
+                        e = r.ReadorEOF();
+                    }
                     if (!e) {
                         report(&r, e, v, "unexpected EOF. expect integer");
                         return 0;
@@ -547,7 +565,10 @@ namespace binred {
                     }
                 }
                 else if (v->token->has_("STRING")) {
-                    auto e = cr.ReadorEOF();
+                    auto e = cr.GetorEOF();
+                    if (!v->adjacent) {
+                        e = r.ReadorEOF();
+                    }
                     if (!e) {
                         report(&r, e, v, "unexpected EOF. expect string");
                         return 0;

@@ -36,6 +36,7 @@ namespace binred {
 
     struct Stmt {
         SyntaxCb cb;
+        syntax::MatchingStackInfo stack;
         bool ended = false;
         bool end_stmt() const {
             return ended;
@@ -118,7 +119,7 @@ namespace binred {
 
     struct IfStmt : Stmt {
         bool keyword = false;
-        syntax::MatchingStackInfo stack;
+
         SyntaxCb cb;
         std::shared_ptr<Expr> init;
         std::shared_ptr<Expr> cond;
@@ -208,6 +209,9 @@ namespace binred {
                         return true;
                     }
                     else if (ctx.is_type(syntax::MatchingType::identifier)) {
+                        if (varname.size() == 0) {
+                            stack = ctx.get_stack();
+                        }
                         varname.push_back(ctx.get_token());
                         return true;
                     }
@@ -215,8 +219,14 @@ namespace binred {
                     return false;
                 }
             }
-            ctx.set_errmsg("unimplemented");
-            return false;
+            if (ctx.is_rollbacked(stack)) {
+                ctx.set_errmsg("unexpected rollback. expect varinit");
+                return false;
+            }
+            if (!cb) {
+                cb = TreeBySyntax();
+            }
+            return cb(ctx);
         }
     };
 
