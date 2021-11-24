@@ -510,7 +510,7 @@ namespace binred {
                         report(&r, e, v, "expect EOF but token is " + e->to_string());
                         return 0;
                     }
-                    if (!callback(e, cr, e->to_string(), MatchingType::eof)) {
+                    if (!callback(e, cr, "", MatchingType::eof)) {
                         return -1;
                     }
                 }
