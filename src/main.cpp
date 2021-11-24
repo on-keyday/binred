@@ -131,9 +131,10 @@ int main(int argc, char** argv) {
             std::cout << "error: " << syntaxc.error();
         }
     }
-    syntaxc.callback() = [](const binred::syntax::MatchingContext& c) {
+    binred::Stmts stmts;
+    syntaxc.callback() = [&](const binred::syntax::MatchingContext& c) {
         std::cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
-        return true;
+        return stmts(c);
     };
     {
         File testfile(commonlib2::FileReader("src/syntax_file/test_syntax.txt"));
@@ -141,6 +142,6 @@ int main(int argc, char** argv) {
             std::cout << "error: " << syntaxc.error();
         }
     }
-    binred::SyntaxCb cb = binred::Stmts();
+
     //binred_test();
 }

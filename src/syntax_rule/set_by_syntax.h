@@ -267,6 +267,10 @@ namespace binred {
                 ended = true;
                 return true;
             }
+            if (!cb) {
+                cb = TreeBySyntax();
+            }
+            return cb(ctx);
         }
     };
 
@@ -311,7 +315,9 @@ namespace binred {
                     cb = VarInitStmt();
                 }
                 else if (ctx.is_current("EXPRSTMT")) {
+                    cb = ExprStmt();
                 }
+                return cb(ctx);
             }
             return true;
         }
