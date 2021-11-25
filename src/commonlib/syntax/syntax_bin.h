@@ -13,6 +13,14 @@
 namespace PROJECT_NAME {
     namespace syntax {
         struct SyntaxIO {
+            static bool write_syntax(Serializer<std::string>& target, std::shared_ptr<Syntax>& stx, std::map<std::shared_ptr<token_t>, size_t>& stxtok) {
+                if (!tkpsr::BinaryIO::write_num(target, size_t(stx->type))) {
+                    return false;
+                }
+                switch (stx->type) {
+                    default:
+                }
+            }
         };
     }  // namespace syntax
 }  // namespace PROJECT_NAME

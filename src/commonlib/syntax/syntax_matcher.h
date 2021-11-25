@@ -247,7 +247,7 @@ namespace PROJECT_NAME {
 
             int parse_literal(TokenReader& r, std::shared_ptr<Syntax>& v) {
                 auto e = r.GetorEOF();
-                if (!v->adjacent) {
+                if (!any(v->flag & SyntaxFlag::adjacent)) {
                     e = r.ReadorEOF();
                 }
                 if (!e) {
@@ -325,7 +325,7 @@ namespace PROJECT_NAME {
             }
 
             void get_floatpoint(TokenReader& cr, std::shared_ptr<Syntax>& v, FloatReadPoint& pt) {
-                if (!v->adjacent) {
+                if (!any(v->flag & SyntaxFlag::adjacent)) {
                     cr.Read();
                 }
                 while (true) {
@@ -503,7 +503,7 @@ namespace PROJECT_NAME {
                 };
                 if (v->token->has_("EOF")) {
                     auto e = cr.Get();
-                    if (!v->adjacent) {
+                    if (!any(v->flag & SyntaxFlag::adjacent)) {
                         e = cr.Read();
                     }
                     if (e) {
@@ -516,7 +516,7 @@ namespace PROJECT_NAME {
                 }
                 else if (v->token->has_("EOL")) {
                     auto e = cr.GetorEOF();
-                    if (!v->adjacent) {
+                    if (!any(v->flag & SyntaxFlag::adjacent)) {
                         cr.SetIgnoreLine(false);
                         e = cr.ReadorEOF();
                         cr.SetIgnoreLine(true);
@@ -536,7 +536,7 @@ namespace PROJECT_NAME {
                 }
                 else if (v->token->has_("ID")) {
                     auto e = cr.GetorEOF();
-                    if (!v->adjacent) {
+                    if (!any(v->flag & SyntaxFlag::adjacent)) {
                         e = cr.ReadorEOF();
                     }
                     if (!e) {
@@ -554,7 +554,7 @@ namespace PROJECT_NAME {
                 }
                 else if (v->token->has_("INTEGER")) {
                     auto e = cr.GetorEOF();
-                    if (!v->adjacent) {
+                    if (!any(v->flag & SyntaxFlag::adjacent)) {
                         e = cr.ReadorEOF();
                     }
                     if (!e) {
@@ -580,7 +580,7 @@ namespace PROJECT_NAME {
                 }
                 else if (v->token->has_("STRING")) {
                     auto e = cr.GetorEOF();
-                    if (!v->adjacent) {
+                    if (!any(v->flag & SyntaxFlag::adjacent)) {
                         e = cr.ReadorEOF();
                     }
                     if (!e) {
@@ -625,10 +625,10 @@ namespace PROJECT_NAME {
                     bool repeating = false;
                     while (true) {
                         if (auto res = f(r, v); res == 0) {
-                            if (v->fatal) {
+                            if (any(v->flag & SyntaxFlag::fatal)) {
                                 return -1;
                             }
-                            if (!repeating && !v->ifexists) {
+                            if (!repeating && !any(v->flag & SyntaxFlag::ifexists)) {
                                 return 0;
                             }
                             break;
@@ -636,7 +636,7 @@ namespace PROJECT_NAME {
                         else if (res < 0) {
                             return -1;
                         }
-                        if (v->repeat) {
+                        if (any(v->flag & SyntaxFlag::repeat)) {
                             repeating = true;
                             continue;
                         }

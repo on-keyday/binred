@@ -28,15 +28,22 @@ namespace PROJECT_NAME {
             bos,  //begining of statement
         };
 
+        enum class SyntaxFlag : std::uint8_t {
+            none,
+            repeat = 0x1,
+            ifexists = 0x2,
+            adjacent = 0x4,
+            fatal = 0x8,
+        };
+
+        DEFINE_ENUMOP(SyntaxFlag)
+
         struct Syntax {
             Syntax(SyntaxType t)
                 : type(t) {}
             SyntaxType type;
             std::shared_ptr<token_t> token;
-            bool repeat = false;
-            bool ifexists = false;
-            bool adjacent = false;
-            bool fatal = false;
+            SyntaxFlag flag = SyntaxFlag::none;
         };
 
         struct OrSyntax : Syntax {
@@ -213,23 +220,23 @@ namespace PROJECT_NAME {
                         if (!e) {
                             break;
                         }
-                        if (!ptr->ifexists && e->has_("?")) {
-                            ptr->ifexists = true;
+                        if (!any(ptr->flag & SyntaxFlag::ifexists) && e->has_("?")) {
+                            ptr->flag |= SyntaxFlag::ifexists;
                             r.Consume();
                             continue;
                         }
-                        else if (!ptr->repeat && e->has_("*")) {
-                            ptr->repeat = true;
+                        else if (!any(ptr->flag & SyntaxFlag::repeat) && e->has_("*")) {
+                            ptr->flag |= SyntaxFlag::repeat;
                             r.Consume();
                             continue;
                         }
-                        else if (!ptr->adjacent && e->has_("&")) {
-                            ptr->adjacent = true;
+                        else if (!any(ptr->flag & SyntaxFlag::adjacent) && e->has_("&")) {
+                            ptr->flag |= SyntaxFlag::adjacent;
                             r.Consume();
                             continue;
                         }
-                        else if (!ptr->fatal && e->has_("!")) {
-                            ptr->fatal = true;
+                        else if (!any(ptr->flag & SyntaxFlag::fatal) && e->has_("!")) {
+                            ptr->flag |= SyntaxFlag::fatal;
                             r.Consume();
                             continue;
                         }
