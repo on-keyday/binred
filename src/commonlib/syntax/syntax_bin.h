@@ -155,6 +155,8 @@ namespace PROJECT_NAME {
                     return false;
                 }
                 {
+                    syntaxc.match.p.parser.GetKeyWords().reg.clear();
+                    syntaxc.match.p.parser.GetSymbols().reg.clear();
                     std::map<size_t, std::string> tmpmap;
                     if (!tkpsr::TokenIO::read_mapping<std::string>(target, syntaxc.match.p.parser.GetKeyWords(), tmpmap)) {
                         return false;
