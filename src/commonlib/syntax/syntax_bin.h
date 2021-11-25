@@ -126,6 +126,13 @@ namespace PROJECT_NAME {
                                 }
                             }
                         }
+                        else if (v->is_(tkpsr::TokenKind::spaces)) {
+                            if (auto p = v->get_next()) {
+                                if (p->is_(tkpsr::TokenKind::line)) {
+                                    return false;
+                                }
+                            }
+                        }
                     }
                     return true;
                 };
