@@ -149,7 +149,7 @@ namespace PROJECT_NAME {
                 auto cb = [&](auto& v) {
                     stxtok.push_back(v);
                 };
-                auto result = tkpsr::TokensIO::read_parsed<std::map<std::string, size_t>>(target, syntaxc.pm.parser, std::move(cb));
+                auto result = tkpsr::TokensIO::read_parsed<std::map<size_t, std::string>>(target, syntaxc.pm.parser, std::move(cb));
                 if (!result) {
                     return false;
                 }
