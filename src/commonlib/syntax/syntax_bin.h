@@ -13,7 +13,8 @@
 namespace PROJECT_NAME {
     namespace syntax {
         struct SyntaxIO {
-            static bool write_syntax(Serializer<std::string>& target, const std::shared_ptr<Syntax>& stx, std::map<std::shared_ptr<token_t>, size_t>& stxtok) {
+            template <class Buf>
+            static bool write_syntax(Serializer<Buf>& target, const std::shared_ptr<Syntax>& stx, std::map<std::shared_ptr<token_t>, size_t>& stxtok) {
                 if (!tkpsr::BinaryIO::write_num(target, size_t(stx->type))) {
                     return false;
                 }
@@ -49,7 +50,8 @@ namespace PROJECT_NAME {
                 }
             }
 
-            static bool read_syntax(Deserializer<std::string>& target, std::shared_ptr<Syntax>& stx, std::vector<std::shared_ptr<token_t>>& stxtok) {
+            template <class Buf>
+            static bool read_syntax(Deserializer<Buf>& target, std::shared_ptr<Syntax>& stx, std::vector<std::shared_ptr<token_t>>& stxtok) {
                 size_t tmpnum = 0;
                 if (!tkpsr::BinaryIO::read_num(target, tmpnum)) {
                     return false;
@@ -96,7 +98,9 @@ namespace PROJECT_NAME {
                 }
             }
 
-            static bool write_all(Serializer<std::string>& target, SyntaxCompiler& syntaxc) {
+            template <class Buf>
+            static bool write_all(Serializer<Buf>& target, SyntaxCompiler& syntaxc) {
+                target.write_byte("StD0", 4);
                 size_t count = 0;
                 std::map<std::shared_ptr<token_t>, size_t> stxtok;
                 auto cb = [&](auto& v) {
@@ -105,6 +109,16 @@ namespace PROJECT_NAME {
                 auto result = tkpsr::TokensIO::write_parsed<std::map<std::string, size_t>>(target, syntaxc.pm.parser, std::move(cb));
                 if (!result) {
                     return false;
+                }
+                {
+                    std::map<std::string, size_t> tmpmap;
+                    if (!tkpsr::TokenIO::write_mapping(target, syntaxc.match.p.parser.GetKeyWords(), tmpmap)) {
+                        return false;
+                    }
+                    tmpmap.clear();
+                    if (!tkpsr::TokenIO::write_mapping(target, syntaxc.match.p.parser.GetSymbols(), tmpmap)) {
+                        return false;
+                    }
                 }
                 for (auto& stx : syntaxc.match.p.syntax) {
                     if (!tkpsr::BinaryIO::write_string(target, stx.first)) {
@@ -119,6 +133,62 @@ namespace PROJECT_NAME {
                         }
                     }
                 }
+                if (!tkpsr::BinaryIO::write_num(target, 0)) {
+                    return false;
+                }
+                return true;
+            }
+
+            template <class Buf>
+            static bool read_all(Deserializer<Buf>& target, SyntaxCompiler& syntaxc) {
+                if (!target.base_reader().expect("StD0")) {
+                    return false;
+                }
+                size_t count = 0;
+                std::vector<std::shared_ptr<token_t>> stxtok;
+                auto cb = [&](auto& v) {
+                    stxtok.push_back(v);
+                };
+                auto result = tkpsr::TokensIO::read_parsed<std::map<std::string, size_t>>(target, syntaxc.pm.parser, std::move(cb));
+                if (!result) {
+                    return false;
+                }
+                {
+                    std::map<size_t, std::string> tmpmap;
+                    if (!tkpsr::TokenIO::read_mapping(syntaxc.match.p.parser.GetKeyWords(), tmpmap)) {
+                        return false;
+                    }
+                    tmpmap.clear();
+                    if (!tkpsr::TokenIO::read_mapping(syntaxc.match.p.parser.GetSymbols(), tmpmap)) {
+                        return false;
+                    }
+                }
+                auto& elms = syntaxc.match.p.syntax;
+                while (true) {
+                    std::string name;
+                    if (!tkpsr::BinaryIO::read_string(target, name)) {
+                        return false;
+                    }
+                    if (name.size() == 0) {
+                        break;
+                    }
+                    auto got = elms.insert({name});
+                    if (!got.second) {
+                        return false;
+                    }
+                    size_t count = 0;
+                    if (!tkpsr::BinaryIO::read_num(target, count)) {
+                        return false;
+                    }
+                    for (size_t i = 0; i < count; i++) {
+                        std::shared_ptr<Syntax> stx;
+                        if (!read_syntax(target, stx, stxtok)) {
+                            return false;
+                        }
+                        got.first->second.push_back(stx);
+                    }
+                }
+                return true;
             }
         };
     }  // namespace syntax
