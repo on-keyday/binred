@@ -139,13 +139,40 @@ namespace PROJECT_NAME {
         };
 
         struct TokenIO {
-            template <class Reg, class Map>
-            void set_mapping(Registry<Reg>& reg, Map& map) {
+            template <class String, class Reg, class Map>
+            bool write_mapping(Serializer<String>& target, Registry<Reg>& reg, Map& map) {
                 size_t count = 0;
                 for (auto& v : reg.reg) {
-                    map.insert({v, count});
-                    count++;
+                    if (map.insert({v, count}).second) {
+                        count++;
+                    }
                 }
+                if(!BinaryIO::write_num(target,map.size()){
+                    return false;
+                }
+                for(auto& v:map){
+                    if (!BinaryIO::write_string(target, v.first)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            template <class String, class Reg, class Map>
+            bool read_mapping(Deserializer<String>& target, Registry<Reg>& reg, Map& map) {
+                size_t count = 0;
+                if (!BinaryIO::read_num(target, count)) {
+                    return false;
+                }
+                for (size_t i = 0; i < count; i++) {
+                    String v;
+                    if (!BinaryIO::read_string(taregt, v)) {
+                        return false;
+                    }
+                    reg.Register(v);
+                    map.insert({i, v});
+                }
+                return true;
             }
 
             template <class Buf, class String, class Map>
