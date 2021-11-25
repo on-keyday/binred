@@ -236,6 +236,8 @@ namespace PROJECT_NAME {
             friend struct TokenIO;
             size_t numsp = 0;
             char16_t spchar = 0;
+            constexpr Spaces()
+                : Token<String>(TokenKind::spaces) {}
 
            public:
             constexpr Spaces(size_t nsp, uint16_t c)
@@ -387,6 +389,9 @@ namespace PROJECT_NAME {
             LineKind linekind = LineKind::none;
             size_t numline = 0;
 
+            constexpr Line()
+                : Token<String>(TokenKind::line) {}
+
            public:
             constexpr Line(LineKind kind, size_t num)
                 : linekind(kind), numline(num), Token<String>(TokenKind::line) {}
@@ -464,6 +469,8 @@ namespace PROJECT_NAME {
             friend struct TokenIO;
             String comments;
             bool oneline = false;
+            Comment()
+                : Token<String>(TokenKind::comments) {}
 
            public:
             Comment(String&& com, bool ol)
@@ -557,6 +564,9 @@ namespace PROJECT_NAME {
             friend struct TokenIO;
             String token;
 
+            RegistryRead(TokenKind kind)
+                : Token<String>(kind) {}
+
            public:
             RegistryRead(String&& str, TokenKind kind)
                 : token(std::move(str)), Token<String>(kind) {}
@@ -636,6 +646,9 @@ namespace PROJECT_NAME {
            private:
             friend struct TokenIO;
             String id;
+
+            Identifier()
+                : Token<String>(TokenKind::identifiers) {}
 
            public:
             Identifier(String&& s)

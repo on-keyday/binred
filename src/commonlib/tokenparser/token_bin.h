@@ -112,13 +112,15 @@ namespace PROJECT_NAME {
             size_t count = 0;
             Map id;
             template <class String>
-            size_t getid(const String& v) {
+            size_t getid(const String& v, bool& already) {
                 if (auto found = id.find(v); found != id.end()) {
+                    already = true;
                     return found->second;
                 }
-                id[v] = count;
                 count++;
-                return count - 1;
+                already = false;
+                id[v] = count;
+                return count;
             }
         };
 
@@ -169,6 +171,24 @@ namespace PROJECT_NAME {
                         }
                         ptr->numsp = tmpsize;
                         token = space;
+                        return true;
+                    }
+                    case TokenKind::keyword:
+                    case TokenKind::weak_keyword: {
+                        auto keyword = std::make_shared<RegistryRead<String>>();
+                        //to type on editor easily
+                        RegistryRead<String>* ptr = space.get();
+                        if (!BinaryIO::read_num(target, tmpsize)) {
+                            return false;
+                        }
+                        auto found = ctx.keyword.find(tmpsize);
+                        if (found != ctx.keyword) {
+                            return false;
+                        }
+                        ptr->token = found->second;
+                        if (kind == TokenKind::weak_keyword) {
+                            ptr->keyword_to_weak();
+                        }
                         return true;
                     }
                 }
@@ -226,8 +246,20 @@ namespace PROJECT_NAME {
                     }
                     case TokenKind::identifiers: {
                         Identifier<String>* id = token.identifier();
-                        if(!BinaryIO::write_num(target,ctx.getid(id->get_identifier())){
-                            return false;
+                        bool already = false;
+                        size_t id = ctx.getid(id->get_identifier(), already);
+                        if (already) {
+                            if(!BinaryIO::write_num(target,id){
+                                return false;
+                            }
+                        }
+                        else {
+                            if(!BinaryIO::write_num(target,0){
+                                return false;
+                            }
+                            if(!BinaryIO::write_string(target,id->get_identifier())){
+                                return false;
+                            }
                         }
                         return true;
                     }
@@ -238,8 +270,7 @@ namespace PROJECT_NAME {
                         }
                         return true;
                     }
-                    case TokenKind::root:
-                    case TokenKind::identifiers: {
+                    case TokenKind::root: {
                         return true;
                     }
                     default: {
