@@ -8,9 +8,11 @@
 #pragma once
 
 #include "syntax_parser.h"
+#include "../tokenparser/token_bin.h"
 
 namespace PROJECT_NAME {
     namespace syntax {
-
-    }
+        struct SyntaxIO {
+        };
+    }  // namespace syntax
 }  // namespace PROJECT_NAME

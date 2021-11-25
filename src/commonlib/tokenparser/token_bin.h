@@ -397,8 +397,9 @@ namespace PROJECT_NAME {
         };
 
         struct TokensIO {
-            template <class Map, class Vector, class String, class Buf>
-            static bool write_parsed(Serializer<Buf>& target, TokenParser<Vector, String>& p) {
+            template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&)>
+            static bool write_parsed(
+                Serializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&) {}) {
                 auto parsed = p.GetParsed();
                 if (!parsed) {
                     return false;
@@ -415,6 +416,7 @@ namespace PROJECT_NAME {
                     if (!TokenIO::write_token(target, *tok, ctx)) {
                         return false;
                     }
+                    cb(tok);
                 }
                 if (!BinaryIO::write_num(target, size_t(TokenKind::unknown))) {
                     return false;
@@ -422,8 +424,9 @@ namespace PROJECT_NAME {
                 return true;
             }
 
-            template <class Map, class Vector, class String, class Buf>
-            static bool read_parsed(Deserializer<Buf>& target, TokenParser<Vector, String>& p) {
+            template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&)>
+            static bool read_parsed(
+                Deserializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&) {}) {
                 TokenReadContext<Map> ctx;
                 if (!target.base_reader().expect("TkD0")) {
                     return false;
@@ -453,6 +456,7 @@ namespace PROJECT_NAME {
                         prev->force_set_next(tok);
                         prev = tok;
                     }
+                    cb(tok);
                 }
                 p.current = prev.get();
                 return true;
