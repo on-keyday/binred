@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
                 for (auto& key : *arg->arg()) {
                     v += key + ": ";
                     auto tmp = c->get_subcmd(key);
-                    if (!c) {
+                    if (!tmp) {
                         cout << r.fmtln(v + "no such subcommand exists");
                         return 1;
                     }
