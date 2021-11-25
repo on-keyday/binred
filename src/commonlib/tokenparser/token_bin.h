@@ -427,7 +427,7 @@ namespace PROJECT_NAME {
             static bool write_parsed(
                 Serializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&) {}) {
                 target.write_byte("TkD0", 4);
-                return write_parsed_v1_impl(target, p, std::forward<Cb>(cb));
+                return write_parsed_v1_impl<Map>(target, p, std::forward<Cb>(cb));
             }
 
             template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&)>
