@@ -196,6 +196,7 @@ int main(int argc, char** argv) {
                                      cout << result.error("failed to write syntax to " + output);
                                      return -1;
                                  }
+                                 cout << result.error("operation succeed. result saved to " + output);
                              }
                              return 0;
                          })
