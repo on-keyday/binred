@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
                             {"minimum", {'m'}, "remove comment and needless space", 1, true},
                         },
                         [](decltype(disp)::result_t& result) {
-                            auto layer = result.get_layer("compile");
+                            auto layer = result.get_layer("syntaxc");
                             auto args = layer->has_("input-file");
                             if (!args) {
                                 cout << result.fmt("need input file name");
