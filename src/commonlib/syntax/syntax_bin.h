@@ -119,6 +119,13 @@ namespace PROJECT_NAME {
                         else if (v->is_(tkpsr::TokenKind::symbols) && v->has_("#")) {
                             return false;
                         }
+                        else if (v->is_(tkpsr::TokenKind::line)) {
+                            if (auto p = v->get_prev()) {
+                                if (p->is_(tkpsr::TokenKind::comments)) {
+                                    return false;
+                                }
+                            }
+                        }
                     }
                     return true;
                 };
