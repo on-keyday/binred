@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
                                 auto& input = args->arg()->at(0);
                                 File syntaxfile(commonlib2::FileReader(cl2::ToPath(input).c_str()));
                                 if (!syntaxfile.ref().is_open()) {
-                                    cout << result.fmt("file " + input + " not opened");
+                                    cout << result.fmt("file " + input + " couldn't opened");
                                     return -1;
                                 }
                                 if (!syntaxc.make_parser(syntaxfile)) {
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
                                 auto& output = args->arg()->at(0);
                                 commonlib2::Serializer<commonlib2::FileWriter> w(commonlib2::FileWriter(cl2::ToPath(output).c_str()));
                                 if (!w.get().is_open()) {
-                                    cout << result.fmt("file " + output + " not opened");
+                                    cout << result.fmt("file " + output + " couldn't opened");
                                     return -1;
                                 }
                                 if (!commonlib2::syntax::SyntaxIO::write_all(w, syntaxc, (bool)layer->has_("minimum"))) {
