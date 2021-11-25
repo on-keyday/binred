@@ -151,59 +151,54 @@ int main(int argc, char** argv) {
                 {"where", {'w'}, "set where fetch from", 1, false, true},
             })
         ->set_usage("binred get [<options>] <url>");
-    disp.set_subcommand("syntax", "syntax parser", {},
-                        [](auto& result) {
-                            cout << result.fmt("type `binred help syntax` for more info");
+    disp.set_subcommand("syntaxc", "compile syntax file",
+                        {
+                            {"input-file", {'i'}, "set input file", 1, true},
+                            {"output-file", {'o'}, "set output file", 1, true},
+                            {"minimum", {'m'}, "remove comment and needless space", 1, true},
+                        },
+                        [](decltype(disp)::result_t& result) {
+                            auto layer = result.get_layer("compile");
+                            auto args = layer->has_("input-file");
+                            if (!args) {
+                                cout << result.fmt("need input file name");
+                                return 1;
+                            }
+                            binred::syntax::SyntaxCompiler syntaxc;
+                            using File = commonlib2::Reader<commonlib2::FileReader>;
+                            {
+                                auto& input = args->arg()->at(0);
+                                File syntaxfile(commonlib2::FileReader(cl2::ToPath(input).c_str()));
+                                if (!syntaxfile.ref().is_open()) {
+                                    cout << result.fmt("file " + input + " not opened");
+                                    return -1;
+                                }
+                                if (!syntaxc.make_parser(syntaxfile)) {
+                                    cout << result.fmt(syntaxc.error());
+                                    return -1;
+                                }
+                            }
+                            {
+                                args = layer->has_("output-file");
+                                if (!args) {
+                                    cout << result.fmt("need output file name");
+                                    return 1;
+                                }
+                                auto& output = args->arg()->at(0);
+                                commonlib2::Serializer<commonlib2::FileWriter> w(commonlib2::FileWriter(cl2::ToPath(output).c_str()));
+                                if (!w.get().is_open()) {
+                                    cout << result.fmt("file " + output + " not opened");
+                                    return -1;
+                                }
+                                if (!commonlib2::syntax::SyntaxIO::write_all(w, syntaxc, (bool)layer->has_("minimum"))) {
+                                    cout << result.fmt("failed to write syntax to " + output);
+                                    return -1;
+                                }
+                                cout << result.fmt("operation succeed. result saved to " + output);
+                            }
+                            return 0;
                         })
-        ->set_usage("binred syntax [<command>]")
-        ->set_subcommand("compile", "compile syntax file",
-                         {
-                             {"input-file", {'i'}, "set input file", 1, true},
-                             {"output-file", {'o'}, "set output file", 1, true},
-                             {"minimum", {'m'}, "remove comment and needless space", 1, true},
-                         },
-                         [](decltype(disp)::result_t& result) {
-                             auto layer = result.get_layer("compile");
-                             auto args = layer->has_("input-file");
-                             if (!args) {
-                                 cout << result.fmt("need input file name");
-                                 return 1;
-                             }
-                             binred::syntax::SyntaxCompiler syntaxc;
-                             using File = commonlib2::Reader<commonlib2::FileReader>;
-                             {
-                                 auto& input = args->arg()->at(0);
-                                 File syntaxfile(commonlib2::FileReader(cl2::ToPath(input).c_str()));
-                                 if (!syntaxfile.ref().is_open()) {
-                                     cout << result.fmt("file " + input + " not opened");
-                                     return -1;
-                                 }
-                                 if (!syntaxc.make_parser(syntaxfile)) {
-                                     cout << result.fmt(syntaxc.error());
-                                     return -1;
-                                 }
-                             }
-                             {
-                                 args = layer->has_("output-file");
-                                 if (!args) {
-                                     cout << result.fmt("need output file name");
-                                     return 1;
-                                 }
-                                 auto& output = args->arg()->at(0);
-                                 commonlib2::Serializer<commonlib2::FileWriter> w(commonlib2::FileWriter(cl2::ToPath(output).c_str()));
-                                 if (!w.get().is_open()) {
-                                     cout << result.fmt("file " + output + " not opened");
-                                     return -1;
-                                 }
-                                 if (!commonlib2::syntax::SyntaxIO::write_all(w, syntaxc, (bool)layer->has_("minimum"))) {
-                                     cout << result.fmt("failed to write syntax to " + output);
-                                     return -1;
-                                 }
-                                 cout << result.fmt("operation succeed. result saved to " + output);
-                             }
-                             return 0;
-                         })
-        ->set_usage("binred syntax compile [<options>]");
+        ->set_usage("binred syntaxc [<command>]");
     std::string msg;
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
                             [&](auto& op, bool on_error) {
