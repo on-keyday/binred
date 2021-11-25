@@ -154,17 +154,11 @@ int main(int argc, char** argv) {
     }
     commonlib2::Serializer<std::string> target;
 
-    auto result = commonlib2::tokenparser::TokensIO::write_parsed<std::map<std::string, size_t>>(target, syntaxc.get_rawparser());
     commonlib2::Deserializer<std::string&> target2(target.get());
-    commonlib2::syntax::Parser parser;
-    result = commonlib2::tokenparser::TokensIO::read_parsed<std::map<size_t, std::string>>(target2, parser);
-    for (auto i = parser.GetParsed(); i; i = i->get_next()) {
-        cout << i->to_string();
-    }
-    std::ofstream("src/syntax_file/parsed.dat", std::ios_base::binary) << target.get();
-    target.get().clear();
-    result = commonlib2::syntax::SyntaxIO::write_all(target, syntaxc);
-    target2.base_reader().seek(0);
+
+    auto result = commonlib2::syntax::SyntaxIO::write_all(target, syntaxc);
+
     commonlib2::syntax::SyntaxCompiler stxc;
     result = commonlib2::syntax::SyntaxIO::read_all(target2, stxc);
+    std::ofstream("src/syntax_file/parsed.dat", std::ios_base::binary) << target.get();
 }

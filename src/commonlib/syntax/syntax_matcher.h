@@ -671,7 +671,7 @@ namespace PROJECT_NAME {
                         }
                         case SyntaxType::or_: {
                             auto ptr = std::static_pointer_cast<OrSyntax>(v);
-                            if (any(ptr->flag & SyntaxFlag::once_each)) {
+                            if (!any(ptr->flag & SyntaxFlag::once_each)) {
                                 if (auto e = call_v(
                                         [&](auto& r, auto& v) {
                                             int index = 0;
