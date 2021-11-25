@@ -167,6 +167,7 @@ namespace PROJECT_NAME {
                     }
                 }
                 auto& elms = syntaxc.match.p.syntax;
+                elms.clear();
                 while (true) {
                     std::string name;
                     if (!tkpsr::BinaryIO::read_string(target, name)) {
