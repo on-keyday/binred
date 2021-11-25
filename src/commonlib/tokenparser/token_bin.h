@@ -398,14 +398,13 @@ namespace PROJECT_NAME {
 
         struct TokensIO {
             template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&)>
-            static bool write_parsed(
+            static bool write_parsed_v1_impl(
                 Serializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&) {}) {
+                TokenWriteContext<Map> ctx;
                 auto parsed = p.GetParsed();
                 if (!parsed) {
                     return false;
                 }
-                TokenWriteContext<Map> ctx;
-                target.write_byte("TkD0", 4);
                 if (!TokenIO::write_mapping(target, p.keywords, ctx.keyword)) {
                     return false;
                 }
@@ -425,12 +424,16 @@ namespace PROJECT_NAME {
             }
 
             template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&)>
-            static bool read_parsed(
+            static bool write_parsed(
+                Serializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&) {}) {
+                target.write_byte("TkD0", 4);
+                return write_parsed_v1_impl(target, p, std::forward<Cb>(cb));
+            }
+
+            template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&)>
+            static bool read_parsed_v1_impl(
                 Deserializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&) {}) {
                 TokenReadContext<Map> ctx;
-                if (!target.base_reader().expect("TkD0")) {
-                    return false;
-                }
                 if (!TokenIO::read_mapping<String>(target, p.keywords, ctx.keyword)) {
                     return false;
                 }
@@ -460,6 +463,15 @@ namespace PROJECT_NAME {
                 }
                 p.current = prev.get();
                 return true;
+            }
+
+            template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&)>
+            static bool read_parsed(
+                Deserializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&) {}) {
+                if (!target.base_reader().expect("TkD0")) {
+                    return false;
+                }
+                return read_parsed_v1_impl<Map>(target, p, std::forward<Cb>(cb));
             }
         };
     }  // namespace tokenparser

@@ -95,6 +95,9 @@ namespace PROJECT_NAME {
                     }
                 }
             }
+
+            static bool read_() {
+            }
         };
     }  // namespace syntax
 }  // namespace PROJECT_NAME
