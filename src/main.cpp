@@ -6,6 +6,7 @@
 */
 
 #include <fileio.h>
+#include <path_string.h>
 #include "parse/parser/parse.h"
 #include "output/cpp/cargo_to_struct.h"
 #include "output/cpp/alias_to_enum.h"
@@ -18,6 +19,7 @@
 #include "syntax_rule/set_by_syntax.h"
 #include <coutwrapper.h>
 #include <syntax/syntax_bin.h>
+namespace cl2 = commonlib2;
 
 auto& cout = commonlib2::cout_wrapper();
 
@@ -46,6 +48,41 @@ void binred_test() {
         fs << binred::cpp::error_enum_class(ctx);
         fs << ctx.buffer;
     }
+}
+
+void test_syntax() {
+    binred::syntax::SyntaxCompiler syntaxc;
+    using File = commonlib2::Reader<commonlib2::FileReader>;
+    {
+        File syntaxfile(commonlib2::FileReader("src/syntax_file/syntax.txt"));
+        if (!syntaxc.make_parser(syntaxfile)) {
+            cout << "error: " << syntaxc.error();
+        }
+    }
+    binred::Stmts stmts;
+    syntaxc.callback() = [&](const binred::syntax::MatchingContext& c) {
+        if (!c.is_invisible_type()) {
+            cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
+        }
+
+        return stmts(c);
+    };
+    {
+        File testfile(commonlib2::FileReader("src/syntax_file/test_syntax2.txt"));
+        if (!syntaxc.parse(testfile)) {
+            cout << "error:\n"
+                 << syntaxc.error();
+        }
+    }
+    commonlib2::Serializer<std::string> target;
+
+    commonlib2::Deserializer<std::string&> target2(target.get());
+
+    auto result = commonlib2::syntax::SyntaxIO::write_all(target, syntaxc, true);
+
+    commonlib2::syntax::SyntaxCompiler stxc;
+    result = commonlib2::syntax::SyntaxIO::read_all(target2, stxc);
+    std::ofstream("src/syntax_file/parsed.dat", std::ios_base::binary) << target.get();
 }
 
 int main(int argc, char** argv) {
@@ -114,16 +151,55 @@ int main(int argc, char** argv) {
                 {"where", {'w'}, "set where fetch from", 1, false, true},
             })
         ->set_usage("binred get [<options>] <url>");
-    disp.set_subcommand("syntax", "syntax parser",
-                        {
-                            {"syntax-file", {'s'}, "set syntax file", 1, true},
-                            {"input-file", {'i'}, "set input file", 1, false, true},
-                            {"output-file", {'o'}, "set output file", 1, true},
-                        },
-                        [](decltype(disp)::result_t& result) {
-                            result.get_layer("syntax")->has_();
-                        })
-        ->set_usage("binred syntax [<options>]");
+    disp.set_subcommand("syntax", "syntax parser")
+        ->set_usage("binred syntax [<command>]")
+        ->set_subcommand("compile", "compile syntax file",
+                         {
+                             {"input-file", {'i'}, "set input file", 1, true},
+                             {"output-file", {'o'}, "set output file", 1, true},
+                             {"minimum", {'m'}, "remove comment and needless space", 1, true},
+                         },
+                         [](decltype(disp)::result_t& result) {
+                             auto layer = result.get_layer("compile");
+                             auto args = layer->has_("input-file");
+                             if (!args) {
+                                 cout << result.error("need input file name");
+                                 return 1;
+                             }
+                             binred::syntax::SyntaxCompiler syntaxc;
+                             using File = commonlib2::Reader<commonlib2::FileReader>;
+                             {
+                                 auto& input = args->arg()->at(0);
+                                 File syntaxfile(commonlib2::FileReader(cl2::ToPath(input).c_str()));
+                                 if (!syntaxfile.ref().is_open()) {
+                                     cout << result.error("file " + input + " not opened");
+                                     return -1;
+                                 }
+                                 if (!syntaxc.make_parser(syntaxfile)) {
+                                     cout << result.error(syntaxc.error());
+                                     return -1;
+                                 }
+                             }
+                             {
+                                 args = layer->has_("output-file");
+                                 if (!args) {
+                                     cout << result.error("need output file name");
+                                     return 1;
+                                 }
+                                 auto& output = args->arg()->at(0);
+                                 commonlib2::Serializer<commonlib2::FileWriter> w(commonlib2::FileWriter(cl2::ToPath(output).c_str()));
+                                 if (!w.get().is_open()) {
+                                     cout << result.error("file " + output + " not opened");
+                                     return -1;
+                                 }
+                                 if (!commonlib2::syntax::SyntaxIO::write_all(w, syntaxc, (bool)layer->has_("minimum"))) {
+                                     cout << result.error("failed to write syntax to " + output);
+                                     return -1;
+                                 }
+                             }
+                             return 0;
+                         })
+        ->set_usage("binred syntax compile [<options>]");
     std::string msg;
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
                             [&](auto& op, bool on_error) {
@@ -138,36 +214,4 @@ int main(int argc, char** argv) {
         !err.first) {
         cout << "binred: error: " << msg << commonlib2::error_message(err.first);
     }
-    binred::syntax::SyntaxCompiler syntaxc;
-    using File = commonlib2::Reader<commonlib2::FileReader>;
-    {
-        File syntaxfile(commonlib2::FileReader("src/syntax_file/syntax.txt"));
-        if (!syntaxc.make_parser(syntaxfile)) {
-            cout << "error: " << syntaxc.error();
-        }
-    }
-    binred::Stmts stmts;
-    syntaxc.callback() = [&](const binred::syntax::MatchingContext& c) {
-        if (!c.is_invisible_type()) {
-            cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
-        }
-
-        return stmts(c);
-    };
-    {
-        File testfile(commonlib2::FileReader("src/syntax_file/test_syntax2.txt"));
-        if (!syntaxc.parse(testfile)) {
-            cout << "error:\n"
-                 << syntaxc.error();
-        }
-    }
-    commonlib2::Serializer<std::string> target;
-
-    commonlib2::Deserializer<std::string&> target2(target.get());
-
-    auto result = commonlib2::syntax::SyntaxIO::write_all(target, syntaxc, true);
-
-    commonlib2::syntax::SyntaxCompiler stxc;
-    result = commonlib2::syntax::SyntaxIO::read_all(target2, stxc);
-    std::ofstream("src/syntax_file/parsed.dat", std::ios_base::binary) << target.get();
 }
