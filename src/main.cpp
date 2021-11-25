@@ -161,4 +161,5 @@ int main(int argc, char** argv) {
     for (auto i = parser.GetParsed(); i; i = i->get_next()) {
         cout << i->to_string();
     }
+    std::ofstream("src/syntax_file/parsed.dat", std::ios_base::binary) << target.get();
 }
