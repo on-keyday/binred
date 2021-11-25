@@ -163,6 +163,6 @@ int main(int argc, char** argv) {
     }
     std::ofstream("src/syntax_file/parsed.dat", std::ios_base::binary) << target.get();
     target.get().clear();
-    auto result = commonlib2::syntax::SyntaxIO::write_all(target, syntaxc);
+    result = commonlib2::syntax::SyntaxIO::write_all(target, syntaxc);
     result = commonlib2::syntax::SyntaxIO::read_all(target2, syntaxc);
 }
