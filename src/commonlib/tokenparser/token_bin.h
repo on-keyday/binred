@@ -239,7 +239,7 @@ namespace PROJECT_NAME {
                             return false;
                         }
                         auto found = ctx.keyword.find(tmpsize);
-                        if (found != ctx.keyword.end()) {
+                        if (found == ctx.keyword.end()) {
                             return false;
                         }
                         ptr->token = found->second;
@@ -254,7 +254,7 @@ namespace PROJECT_NAME {
                             return false;
                         }
                         auto found = ctx.symbol.find(tmpsize);
-                        if (found != ctx.symbol.end()) {
+                        if (found == ctx.symbol.end()) {
                             return false;
                         }
                         ptr->token = found->second;
@@ -270,7 +270,7 @@ namespace PROJECT_NAME {
                         }
                         if (tmpsize) {
                             auto found = ctx.id.find(tmpsize);
-                            if (found != ctx.id.end()) {
+                            if (found == ctx.id.end()) {
                                 return false;
                             }
                             ptr->id = found->second;
