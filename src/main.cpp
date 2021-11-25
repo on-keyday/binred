@@ -165,5 +165,6 @@ int main(int argc, char** argv) {
     target.get().clear();
     result = commonlib2::syntax::SyntaxIO::write_all(target, syntaxc);
     target2.base_reader().seek(0);
-    result = commonlib2::syntax::SyntaxIO::read_all(target2, syntaxc);
+    commonlib2::syntax::SyntaxCompiler stxc;
+    result = commonlib2::syntax::SyntaxIO::read_all(target2, stxc);
 }
