@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
             {},
             [](decltype(disp)::result_t& r) {
                 cout << r.fmtln("Hello!");
-                return std::pair{0, false};
+                return 0;
             })
         ->set_usage("binred hello");
     disp.set_subcommand(
