@@ -153,8 +153,8 @@ int main(int argc, char** argv) {
         ->set_usage("binred get [<options>] <url>");
     disp.set_subcommand("syntaxc", "compile syntax file",
                         {
-                            {"input-file", {'i'}, "set input file", 1, true},
-                            {"output-file", {'o'}, "set output file", 1, true},
+                            {"input-file", {'i'}, "set input file (required)", 1, true},
+                            {"output-file", {'o'}, "set output file (required)", 1, true},
                             {"minimum", {'m'}, "remove comment and needless space"},
                         },
                         [](decltype(disp)::result_t& result) {
@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
                             }
                             return 0;
                         })
-        ->set_usage("binred syntaxc [<command>]");
+        ->set_usage("binred syntaxc <option>");
     std::string msg;
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
                             [&](auto& op, bool on_error) {
