@@ -103,6 +103,22 @@ namespace PROJECT_NAME {
                     stxtok.insert({v, count});
                 };
                 auto result = tkpsr::TokensIO::write_parsed<std::map<std::string, size_t>>(target, syntaxc.pm.parser, std::move(cb));
+                if (!result) {
+                    return false;
+                }
+                for (auto& stx : syntaxc.match.p.syntax) {
+                    if (!tkpsr::BinaryIO::write_string(target, stx.first)) {
+                        return false;
+                    }
+                    if (!tkpsr::BinaryIO::write_num(target, stx.second.size())) {
+                        return false;
+                    }
+                    for (auto& v : stx.second) {
+                        if (!write_syntax(target, v, stxtok)) {
+                            return false;
+                        }
+                    }
+                }
             }
         };
     }  // namespace syntax
