@@ -34,6 +34,7 @@ namespace PROJECT_NAME {
             ifexists = 0x2,
             adjacent = 0x4,
             fatal = 0x8,
+            once_each = 0x10,
         };
 
         DEFINE_ENUMOP(SyntaxFlag)
@@ -49,7 +50,6 @@ namespace PROJECT_NAME {
         struct OrSyntax : Syntax {
             using Syntax::Syntax;
             std::vector<std::vector<std::shared_ptr<Syntax>>> syntax;
-            bool once_each = false;
         };
 
         struct TokenReader : tokenparser::TokenReaderBase<std::string, false, true> {
@@ -206,7 +206,7 @@ namespace PROJECT_NAME {
                         }
                         e = r.Read();
                         if (e && e->has_("$")) {
-                            tmp->once_each = true;
+                            tmp->flag |= SyntaxFlag::once_each;
                             r.Consume();
                         }
                         ptr = tmp;

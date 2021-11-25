@@ -18,7 +18,34 @@ namespace PROJECT_NAME {
                     return false;
                 }
                 switch (stx->type) {
-                    default:
+                    case SyntaxType::or_: {
+                        auto or_ = std::static_pointer_cast<OrSyntax>(stx);
+                        if (!tkpsr::BinaryIO::write_num(target, or_->syntax.size())) {
+                            return false;
+                        }
+                        for (auto& v : or_->syntax) {
+                            if (!tkpsr::BinaryIO::write_num(target, v.size())) {
+                                return false;
+                            }
+                            for (auto& c : v) {
+                                if (!write_syntax(target, stx, stxtok)) {
+                                    return false;
+                                }
+                            }
+                        }
+                        [[fallthrough]];
+                    }
+                    default: {
+                        target.write(std::uint8_t(stx->flag));
+                        auto found = stxtok.find(stx->token);
+                        if (found == stxtok.end()) {
+                            return false;
+                        }
+                        if (!tkpsr::BinaryIO::write_num(target, found->second)) {
+                            return false;
+                        }
+                        return true;
+                    }
                 }
             }
         };
