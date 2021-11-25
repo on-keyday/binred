@@ -399,7 +399,7 @@ namespace PROJECT_NAME {
                 if (!TokenIO::write_mapping(target, p.symbols, ctx.symbol)) {
                     return false;
                 }
-                for (auto tok = parsed; tok; tok = toke->get_next()) {
+                for (auto tok = parsed; tok; tok = tok->get_next()) {
                     if (!TokenIO::write_token(target, *tok, ctx)) {
                         return false;
                     }
