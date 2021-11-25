@@ -85,7 +85,7 @@ namespace PROJECT_NAME {
                         if (!stx) {
                             stx = std::make_shared<Syntax>(type);
                         }
-                        target.read_as<std::uint8_t>(stx->flag);
+                        target.template read_as<std::uint8_t>(stx->flag);
                         if (!tkpsr::BinaryIO::read_num(target, tmpnum)) {
                             return false;
                         }
