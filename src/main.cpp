@@ -114,7 +114,16 @@ int main(int argc, char** argv) {
                 {"where", {'w'}, "set where fetch from", 1, false, true},
             })
         ->set_usage("binred get [<options>] <url>");
-
+    disp.set_subcommand("syntax", "syntax parser",
+                        {
+                            {"syntax-file", {'s'}, "set syntax file", 1, true},
+                            {"input-file", {'i'}, "set input file", 1, false, true},
+                            {"output-file", {'o'}, "set output file", 1, true},
+                        },
+                        [](decltype(disp)::result_t& result) {
+                            result.get_layer("syntax")->has_();
+                        })
+        ->set_usage("binred syntax [<options>]");
     std::string msg;
     if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
                             [&](auto& op, bool on_error) {

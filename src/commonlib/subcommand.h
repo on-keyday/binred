@@ -159,8 +159,9 @@ namespace PROJECT_NAME {
             return ret;
         }
 
-        void set_usage(const String& str) {
+        Cmd* set_usage(const String& str) {
             opt.set_usage(str);
+            return static_cast<Cmd*>(this);
         }
 
         const String& get_cmdname() const {
