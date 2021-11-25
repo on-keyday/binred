@@ -142,11 +142,11 @@ namespace PROJECT_NAME {
                 }
                 {
                     std::map<std::string, size_t> tmpmap;
-                    if (!tkpsr::TokenIO::write_mapping<std::string>(target, syntaxc.match.p.parser.GetKeyWords(), tmpmap)) {
+                    if (!tkpsr::TokenIO::write_mapping(target, syntaxc.match.p.parser.GetKeyWords(), tmpmap)) {
                         return false;
                     }
                     tmpmap.clear();
-                    if (!tkpsr::TokenIO::write_mapping<std::string>(target, syntaxc.match.p.parser.GetSymbols(), tmpmap)) {
+                    if (!tkpsr::TokenIO::write_mapping(target, syntaxc.match.p.parser.GetSymbols(), tmpmap)) {
                         return false;
                     }
                 }
