@@ -241,6 +241,29 @@ namespace PROJECT_NAME {
                         token = id;
                         return true;
                     }
+                    case TokenKind::comments: {
+                        auto comment = std::make_shared<Comment<String>>();
+                        Comment<String>* ptr = id.get();
+                        if(!BinaryIO::read_num(target,tmpsize){
+                            return false;
+                        }
+                        ptr->oneline=bool(tmpsize);
+                        if (!BinaryIO::read_string(target,ptr->comment)) {
+                            return false;
+                        }
+                        token = comment;
+                        return true;
+                    }
+                    case TokenKind::root: {
+                        token = std::make_shared<Token<String>>();
+                        return true;
+                    }
+                    case TokenKind::unknown: {
+                        return true;
+                    }
+                    default: {
+                        return false;
+                    }
                 }
             }
 
@@ -315,7 +338,7 @@ namespace PROJECT_NAME {
                     }
                     case TokenKind::comments: {
                         Comment<String>* comment = token.comment();
-                        if(!BinaryIO::write_num(target,std::uint8_t(comment->is_identifier())){
+                        if(!BinaryIO::write_num(target,std::uint8_t(comment->is_oneline())){
                             return false;
                         }
                         if (!BinaryIO::write_string(target, comment->get_comment())) {
