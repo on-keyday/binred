@@ -103,9 +103,12 @@ namespace PROJECT_NAME {
                 target.write_byte("StD0", 4);
                 size_t count = 0;
                 std::map<std::shared_ptr<token_t>, size_t> stxtok;
-                auto cb = [&](auto& v) {
-                    stxtok.insert({v, count});
-                    count++;
+                auto cb = [&](auto& v, bool before) {
+                    if (!before) {
+                        stxtok.insert({v, count});
+                        count++;
+                    }
+                    return true;
                 };
                 auto result = tkpsr::TokensIO::write_parsed<std::map<std::string, size_t>>(target, syntaxc.pm.parser, std::move(cb));
                 if (!result) {

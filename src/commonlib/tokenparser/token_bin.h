@@ -397,9 +397,9 @@ namespace PROJECT_NAME {
         };
 
         struct TokensIO {
-            template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&)>
+            template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&, bool)>
             static bool write_parsed_v1_impl(
-                Serializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&) {}) {
+                Serializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&, bool before) { return true; }) {
                 TokenWriteContext<Map> ctx;
                 auto parsed = p.GetParsed();
                 if (!parsed) {
@@ -412,10 +412,13 @@ namespace PROJECT_NAME {
                     return false;
                 }
                 for (auto tok = parsed; tok; tok = tok->get_next()) {
+                    if (!cb(tok, true)) {
+                        continue;
+                    }
                     if (!TokenIO::write_token(target, *tok, ctx)) {
                         return false;
                     }
-                    cb(tok);
+                    cb(tok, false);
                 }
                 if (!BinaryIO::write_num(target, size_t(TokenKind::unknown))) {
                     return false;
@@ -423,9 +426,9 @@ namespace PROJECT_NAME {
                 return true;
             }
 
-            template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&)>
+            template <class Map, class Vector, class String, class Buf, class Cb = void (*)(std::shared_ptr<Token<String>>&, bool)>
             static bool write_parsed(
-                Serializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&) {}) {
+                Serializer<Buf>& target, TokenParser<Vector, String>& p, Cb&& cb = [](std::shared_ptr<Token<String>>&, bool before) { return true; }) {
                 target.write_byte("TkD0", 4);
                 return write_parsed_v1_impl<Map>(target, p, std::forward<Cb>(cb));
             }
