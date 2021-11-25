@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
                         {
                             {"input-file", {'i'}, "set input file", 1, true},
                             {"output-file", {'o'}, "set output file", 1, true},
-                            {"minimum", {'m'}, "remove comment and needless space", 1, true},
+                            {"minimum", {'m'}, "remove comment and needless space"},
                         },
                         [](decltype(disp)::result_t& result) {
                             auto layer = result.get_layer("syntaxc");
