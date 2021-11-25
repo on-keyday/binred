@@ -33,28 +33,28 @@ namespace PROJECT_NAME {
             static bool read_num(Deserializer<Buf>& target, size_t& size) {
                 std::uint8_t e = target.base_reader().achar();
                 std::uint8_t masked = e & CodeLimit::mask64_8;
-                auto set_v = [&](auto& v) {
+                auto set_v = [&](auto& v, auto unmask) {
                     if (!target.read_ntoh(v)) {
                         return false;
                     }
-                    size = v;
+                    size = v & ~unmask;
                     return true;
                 };
                 if (masked == CodeLimit::mask64_8) {
                     std::uint64_t v;
-                    return set_v(v);
+                    return set_v(v, CodeLimit::mask64);
                 }
                 else if (masked == CodeLimit::mask32_8) {
                     std::uint32_t v;
-                    return set_v(v);
+                    return set_v(v, CodeLimit::mask32);
                 }
                 else if (masked == CodeLimit::mask16_8) {
                     std::uint16_t v;
-                    return set_v(v);
+                    return set_v(v, CodeLimit::mask16);
                 }
                 else {
                     std::uint8_t v;
-                    return set_v(v);
+                    return set_v(v, 0);
                 }
             }
 
@@ -172,11 +172,8 @@ namespace PROJECT_NAME {
 
             template <class String, class Reg, class Map, class Buf>
             static bool read_mapping(Deserializer<Buf>& target, Registry<Reg>& reg, Map& map) {
-                size_t count = 0;
-                if (!BinaryIO::read_num(target, count)) {
-                    return false;
-                }
-                for (size_t i = 0; i < count; i++) {
+                size_t i = 0;
+                while (true) {
                     String v;
                     if (!BinaryIO::read_string(target, v)) {
                         return false;
@@ -186,6 +183,7 @@ namespace PROJECT_NAME {
                     }
                     reg.Register(v);
                     map.insert({i, v});
+                    i++;
                 }
                 return true;
             }
