@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
                     cout << r.help(base, "usage:", "subcommand:", 3);
                     return 0;
                 }
-                std::string v = 0;
+                std::string v;
                 const decltype(disp)* c = base;
                 for (auto& key : *arg->arg()) {
                     v += key + ": ";
