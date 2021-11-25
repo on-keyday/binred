@@ -175,20 +175,33 @@ namespace PROJECT_NAME {
                     }
                     case TokenKind::keyword:
                     case TokenKind::weak_keyword: {
-                        auto keyword = std::make_shared<RegistryRead<String>>();
+                        auto keyword = std::make_shared<RegistryRead<String>>(kind);
                         //to type on editor easily
-                        RegistryRead<String>* ptr = space.get();
+                        RegistryRead<String>* ptr = keyword.get();
                         if (!BinaryIO::read_num(target, tmpsize)) {
                             return false;
                         }
                         auto found = ctx.keyword.find(tmpsize);
-                        if (found != ctx.keyword) {
+                        if (found != ctx.keyword.end()) {
                             return false;
                         }
                         ptr->token = found->second;
-                        if (kind == TokenKind::weak_keyword) {
-                            ptr->keyword_to_weak();
+                        token = keyword;
+                        return true;
+                    }
+                    case TokenKind::symbols: {
+                        auto symbol = std::make_shared<RegistryRead<String>>();
+                        //to type on editor easily
+                        RegistryRead<String>* ptr = symbol.get();
+                        if (!BinaryIO::read_num(target, tmpsize)) {
+                            return false;
                         }
+                        auto found = ctx.symbol.find(tmpsize);
+                        if (found != ctx.symbol.end()) {
+                            return false;
+                        }
+                        ptr->token = found->second;
+                        token = symbol;
                         return true;
                     }
                 }
@@ -265,6 +278,9 @@ namespace PROJECT_NAME {
                     }
                     case TokenKind::comments: {
                         Comment<String>* comment = token.comment();
+                        if(!BinaryIO::write_num(target,std::uint8_t(comment->is_identifier())){
+                            return false;
+                        }
                         if (!BinaryIO::write_string(target, comment->get_comment())) {
                             return false;
                         }
