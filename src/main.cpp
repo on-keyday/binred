@@ -142,10 +142,7 @@ int main(int argc, char** argv) {
         if (!c.is_invisible_type()) {
             cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
         }
-        commonlib2::Serializer<std::string> target;
-        auto tmp = c.get_tokloc().lock();
-        commonlib2::tokenparser::TokenWriteContext<std::map<std::string, size_t>> ctx;
-        commonlib2::tokenparser::TokenIO::write_token(target, *tmp, ctx);
+
         return stmts(c);
     };
     {
@@ -155,6 +152,8 @@ int main(int argc, char** argv) {
                  << syntaxc.error();
         }
     }
+    commonlib2::Serializer<std::string> target;
 
+    commonlib2::tokenparser::TokensIO::write_parsed<std::map<std::string, size_t>>(target, syntaxc.get_rawparser());
     //binred_test();
 }

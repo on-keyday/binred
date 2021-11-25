@@ -56,6 +56,10 @@ namespace PROJECT_NAME {
                 }
                 return true;
             }
+
+            Parser& get_rawparser() {
+                return pm.parser;
+            }
         };
     }  // namespace syntax
 }  // namespace PROJECT_NAME

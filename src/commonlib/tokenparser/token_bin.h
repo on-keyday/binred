@@ -386,7 +386,7 @@ namespace PROJECT_NAME {
 
         struct TokensIO {
             template <class Map, class Vector, class String, class Buf>
-            bool write_parsed(Serializer<Buf>& target, TokenParser<Vector, String>& p) {
+            static bool write_parsed(Serializer<Buf>& target, TokenParser<Vector, String>& p) {
                 auto parsed = p.GetParsed();
                 if (!parsed) {
                     return false;
@@ -411,7 +411,7 @@ namespace PROJECT_NAME {
             }
 
             template <class Map, class Vector, class String, class Buf>
-            bool read_parsed(Deserializer<Buf>& target, TokenParser<Vector, String>& p) {
+            static bool read_parsed(Deserializer<Buf>& target, TokenParser<Vector, String>& p) {
                 TokenReadContext<Map> ctx;
                 if (!target.base_reader().expect("TkD0")) {
                     return false;
