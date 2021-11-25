@@ -200,17 +200,18 @@ int main(int argc, char** argv) {
                         })
         ->set_usage("binred syntaxc <option>");
     std::string msg;
-    if (auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
-                            [&](auto& op, bool on_error) {
-                                if (on_error) {
-                                    msg = "-" + op + ": ";
-                                }
-                                else {
-                                    cout << "binred: warning: unknown option -" + op + " ignored\n";
-                                }
-                                return true;
-                            });
-        !err.first) {
+    auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
+                        [&](auto& op, bool on_error) {
+                            if (on_error) {
+                                msg = "-" + op + ": ";
+                            }
+                            else {
+                                cout << "binred: warning: unknown option -" + op + " ignored\n";
+                            }
+                            return true;
+                        });
+    if (!err.first) {
         cout << "binred: error: " << msg << commonlib2::error_message(err.first);
     }
+    return err.second;
 }
