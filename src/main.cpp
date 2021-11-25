@@ -94,15 +94,15 @@ int main(int argc, char** argv) {
     disp.set_callback([](decltype(disp)::result_t& r) {
         if (r.get_current()->get_cmdname() == "binred") {
             if (auto arg = r.get_layer(0)->has_(":arg")) {
-                cout << r.errorln(arg->arg()->at(0) + ": no such subcommand exists\ntry `binred help` for more info");
+                cout << r.fmtln(arg->arg()->at(0) + ": no such subcommand exists\ntry `binred help` for more info");
             }
             else {
-                cout << r.errorln("need subcommand\ntry `binred help` for more info");
+                cout << r.fmtln("need subcommand\ntry `binred help` for more info");
             }
             return -1;
         }
         else {
-            cout << r.errorln("command not implemented");
+            cout << r.fmtln("command not implemented");
         }
         return 0;
     });
@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
                 auto& key = arg->arg()->at(0);
                 auto c = base->get_subcmd(key);
                 if (!c) {
-                    cout << r.errorln(key + ": no such subcommand exists");
+                    cout << r.fmtln(key + ": no such subcommand exists");
                     return 1;
                 }
                 cout << r.help(c, "usage:", "subcommand:", 3);
@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
             "hello", "say hello",
             {},
             [](decltype(disp)::result_t& r) {
-                cout << r.errorln("Hello!");
+                cout << r.fmtln("Hello!");
                 return std::pair{0, false};
             })
         ->set_usage("binred hello");
