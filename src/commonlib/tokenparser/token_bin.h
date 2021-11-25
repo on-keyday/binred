@@ -160,17 +160,13 @@ namespace PROJECT_NAME {
                 size_t count = 0;
                 for (auto& v : reg.reg) {
                     if (map.insert({v, count}).second) {
+                        if (!BinaryIO::write_string(target, v)) {
+                            return false;
+                        }
                         count++;
                     }
                 }
-                if (!BinaryIO::write_num(target, map.size())) {
-                    return false;
-                }
-                for (auto& v : map) {
-                    if (!BinaryIO::write_string(target, v.first)) {
-                        return false;
-                    }
-                }
+                BinaryIO::write_num(target, 0);
                 return true;
             }
 
@@ -184,6 +180,9 @@ namespace PROJECT_NAME {
                     String v;
                     if (!BinaryIO::read_string(target, v)) {
                         return false;
+                    }
+                    if (v.size() == 0) {
+                        break;
                     }
                     reg.Register(v);
                     map.insert({i, v});
@@ -450,6 +449,7 @@ namespace PROJECT_NAME {
                     if (!root) {
                         root = tok;
                         prev = tok;
+                        p.roottoken.force_set_next(root);
                     }
                     else {
                         prev->force_set_next(tok);
@@ -457,7 +457,6 @@ namespace PROJECT_NAME {
                     }
                 }
                 p.current = prev.get();
-                p.roottoken.force_set_next(root);
                 return true;
             }
         };

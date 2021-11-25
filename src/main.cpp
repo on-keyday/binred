@@ -158,4 +158,7 @@ int main(int argc, char** argv) {
     commonlib2::Deserializer<std::string&> target2(target.get());
     commonlib2::syntax::Parser parser;
     result = commonlib2::tokenparser::TokensIO::read_parsed<std::map<size_t, std::string>>(target2, parser);
+    for (auto i = parser.GetParsed(); i; i = i->get_next()) {
+        cout << i->to_string();
+    }
 }
