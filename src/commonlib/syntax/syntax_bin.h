@@ -155,11 +155,11 @@ namespace PROJECT_NAME {
                 }
                 {
                     std::map<size_t, std::string> tmpmap;
-                    if (!tkpsr::TokenIO::read_mapping(syntaxc.match.p.parser.GetKeyWords(), tmpmap)) {
+                    if (!tkpsr::TokenIO::read_mapping(target, syntaxc.match.p.parser.GetKeyWords(), tmpmap)) {
                         return false;
                     }
                     tmpmap.clear();
-                    if (!tkpsr::TokenIO::read_mapping(syntaxc.match.p.parser.GetSymbols(), tmpmap)) {
+                    if (!tkpsr::TokenIO::read_mapping(target, syntaxc.match.p.parser.GetSymbols(), tmpmap)) {
                         return false;
                     }
                 }
@@ -172,7 +172,7 @@ namespace PROJECT_NAME {
                     if (name.size() == 0) {
                         break;
                     }
-                    auto got = elms.insert({name});
+                    auto got = elms.insert(std::pair{name});
                     if (!got.second) {
                         return false;
                     }
