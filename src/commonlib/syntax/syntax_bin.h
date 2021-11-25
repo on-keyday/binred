@@ -29,7 +29,7 @@ namespace PROJECT_NAME {
                                 return false;
                             }
                             for (auto& c : v) {
-                                if (!write_syntax(target, stx, stxtok)) {
+                                if (!write_syntax(target, c, stxtok)) {
                                     return false;
                                 }
                             }
