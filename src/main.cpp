@@ -119,11 +119,16 @@ int main(int argc, char** argv) {
                     cout << r.help(base, "usage:", "subcommand:", 3);
                     return 0;
                 }
-                auto& key = arg->arg()->at(0);
-                auto c = base->get_subcmd(key);
-                if (!c) {
-                    cout << r.fmtln(key + ": no such subcommand exists");
-                    return 1;
+                std::string v = 0;
+                const decltype(disp)* c = base;
+                for (auto& key : *arg->arg()) {
+                    v += key + ": ";
+                    auto tmp = c->get_subcmd(key);
+                    if (!c) {
+                        cout << r.fmtln(v + "no such subcommand exists");
+                        return 1;
+                    }
+                    c = tmp;
                 }
                 cout << r.help(c, "usage:", "subcommand:", 3);
                 return 0;
