@@ -167,7 +167,7 @@ namespace PROJECT_NAME {
                 }
                 for (size_t i = 0; i < count; i++) {
                     String v;
-                    if (!BinaryIO::read_string(taregt, v)) {
+                    if (!BinaryIO::read_string(target, v)) {
                         return false;
                     }
                     reg.Register(v);
