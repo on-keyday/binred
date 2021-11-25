@@ -105,6 +105,7 @@ namespace PROJECT_NAME {
                 std::map<std::shared_ptr<token_t>, size_t> stxtok;
                 auto cb = [&](auto& v) {
                     stxtok.insert({v, count});
+                    count++;
                 };
                 auto result = tkpsr::TokensIO::write_parsed<std::map<std::string, size_t>>(target, syntaxc.pm.parser, std::move(cb));
                 if (!result) {
