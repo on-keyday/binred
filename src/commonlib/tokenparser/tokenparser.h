@@ -40,6 +40,7 @@ namespace PROJECT_NAME {
         template <class Vector, class String>
         struct TokenParser {
            private:
+            friend struct TokensIO;
             using reg_t = Registry<Vector>;
             using token_t = Token<String>;
             reg_t symbols;

@@ -14,9 +14,10 @@
 #include <fstream>
 #include <optmap.h>
 #include <subcommand.h>
-#include "syntax/syntax.h"
+#include <syntax/syntax.h>
 #include "syntax_rule/set_by_syntax.h"
 #include <coutwrapper.h>
+#include <tokenparser/token_bin.h>
 
 auto& cout = commonlib2::cout_wrapper();
 
@@ -141,6 +142,10 @@ int main(int argc, char** argv) {
         if (!c.is_invisible_type()) {
             cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
         }
+        commonlib2::Serializer<std::string> target;
+        auto tmp = c.get_tokloc().lock();
+        commonlib2::tokenparser::TokenWriteContext<std::map<std::string, size_t>> ctx;
+        commonlib2::tokenparser::TokenIO::write_token(target, *tmp, ctx);
         return stmts(c);
     };
     {

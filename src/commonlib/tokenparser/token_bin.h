@@ -8,6 +8,7 @@
 #pragma once
 
 #include "tokendef.h"
+#include "tokenparser.h"
 
 #include "../serializer.h"
 #include "../utfreader.h"
@@ -140,17 +141,17 @@ namespace PROJECT_NAME {
 
         struct TokenIO {
             template <class String, class Reg, class Map>
-            bool write_mapping(Serializer<String>& target, Registry<Reg>& reg, Map& map) {
+            static bool write_mapping(Serializer<String>& target, Registry<Reg>& reg, Map& map) {
                 size_t count = 0;
                 for (auto& v : reg.reg) {
                     if (map.insert({v, count}).second) {
                         count++;
                     }
                 }
-                if(!BinaryIO::write_num(target,map.size()){
+                if (!BinaryIO::write_num(target, map.size())) {
                     return false;
                 }
-                for(auto& v:map){
+                for (auto& v : map) {
                     if (!BinaryIO::write_string(target, v.first)) {
                         return false;
                     }
@@ -159,7 +160,7 @@ namespace PROJECT_NAME {
             }
 
             template <class String, class Reg, class Map>
-            bool read_mapping(Deserializer<String>& target, Registry<Reg>& reg, Map& map) {
+            static bool read_mapping(Deserializer<String>& target, Registry<Reg>& reg, Map& map) {
                 size_t count = 0;
                 if (!BinaryIO::read_num(target, count)) {
                     return false;
@@ -176,7 +177,7 @@ namespace PROJECT_NAME {
             }
 
             template <class Buf, class String, class Map>
-            bool read_token(Deserializer<Buf>& target, Token<String>& token, TokenReadContext<Map>& ctx) {
+            static bool read_token(Deserializer<Buf>& target, std::shared_ptr<Token<String>>& token, TokenReadContext<Map>& ctx) {
                 TokenKind kind;
                 size_t tmpsize = 0;
                 if (!BinaryIO::read_num(target, tmpsize)) {
@@ -192,7 +193,7 @@ namespace PROJECT_NAME {
                             return false;
                         }
                         ptr->linekind = LineKind(tmpsize);
-                        if (!BinaryIO::read_num(target, tmpsize) {
+                        if (!BinaryIO::read_num(target, tmpsize)) {
                             return false;
                         }
                         ptr->numline = tmpsize;
@@ -271,11 +272,11 @@ namespace PROJECT_NAME {
                     case TokenKind::comments: {
                         auto comment = std::make_shared<Comment<String>>();
                         Comment<String>* ptr = id.get();
-                        if(!BinaryIO::read_num(target,tmpsize){
+                        if (!BinaryIO::read_num(target, tmpsize)) {
                             return false;
                         }
-                        ptr->oneline=bool(tmpsize);
-                        if (!BinaryIO::read_string(target,ptr->comment)) {
+                        ptr->oneline = bool(tmpsize);
+                        if (!BinaryIO::read_string(target, ptr->comments)) {
                             return false;
                         }
                         token = comment;
@@ -295,7 +296,7 @@ namespace PROJECT_NAME {
             }
 
             template <class Buf, class String, class Map>
-            bool write_token(Serializer<Buf>& target, Token<String>& token, TokenWriteContext<Map>& ctx) {
+            static bool write_token(Serializer<Buf>& target, Token<String>& token, TokenWriteContext<Map>& ctx) {
                 auto kind = token.get_kind();
                 if (!BinaryIO::write_num(target, size_t(kind))) {
                     return false;
@@ -316,7 +317,7 @@ namespace PROJECT_NAME {
                         if (!BinaryIO::write_num(target, size_t(space->get_spacechar()))) {
                             return false;
                         }
-                        if (!BinaryIO::write_num(target, size_t(line->get_spacecount()))) {
+                        if (!BinaryIO::write_num(target, size_t(space->get_spacecount()))) {
                             return false;
                         }
                         return true;
@@ -347,17 +348,17 @@ namespace PROJECT_NAME {
                     case TokenKind::identifiers: {
                         Identifier<String>* id = token.identifier();
                         bool already = false;
-                        size_t id = ctx.getid(id->get_identifier(), already);
+                        size_t idnum = ctx.getid(id->get_identifier(), already);
                         if (already) {
-                            if(!BinaryIO::write_num(target,id){
+                            if (!BinaryIO::write_num(target, idnum)) {
                                 return false;
                             }
                         }
                         else {
-                            if(!BinaryIO::write_num(target,0){
+                            if (!BinaryIO::write_num(target, 0)) {
                                 return false;
                             }
-                            if(!BinaryIO::write_string(target,id->get_identifier())){
+                            if (!BinaryIO::write_string(target, id->get_identifier())) {
                                 return false;
                             }
                         }
@@ -365,7 +366,7 @@ namespace PROJECT_NAME {
                     }
                     case TokenKind::comments: {
                         Comment<String>* comment = token.comment();
-                        if(!BinaryIO::write_num(target,std::uint8_t(comment->is_oneline())){
+                        if (!BinaryIO::write_num(target, std::uint8_t(comment->is_oneline()))) {
                             return false;
                         }
                         if (!BinaryIO::write_string(target, comment->get_comment())) {
@@ -380,6 +381,69 @@ namespace PROJECT_NAME {
                         return false;
                     }
                 }
+            }
+        };
+
+        struct TokensIO {
+            template <class Map, class Vector, class String, class Buf>
+            bool write_parsed(Serializer<Buf>& target, TokenParser<Vector, String>& p) {
+                auto parsed = p.GetParsed();
+                if (!parsed) {
+                    return false;
+                }
+                TokenWriteContext<Map> ctx;
+                target.write_byte("TkD0", 4);
+                if (!TokenIO::write_mapping(target, p.keywords, ctx.keyword)) {
+                    return false;
+                }
+                if (!TokenIO::write_mapping(target, p.symbols, ctx.symbol)) {
+                    return false;
+                }
+                for (auto tok = parsed; tok; tok = toke->get_next()) {
+                    if (!TokenIO::write_token(target, *tok, ctx)) {
+                        return false;
+                    }
+                }
+                if (!BinaryIO::write_num(target, size_t(TokenKind::unknown))) {
+                    return false;
+                }
+                return true;
+            }
+
+            template <class Map, class Vector, class String, class Buf>
+            bool read_parsed(Deserializer<Buf>& target, TokenParser<Vector, String>& p) {
+                TokenReadContext<Map> ctx;
+                if (!target.base_reader().expect("TkD0")) {
+                    return false;
+                }
+                if (!TokenIO::read_mapping(target, p.keywords, ctx.keyword)) {
+                    return false;
+                }
+                if (!TokenIO::read_mapping(target, p.symbols, ctx.symbol)) {
+                    return false;
+                }
+                std::shared_ptr<Token<String>> root;
+                std::shared_ptr<Token<String>> prev;
+                while (true) {
+                    std::shared_ptr<Token<String>> tok;
+                    if (!TokenIO::read_token(target, tok, ctx)) {
+                        return false;
+                    }
+                    if (!tok) {
+                        break;
+                    }
+                    if (!root) {
+                        root = tok;
+                        prev = tok;
+                    }
+                    else {
+                        prev->force_set_next(tok);
+                        prev = tok;
+                    }
+                }
+                p.current = prev.get();
+                p.roottoken.next = root;
+                return true;
             }
         };
     }  // namespace tokenparser
