@@ -124,6 +124,20 @@ namespace PROJECT_NAME {
             }
         };
 
+        template <class Map>
+        struct TokenReadContext {
+            Map keyword;
+            Map symbol;
+            size_t count = 0;
+            Map id;
+            template <class String>
+            size_t setstring(const String& v) {
+                count++;
+                id[count] = v;
+                return count;
+            }
+        };
+
         struct TokenIO {
             template <class Reg, class Map>
             void set_mapping(Registry<Reg>& reg, Map& map) {
@@ -135,7 +149,7 @@ namespace PROJECT_NAME {
             }
 
             template <class Buf, class String, class Map>
-            bool read_token(Deserializer<Buf>& target, Token<String>& token, TokenWriteContext<Map>& ctx) {
+            bool read_token(Deserializer<Buf>& target, Token<String>& token, TokenReadContext<Map>& ctx) {
                 TokenKind kind;
                 size_t tmpsize = 0;
                 if (!BinaryIO::read_num(target, tmpsize)) {
@@ -202,6 +216,29 @@ namespace PROJECT_NAME {
                         }
                         ptr->token = found->second;
                         token = symbol;
+                        return true;
+                    }
+                    case TokenKind::identifiers: {
+                        auto id = std::make_shared<Identifier<String>>();
+                        //to type on editor easily
+                        Identifier<String>* ptr = id.get();
+                        if (!BinaryIO::read_num(target, tmpsize)) {
+                            return false;
+                        }
+                        if (tmpsize) {
+                            auto found = ctx.id.find();
+                            if (found != ctx.id.end()) {
+                                return false;
+                            }
+                            ptr->id = found->second;
+                        }
+                        else {
+                            if (!BinaryIO::read_string(target, ptr->id)) {
+                                return false;
+                            }
+                            ctx.setstring(ptr->id);
+                        }
+                        token = id;
                         return true;
                     }
                 }
