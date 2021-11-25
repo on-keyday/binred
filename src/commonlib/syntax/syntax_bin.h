@@ -99,7 +99,7 @@ namespace PROJECT_NAME {
             }
 
             template <class Buf>
-            static bool write_all(Serializer<Buf>& target, SyntaxCompiler& syntaxc) {
+            static bool write_all(Serializer<Buf>& target, SyntaxCompiler& syntaxc, bool minimum = false) {
                 target.write_byte("StD0", 4);
                 size_t count = 0;
                 std::map<std::shared_ptr<token_t>, size_t> stxtok;
@@ -107,6 +107,18 @@ namespace PROJECT_NAME {
                     if (!before) {
                         stxtok.insert({v, count});
                         count++;
+                    }
+                    else if (minimum) {
+                        if (v->is_(tkpsr::TokenKind::comments)) {
+                            if (auto p = v->get_prev()) {
+                                if (p->is_(tkpsr::TokenKind::symbols) && p->has_("#")) {
+                                    return false;
+                                }
+                            }
+                        }
+                        else if (v->is_(tkpsr::TokenKind::symbols) && v->has_("#")) {
+                            return false;
+                        }
                     }
                     return true;
                 };
