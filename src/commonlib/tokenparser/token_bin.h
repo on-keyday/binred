@@ -442,7 +442,7 @@ namespace PROJECT_NAME {
                     }
                 }
                 p.current = prev.get();
-                p.roottoken.next = root;
+                p.roottoken.force_set_next(root);
                 return true;
             }
         };

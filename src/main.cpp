@@ -155,5 +155,7 @@ int main(int argc, char** argv) {
     commonlib2::Serializer<std::string> target;
 
     commonlib2::tokenparser::TokensIO::write_parsed<std::map<std::string, size_t>>(target, syntaxc.get_rawparser());
-    //binred_test();
+    commonlib2::Deserializer<std::string&> target2(target.get());
+    commonlib2::syntax::Parser parser;
+    commonlib2::tokenparser::TokensIO::read_parsed<std::map<size_t, std::string>>(target2, parser);
 }
