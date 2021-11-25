@@ -150,6 +150,8 @@ namespace PROJECT_NAME {
                 auto cb = [&](auto& v) {
                     stxtok.push_back(v);
                 };
+                syntaxc.pm.parser.GetKeyWords().reg.clear();
+                syntaxc.pm.parser.GetSymbols().reg.clear();
                 auto result = tkpsr::TokensIO::read_parsed<std::map<size_t, std::string>>(target, syntaxc.pm.parser, std::move(cb));
                 if (!result) {
                     return false;
