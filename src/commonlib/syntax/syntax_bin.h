@@ -172,7 +172,7 @@ namespace PROJECT_NAME {
                     if (name.size() == 0) {
                         break;
                     }
-                    auto got = elms.insert(std::pair{name});
+                    auto got = elms.insert({name, std::vector<std::shared_ptr<Syntax>>()});
                     if (!got.second) {
                         return false;
                     }
