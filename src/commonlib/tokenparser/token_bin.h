@@ -140,6 +140,21 @@ namespace PROJECT_NAME {
         };
 
         struct TokenIO {
+           private:
+            template <class T>
+            struct MakeToken {
+                T t;
+                template <class... Args>
+                MakeToken(Args&&... args)
+                    : t(std::forward<Args>(args)...) {}
+                template <class... Args>
+                static std::shared_ptr<T> make_shared(Args&&... args) {
+                    auto p = std::make_shared<MakeToken<T>>(std::forward<Args>(args)...);
+                    return std::shared_ptr<T>(std::move(p), &p->t);
+                }
+            };
+
+           public:
             template <class String, class Reg, class Map>
             static bool write_mapping(Serializer<String>& target, Registry<Reg>& reg, Map& map) {
                 size_t count = 0;
@@ -159,8 +174,8 @@ namespace PROJECT_NAME {
                 return true;
             }
 
-            template <class String, class Reg, class Map>
-            static bool read_mapping(Deserializer<String>& target, Registry<Reg>& reg, Map& map) {
+            template <class String, class Reg, class Map, class Buf>
+            static bool read_mapping(Deserializer<Buf>& target, Registry<Reg>& reg, Map& map) {
                 size_t count = 0;
                 if (!BinaryIO::read_num(target, count)) {
                     return false;
@@ -186,10 +201,10 @@ namespace PROJECT_NAME {
                 kind = TokenKind(tmpsize);
                 switch (kind) {
                     case TokenKind::line: {
-                        auto line = std::make_shared<Line<String>>();
+                        auto line = MakeToken<Line<String>>::make_shared();
                         //to type on editor easily
                         Line<String>* ptr = line.get();
-                        if (!BinaryIO::read_num(target, tmpsize) {
+                        if (!BinaryIO::read_num(target, tmpsize)) {
                             return false;
                         }
                         ptr->linekind = LineKind(tmpsize);
@@ -197,18 +212,18 @@ namespace PROJECT_NAME {
                             return false;
                         }
                         ptr->numline = tmpsize;
-                        token=line;
+                        token = line;
                         return true;
                     }
                     case TokenKind::spaces: {
-                        auto space = std::make_shared<Spaces<String>>();
+                        auto space = MakeToken<Spaces<String>>::make_shared();
                         //to type on editor easily
                         Spaces<String>* ptr = space.get();
                         if (!BinaryIO::read_num(target, tmpsize)) {
                             return false;
                         }
                         ptr->spchar = char32_t(tmpsize);
-                        if (!BinaryIO::write_num(target, tmpsize)) {
+                        if (!BinaryIO::read_num(target, tmpsize)) {
                             return false;
                         }
                         ptr->numsp = tmpsize;
@@ -217,7 +232,7 @@ namespace PROJECT_NAME {
                     }
                     case TokenKind::keyword:
                     case TokenKind::weak_keyword: {
-                        auto keyword = std::make_shared<RegistryRead<String>>(kind);
+                        auto keyword = MakeToken<RegistryRead<String>>::make_shared(kind);
                         //to type on editor easily
                         RegistryRead<String>* ptr = keyword.get();
                         if (!BinaryIO::read_num(target, tmpsize)) {
@@ -232,7 +247,7 @@ namespace PROJECT_NAME {
                         return true;
                     }
                     case TokenKind::symbols: {
-                        auto symbol = std::make_shared<RegistryRead<String>>();
+                        auto symbol = MakeToken<RegistryRead<String>>::make_shared(kind);
                         //to type on editor easily
                         RegistryRead<String>* ptr = symbol.get();
                         if (!BinaryIO::read_num(target, tmpsize)) {
@@ -247,14 +262,14 @@ namespace PROJECT_NAME {
                         return true;
                     }
                     case TokenKind::identifiers: {
-                        auto id = std::make_shared<Identifier<String>>();
+                        auto id = MakeToken<Identifier<String>>::make_shared();
                         //to type on editor easily
                         Identifier<String>* ptr = id.get();
                         if (!BinaryIO::read_num(target, tmpsize)) {
                             return false;
                         }
                         if (tmpsize) {
-                            auto found = ctx.id.find();
+                            auto found = ctx.id.find(tmpsize);
                             if (found != ctx.id.end()) {
                                 return false;
                             }
@@ -270,8 +285,8 @@ namespace PROJECT_NAME {
                         return true;
                     }
                     case TokenKind::comments: {
-                        auto comment = std::make_shared<Comment<String>>();
-                        Comment<String>* ptr = id.get();
+                        auto comment = MakeToken<Comment<String>>::make_shared();
+                        Comment<String>* ptr = comment.get();
                         if (!BinaryIO::read_num(target, tmpsize)) {
                             return false;
                         }
@@ -416,10 +431,10 @@ namespace PROJECT_NAME {
                 if (!target.base_reader().expect("TkD0")) {
                     return false;
                 }
-                if (!TokenIO::read_mapping(target, p.keywords, ctx.keyword)) {
+                if (!TokenIO::read_mapping<String>(target, p.keywords, ctx.keyword)) {
                     return false;
                 }
-                if (!TokenIO::read_mapping(target, p.symbols, ctx.symbol)) {
+                if (!TokenIO::read_mapping<String>(target, p.symbols, ctx.symbol)) {
                     return false;
                 }
                 std::shared_ptr<Token<String>> root;
