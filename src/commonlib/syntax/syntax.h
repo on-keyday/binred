@@ -8,6 +8,7 @@ namespace PROJECT_NAME {
     namespace syntax {
         struct SyntaxCompiler {
            private:
+            friend struct SyntaxIO;
             SyntaxParserMaker pm;
             SyntaxMatching match;
 

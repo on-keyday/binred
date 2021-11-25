@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "syntax_parser.h"
+#include "syntax.h"
 #include "../tokenparser/token_bin.h"
 
 namespace PROJECT_NAME {
@@ -96,7 +96,13 @@ namespace PROJECT_NAME {
                 }
             }
 
-            static bool read_() {
+            static bool write_all(Serializer<std::string>& target, SyntaxCompiler& syntaxc) {
+                size_t count = 0;
+                std::map<std::shared_ptr<token_t>, size_t> stxtok;
+                auto cb = [&](auto& v) {
+                    stxtok.insert({v, count});
+                };
+                auto result = tkpsr::TokensIO::write_parsed<std::map<std::string, size_t>>(target, syntaxc.pm.parser, std::move(cb));
             }
         };
     }  // namespace syntax
