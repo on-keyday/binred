@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
 
     commonlib2::Deserializer<std::string&> target2(target.get());
 
-    auto result = commonlib2::syntax::SyntaxIO::write_all(target, syntaxc);
+    auto result = commonlib2::syntax::SyntaxIO::write_all(target, syntaxc, true);
 
     commonlib2::syntax::SyntaxCompiler stxc;
     result = commonlib2::syntax::SyntaxIO::read_all(target2, stxc);
