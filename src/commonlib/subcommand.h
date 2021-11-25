@@ -70,7 +70,7 @@ namespace PROJECT_NAME {
             }
 
             String fmtln(const String& msg, Char sep = ':') {
-                return error(msg, sep) + '\n';
+                return fmt(msg, sep) + '\n';
             }
 
             String help(const Cmd* p = nullptr, const char* usagemsg = "Usage:", const char* subcmdmsg = "Subcommand:", size_t currentoffset = 2, size_t preoffset = 0, bool noUsage = false) {
