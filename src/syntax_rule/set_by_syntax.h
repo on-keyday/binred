@@ -61,12 +61,18 @@ namespace binred {
         funccall,
     };
 
+#define HANDLE_ROLLBACK(MSG)        \
+    if (ctx.is_rollbacked(stack)) { \
+        ctx.set_errmsg(MSG);        \
+        return false;               \
+    }
+
     struct Stmt {
         constexpr Stmt(StmtType t)
             : type(t) {}
         StmtType type;
         SyntaxCb cb;
-        syntax::MatchingStackInfo stack;
+        commonlib2::syntax::MatchingStackInfo stack;
         bool firstcall = true;
         bool ended = false;
         bool end_stmt() const {

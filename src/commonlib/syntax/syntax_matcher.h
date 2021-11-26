@@ -178,6 +178,11 @@ namespace PROJECT_NAME {
                 return ty == type;
             }
 
+            bool is_primitive_type() const {
+                return type == MatchingType::identifier || type == MatchingType::number ||
+                       type == MatchingType::string || type == MatchingType::integer;
+            }
+
             bool is_invisible_type() const {
                 return type == MatchingType::bos || type == MatchingType::eos ||
                        type == MatchingType::eol || type == MatchingType::eof;
