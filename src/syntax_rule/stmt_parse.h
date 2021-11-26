@@ -48,6 +48,22 @@ namespace binred {
                 }
             }
 
+            bool is_cbsucceed() const {
+                return result;
+            }
+
+            bool is_cbchange() const {
+                return result && change_cb;
+            }
+
+            bool is_cbrollback() const {
+                return !result && change_cb;
+            }
+
+            bool is_cbfailed() const {
+                return !result && !change_cb;
+            }
+
             bool broken() {
                 ctx->set_errmsg("syntax parser is broken");
                 return false;
@@ -102,17 +118,46 @@ namespace binred {
         };
 
         struct ExprParser : ParserCallback {
-            Expr expr;
-            bool operator()(const cl2s::MatchingContext& ctx) {
+            std::shared_ptr<Expr> expr;
+            bool operator()(const cl2s::MatchingContext& ctx, bool& chcb) {
                 set_ctx(ctx);
-                if (callcb()) {
-                    if (change_cb) {
-                        cb = nullptr;
+                ExprKind kind = ExprKind::id;
+                auto set_to = [&](auto& ptr) {
+                    ptr = std::make_shared<Expr>();
+                    ptr->v = ctx.get_token();
+                    ptr->kind = kind;
+                };
+                auto set_prim = [&] {
+                    if (!expr) {
+                        set_to(expr);
                     }
+                    else if (!expr->right) {
+                        set_to(expr->right);
+                    }
+                    else {
+                        return broken();
+                    }
+                    return true;
+                };
+                if (callcb()) {
+                    if (is_cbchange()) {
+                        auto p = cb.get_rawfunc<FuncCall<ExprParser>>();
+                        if (!p) {
+                            return broken();
+                        }
+                        p->call->left = expr;
+                        expr = std::move(p->call);
+                        return true;
+                    }
+                    else if (!is_cbsucceed()) {
+                        return false;
+                    }
+                    return true;
                 }
                 if (ctx.is_current("FUNCCALL")) {
                     cb = FuncCall<ExprParser>();
-                    return cb(ctx);
+                    callcb();
+                    return result;
                 }
             }
         };
