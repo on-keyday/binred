@@ -49,7 +49,7 @@ void binred_test() {
     }
 }
 
-void test_syntax() {
+void test_syntax(cl2::SubCmdDispatch<>::result_t&) {
     binred::syntax::SyntaxCompiler syntaxc;
     using File = commonlib2::Reader<commonlib2::FileReader>;
     {
@@ -73,6 +73,7 @@ void test_syntax() {
                  << syntaxc.error();
         }
     }
+    /*
     commonlib2::Serializer<std::string> target;
 
     commonlib2::Deserializer<std::string&> target2(target.get());
@@ -82,6 +83,7 @@ void test_syntax() {
     commonlib2::syntax::SyntaxCompiler stxc;
     result = commonlib2::syntax::SyntaxIO::load(target2, stxc);
     std::ofstream("src/syntax_file/parsed.dat", std::ios_base::binary) << target.get();
+    */
 }
 
 int main(int argc, char** argv) {
@@ -204,6 +206,8 @@ int main(int argc, char** argv) {
                 return 0;
             })
         ->set_usage("binred syntaxc <option>");
+    disp.set_subcommand("debug", "for debug", {}, test_syntax)
+        ->set_usage("binred debug");
     std::string msg;
     auto err = disp.run(argc, argv, commonlib2::OptOption::getopt_mode,
                         [&](auto& op, bool on_error) {

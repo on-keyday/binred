@@ -61,12 +61,6 @@ namespace binred {
         funccall,
     };
 
-#define HANDLE_ROLLBACK(MSG)        \
-    if (ctx.is_rollbacked(stack)) { \
-        ctx.set_errmsg(MSG);        \
-        return false;               \
-    }
-
     struct Stmt {
         constexpr Stmt(StmtType t)
             : type(t) {}
