@@ -99,7 +99,7 @@ namespace PROJECT_NAME {
             }
 
             template <class Buf>
-            static bool write_all(Serializer<Buf>& target, SyntaxCompiler& syntaxc, bool minimum = false) {
+            static bool save(Serializer<Buf>& target, SyntaxCompiler& syntaxc, bool minimum = false) {
                 target.write_byte("StD0", 4);
                 size_t count = 0;
                 std::map<std::shared_ptr<token_t>, size_t> stxtok;
@@ -170,7 +170,7 @@ namespace PROJECT_NAME {
             }
 
             template <class Buf>
-            static bool read_all(Deserializer<Buf>& target, SyntaxCompiler& syntaxc) {
+            static bool load(Deserializer<Buf>& target, SyntaxCompiler& syntaxc) {
                 if (!target.base_reader().expect("StD0")) {
                     return false;
                 }

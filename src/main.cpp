@@ -78,10 +78,10 @@ void test_syntax() {
 
     commonlib2::Deserializer<std::string&> target2(target.get());
 
-    auto result = commonlib2::syntax::SyntaxIO::write_all(target, syntaxc, true);
+    auto result = commonlib2::syntax::SyntaxIO::save(target, syntaxc, true);
 
     commonlib2::syntax::SyntaxCompiler stxc;
-    result = commonlib2::syntax::SyntaxIO::read_all(target2, stxc);
+    result = commonlib2::syntax::SyntaxIO::load(target2, stxc);
     std::ofstream("src/syntax_file/parsed.dat", std::ios_base::binary) << target.get();
 }
 
@@ -195,7 +195,7 @@ int main(int argc, char** argv) {
                                     cout << result.fmt("file " + output + " couldn't open");
                                     return -1;
                                 }
-                                if (!commonlib2::syntax::SyntaxIO::write_all(w, syntaxc, (bool)layer->has_("minimum"))) {
+                                if (!commonlib2::syntax::SyntaxIO::save(w, syntaxc, (bool)layer->has_("minimum"))) {
                                     cout << result.fmt("failed to write syntax to " + output);
                                     return -1;
                                 }
