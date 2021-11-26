@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
                         cout << result.fmt("failed to write syntax to " + output);
                         return -1;
                     }
-                    cout << result.fmt("operation succeed. result saved to " + output);
+                    cout << result.fmt("operation succeeded. result saved to " + output);
                 }
                 return 0;
             })
