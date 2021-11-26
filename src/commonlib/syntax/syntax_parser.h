@@ -347,6 +347,8 @@ namespace PROJECT_NAME {
                         "INTEGER",
                         "NUMBER",
                         "STRING",
+                        "KEYWORD",
+                        "SYMBOL",
                         "EOL",
                         "EOF",
                         "EOS",

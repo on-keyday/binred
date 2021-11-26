@@ -12,6 +12,8 @@
 # INTEGER - 整数(10進、16進(0x)) 
 # NUMBER - 実数(INTEGERを内包)
 # STRING - 文字列
+# KEYWORD - 任意のキーワード
+# SYMBOL - 任意の記号
 # EOL - End Of Line
 # EOF - End Of File
 # 以下callback用の機能
