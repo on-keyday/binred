@@ -86,7 +86,7 @@ void test_syntax() {
 
 int main(int argc, char** argv) {
     commonlib2::IOWrapper::Init();
-
+    commonlib2::ArgChange _(argc, argv);
     commonlib2::SubCmdDispatch disp(std::string("binred"));
     disp.set_helpstr("binary I/O generator");
     disp.set_usage("binred [<option>] <subcommand>");
