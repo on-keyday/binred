@@ -552,6 +552,42 @@ namespace PROJECT_NAME {
                     }
                     cr.Consume();
                 }
+                else if (v->token->has_("KEYWORD")) {
+                    auto e = cr.GetorEOF();
+                    if (!any(v->flag & SyntaxFlag::adjacent)) {
+                        e = cr.ReadorEOF();
+                    }
+                    if (!e) {
+                        report(&r, e, v, "unexpected EOF. expect keyword");
+                        return 0;
+                    }
+                    if (!e->is_(tkpsr::TokenKind::keyword)) {
+                        report(&r, e, v, "expect keyword but token is " + e->to_string());
+                        return 0;
+                    }
+                    if (!callback(e, cr, e->to_string(), MatchingType::keyword)) {
+                        return -1;
+                    }
+                    cr.Consume();
+                }
+                else if (v->token->has_("SYMBOL")) {
+                    auto e = cr.GetorEOF();
+                    if (!any(v->flag & SyntaxFlag::adjacent)) {
+                        e = cr.ReadorEOF();
+                    }
+                    if (!e) {
+                        report(&r, e, v, "unexpected EOF. expect symbol");
+                        return 0;
+                    }
+                    if (!e->is_(tkpsr::TokenKind::symbols)) {
+                        report(&r, e, v, "expect symbol but token is " + e->to_string());
+                        return 0;
+                    }
+                    if (!callback(e, cr, e->to_string(), MatchingType::symbol)) {
+                        return -1;
+                    }
+                    cr.Consume();
+                }
                 else if (v->token->has_("INTEGER")) {
                     auto e = cr.GetorEOF();
                     if (!any(v->flag & SyntaxFlag::adjacent)) {
