@@ -783,12 +783,12 @@ namespace PROJECT_NAME {
                     return 0;
                 }
                 else {
-                    info.r.SeekTo(r);
-                    r = std::move(info.r);
                     if (info.r.current == r.current) {
                         report(&r, nullptr, v, "detected infinity loop. please check syntax especialiy around * and ?");
                         return -1;
                     }
+                    info.r.SeekTo(r);
+                    r = std::move(info.r);
                     if (any(v->flag & SyntaxFlag::repeat)) {
                         auto cr = r.FromCurrent();
                         stack.push(r, info.loop);
