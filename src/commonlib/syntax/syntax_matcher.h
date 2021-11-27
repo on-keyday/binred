@@ -981,6 +981,7 @@ namespace PROJECT_NAME {
                 if (root == p.syntax.end()) {
                     return false;
                 }
+                rel.insert("ROOT");
                 return check_rel_to_ROOT_impl(rel, root->second);
             }
         };

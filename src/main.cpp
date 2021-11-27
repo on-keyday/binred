@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
                         cout << result.fmt("file " + output + " couldn't open");
                         return -1;
                     }
-                    if (!commonlib2::syntax::SyntaxIO::save(w, syntaxc, (bool)layer->has_("minimum"))) {
+                    if (!commonlib2::syntax::SyntaxIO::save(w, syntaxc, 2)) {
                         cout << result.fmt("failed to write syntax to " + output);
                         return -1;
                     }
