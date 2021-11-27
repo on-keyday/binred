@@ -189,7 +189,7 @@ namespace PROJECT_NAME {
                             }
                         }
                         if (minimum >= 3) {  //lossy compression
-                            if (v->is_(tkpsr::TokenKind::spaces) || v->is_(tkpsr::TokenKind::line)) {
+                            if (v->is_(tkpsr::TokenKind::spaces) || v->is_(tkpsr::TokenKind::line) || v->is_(tkpsr::TokenKind::root)) {
                                 return false;
                             }
                             if (v->is_(tkpsr::TokenKind::symbols) && v->has_("\"")) {
