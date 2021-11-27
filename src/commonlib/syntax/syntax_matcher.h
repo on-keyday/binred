@@ -709,11 +709,15 @@ namespace PROJECT_NAME {
                     if (info.or_count == v->syntax.size()) {
                         r = std::move(info.r);
                         if (any(v->flag & SyntaxFlag::fatal)) {
+                            r = std::move(info.r);
                             return -1;
                         }
                         if (info.repeat || any(v->flag & SyntaxFlag::ifexists)) {
+                            info.r.SeekTo(r);
+                            r = std::move(info.r);
                             return 1;
                         }
+                        r = std::move(info.r);
                         report(&r, nullptr, v, info.or_errs);
                         return 0;
                     }
@@ -774,13 +778,16 @@ namespace PROJECT_NAME {
                     return -1;
                 }
                 else if (res == 0) {
-                    r = std::move(info.r);
                     if (any(v->flag & SyntaxFlag::fatal)) {
+                        r = std::move(info.r);
                         return -1;
                     }
                     if (info.repeat || any(v->flag & SyntaxFlag::ifexists)) {
+                        info.r.SeekTo(r);
+                        r = std::move(info.r);
                         return 1;
                     }
+                    r = std::move(info.r);
                     return 0;
                 }
                 else {
