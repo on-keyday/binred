@@ -950,6 +950,28 @@ namespace PROJECT_NAME {
                 }
                 return res;
             }
+
+            bool check_rel_to_ROOT_impl(std::set<std::string>& rel, std::vector<std::shared_ptr<Syntax>>& vec) {
+                for (auto& v : vec) {
+                    if (v->type == SyntaxType::ref) {
+                        if (rel.insert(v->token->to_string()).second) {
+                            auto found = p.syntax.find(v->token->to_string());
+                            if (found == p.syntax.end()) {
+                                return false;
+                            }
+                            if (!check_rel_to_ROOT_impl(rel, found->second)) {
+                                return false;
+                            }
+                        }
+                    }
+                    else if (v->type == SyntaxType::or_) {
+                        auto or_ = std::static_pointer_cast<OrSyntax>(v);
+                    }
+                }
+            }
+
+            bool checK_rel_to_ROOT(std::set<std::string>& rel) {
+            }
         };
     }  // namespace syntax
 }  // namespace PROJECT_NAME
