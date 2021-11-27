@@ -764,6 +764,8 @@ namespace PROJECT_NAME {
 
             int result_ref(TokenReader& r, std::shared_ptr<Syntax>& v, int res) {
                 auto info = stack.pop();
+                auto tmp = ctx.scope.back();
+                ctx.scope.pop_back();
                 if (res < 0) {
                     r = std::move(info.r);
                     return -1;
@@ -787,6 +789,7 @@ namespace PROJECT_NAME {
                     }
                     if (any(v->flag & SyntaxFlag::repeat)) {
                         stack.push(r, info.loop);
+                        ctx.scope.push_back(std::move(tmp));
                         stack.current().repeat = true;
                     }
                     return 1;
