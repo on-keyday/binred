@@ -146,7 +146,12 @@ namespace PROJECT_NAME {
                     return true;
                 }
                 else if (st.rootpos == pos && scope) {
-                    return !is_current(scope);
+                    if (get_stackptr() >= st.stackptr) {
+                        return this->scope[st.stackptr] == scope;
+                    }
+                    else {
+                        return true;
+                    }
                 }
                 return false;
             }
