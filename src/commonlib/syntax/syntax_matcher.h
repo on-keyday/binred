@@ -216,6 +216,67 @@ namespace PROJECT_NAME {
 
         using MatchingErr = commonlib2::EnumWrap<MatchingError, MatchingError::none, MatchingError::error, MatchingError::none>;
 
+        struct LoopInfo {
+            std::vector<std::shared_ptr<Syntax>>* loop;
+            size_t pos = 0;
+            TokenReader r;
+            bool repeat = false;
+            size_t or_count = 0;
+            std::set<size_t> or_cond;
+        };
+
+        struct LoopStack {
+            bool changed = false;
+            std::vector<LoopInfo> loopstack;
+            auto& current() {
+                return loopstack.back();
+            }
+
+            auto& loop() {
+                return *current().loop;
+            }
+
+            size_t pos() {
+                return current().pos;
+            }
+
+            auto& current_v() {
+                return loop()[pos()];
+            }
+
+            bool end() {
+                return current().pos >= current().loop->size();
+            }
+
+            void push(TokenReader& r, std::vector<std::shared_ptr<Syntax>>* loop) {
+                loopstack.push_back({loop, 0, std::move(r)});
+                changed = true;
+            }
+
+            LoopInfo pop() {
+                auto ret = std::move(current());
+                loopstack.pop_back();
+                return ret;
+            }
+
+            std::shared_ptr<Syntax> prev_suspend() {
+                if (loopstack.size() < 2) {
+                    return nullptr;
+                }
+                auto& sus = loopstack[loopstack.size() - 2];
+                return (*sus.loop)[sus.pos];
+            }
+
+            void increment() {
+                if (changed) {
+                    changed = false;
+                }
+                else {
+                    current().pos++;
+                }
+            }
+        };
+
         struct SyntaxMatching {
             using holder_t = std::vector<std::shared_ptr<Syntax>>;
             SyntaxParser p;
@@ -223,6 +284,7 @@ namespace PROJECT_NAME {
 
            private:
             MatchingContext ctx;
+            LoopStack stack;
 
            public:
             const std::string& mosterr() const {
@@ -273,45 +335,6 @@ namespace PROJECT_NAME {
                 }
                 r.Consume();
                 return 1;
-            }
-
-            int parse_or(TokenReader& r, std::shared_ptr<OrSyntax>& v, int& idx) {
-                std::string errs;
-                for (auto i = 0; i < v->syntax.size(); i++) {
-                    auto cr = r.FromCurrent();
-                    auto res = parse_on_vec(cr, v->syntax[i]);
-                    if (res > 0) {
-                        idx = i;
-                        r.SeekTo(cr);
-                        return 1;
-                    }
-                    else if (res < 0) {
-                        return res;
-                    }
-                    errs += p.errmsg + "\n";
-                }
-                report(&r, nullptr, v, errs);
-                return 0;
-            }
-
-            int parse_ref(TokenReader& r, std::shared_ptr<Syntax>& v) {
-                auto found = p.syntax.find(v->token->to_string());
-                if (found == p.syntax.end()) {
-                    report(&r, nullptr, v, "syntax " + v->token->to_string() + " is not defined");
-                    return -1;
-                }
-                ctx.scope.push_back(found->first);
-                auto cr = r.FromCurrent();
-                auto res = parse_on_vec(cr, found->second);
-                if (res > 0) {
-                    if (r.current == cr.current) {
-                        report(&r, nullptr, v, "infinity loop detected. please fix definitions especially around ? or *");
-                        return -1;
-                    }
-                    r.SeekTo(cr);
-                }
-                ctx.scope.pop_back();
-                return res;
             }
 
             bool check_int_str(auto& idv, int i, int base, int& allowed) {
@@ -665,111 +688,151 @@ namespace PROJECT_NAME {
                 return 1;
             }
 
-            int parse_on_vec(TokenReader& r, holder_t& vec) {
-                auto call_v = [&](auto f, auto& v) {
-                    bool repeating = false;
-                    while (true) {
-                        if (auto res = f(r, v); res == 0) {
-                            if (any(v->flag & SyntaxFlag::fatal)) {
-                                return -1;
-                            }
-                            if (!repeating && !any(v->flag & SyntaxFlag::ifexists)) {
-                                return 0;
-                            }
-                            break;
+            int parse_or(TokenReader& r, std::shared_ptr<OrSyntax>& v, int& idx) {
+                std::string errs;
+                for (auto i = 0; i < v->syntax.size(); i++) {
+                    auto cr = r.FromCurrent();
+                    auto res = parse_on_vec(cr, v->syntax[i]);
+                    if (res > 0) {
+                        idx = i;
+                        r.SeekTo(cr);
+                        return 1;
+                    }
+                    else if (res < 0) {
+                        return res;
+                    }
+                    errs += p.errmsg + "\n";
+                }
+                report(&r, nullptr, v, errs);
+                return 0;
+            }
+
+            int result_or(TokenReader& r, std::shared_ptr<OrSyntax>& v, int res) {
+                auto info = stack.pop();
+                if (res == 0) {
+                    info.or_count++;
+                    if (info.or_count == v->syntax.size()) {
+                        if (info.repeat || any(v->flag & SyntaxFlag::ifexists)) {
+                            return 1;
                         }
-                        else if (res < 0) {
+                        return 0;
+                    }
+                    r = info.r.FromCurrent();
+                    stack.push(info.r, &v->syntax[info.or_count]);
+                    return 1;
+                }
+            }
+
+            int start_ref(TokenReader& r, std::shared_ptr<Syntax>& v) {
+                auto found = p.syntax.find(v->token->to_string());
+                if (found == p.syntax.end()) {
+                    report(&r, nullptr, v, "syntax " + v->token->to_string() + " is not defined");
+                    return -1;
+                }
+                ctx.scope.push_back(found->first);
+                auto cr = r.FromCurrent();
+                stack.push(r, &found->second);
+                return 1;
+            }
+
+            int result_ref(TokenReader& r, std::shared_ptr<Syntax>& v, int res) {
+                auto info = stack.pop();
+                if (info.r.current == r.current) {
+                    report(&r, nullptr, v, "detected infinity loop. please check syntax especialiy around * and ?");
+                    return -1;
+                }
+                info.r.SeekTo(r);
+                r = std::move(info.r);
+                if (res < 0) {
+                    return -1;
+                }
+                else if (res == 0) {
+                    if (info.repeat || any(v->flag & SyntaxFlag::ifexists)) {
+                        return 1;
+                    }
+                    return 0;
+                }
+                else {
+                    if (any(v->flag & SyntaxFlag::repeat)) {
+                        stack.push(r, info.loop);
+                        stack.current().repeat = true;
+                    }
+                    return 1;
+                }
+            }
+
+            int call_with_cond(TokenReader& r, auto f, auto& v, bool norepeat = false) {
+                bool repeating = false;
+                while (true) {
+                    if (auto res = f(r, v); res == 0) {
+                        if (any(v->flag & SyntaxFlag::fatal)) {
                             return -1;
                         }
-                        if (any(v->flag & SyntaxFlag::repeat)) {
-                            repeating = true;
-                            continue;
+                        if (!repeating && !any(v->flag & SyntaxFlag::ifexists)) {
+                            return 0;
                         }
                         break;
                     }
-                    return 1;
-                };
-                for (size_t i = 0; i < vec.size(); i++) {
-                    auto& v = vec[i];
-                    switch (v->type) {
-                        case SyntaxType::literal: {
-                            if (auto e = call_v(
-                                    [this](auto& r, auto& v) {
-                                        return parse_literal(r, v);
-                                    },
-                                    v);
-                                e <= 0) {
-                                return e;
-                            }
-                            break;
-                        }
-                        case SyntaxType::ref: {
-                            if (auto e = call_v(
-                                    [this](auto& r, auto& v) {
-                                        return parse_ref(r, v);
-                                    },
-                                    v);
-                                e <= 0) {
-                                return e;
-                            }
-                            break;
-                        }
-                        case SyntaxType::or_: {
-                            auto ptr = std::static_pointer_cast<OrSyntax>(v);
-                            if (!any(ptr->flag & SyntaxFlag::once_each)) {
-                                if (auto e = call_v(
-                                        [&](auto& r, auto& v) {
-                                            int index = 0;
-                                            return parse_or(r, v, index);
-                                        },
-                                        ptr);
-                                    e <= 0) {
-                                    return e;
-                                }
-                            }
-                            else {
-                                std::set<int> already_set;
-                                if (auto e = call_v(
-                                        [&](auto& r, auto& v) {
-                                            int index = 0;
-                                            auto res = parse_or(r, v, index);
-                                            if (res > 0) {
-                                                if (!already_set.insert(index).second) {
-                                                    report(&r, nullptr, v, "index " + std::to_string(index) + " is already set");
-                                                    return -1;
-                                                }
-                                            }
-                                            return res;
-                                        },
-                                        ptr);
-                                    e <= 0) {
-                                    return e;
-                                }
-                            }
-                            break;
-                        }
-                        case SyntaxType::keyword: {
-                            if (auto e = call_v(
-                                    [this](auto& r, auto& v) {
-                                        return parse_keyword(r, v);
-                                    },
-                                    v);
-                                e <= 0) {
-                                return e;
-                            }
-                            break;
-                        }
-                        case SyntaxType::bos:
-                        case SyntaxType::eos: {
-                            callback(nullptr, r, "", v->type == SyntaxType::bos ? MatchingType::bos : MatchingType::eos);
-                            break;
-                        }
-                        default:
-                            report(&r, nullptr, v, "unimplemented");
-                            return -1;
+                    else if (res < 0) {
+                        return -1;
                     }
+                    if (!norepeat && any(v->flag & SyntaxFlag::repeat)) {
+                        repeating = true;
+                        continue;
+                    }
+                    break;
                 }
                 return 1;
+            }
+
+            int parse_on_vec(TokenReader& r, holder_t& vec) {
+                auto call_v = [&](auto f, auto& v) {
+                    return call_with_cond(r, f, v);
+                };
+                int e = 1;
+                while (true) {
+                    for (; !stack.end(); stack.increment()) {
+                        auto& v = stack.current_v();
+                        if (v->type == SyntaxType::literal) {
+                            if (e = call_with_cond(
+                                    r, [&](auto& r, auto& v) { return parse_literal(r, v); }, v);
+                                e <= 0) {
+                                break;
+                            }
+                        }
+                        else if (v->type == SyntaxType::keyword) {
+                            if (e = call_with_cond(
+                                    r, [&](auto& r, auto& v) { return parse_keyword(r, v); }, v);
+                                e <= 0) {
+                                break;
+                            }
+                        }
+                        else if (v->type == SyntaxType::bos || v->type == SyntaxType::eos) {
+                            if (!callback(nullptr, r, "", v->type == SyntaxType::bos ? MatchingType::bos : MatchingType::eos)) {
+                                e = -1;
+                                break;
+                            }
+                        }
+                    }
+                    while (true) {
+                        if (auto sus = stack.prev_suspend(); !sus) {
+                            return e;
+                        }
+                        else if (sus->type == SyntaxType::ref) {
+                            e = result_ref(r, sus, e);
+                            if (e <= 0) {
+                                continue;
+                            }
+                        }
+                        else if (sus->type == SyntaxType::or_) {
+                        }
+                        break;
+                    }
+                    if (e <= 0) {
+                        break;
+                    }
+                }
+                return e;
             }
 
             int parse_follow_syntax() {

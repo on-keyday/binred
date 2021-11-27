@@ -42,6 +42,10 @@ namespace binred {
                 return ctx->is_current(stack);
             }
 
+            bool is_current_p(int plus, const char* name) const {
+                return ctx->is_current_p(stack, plus) && ctx->is_current(name);
+            }
+
             bool callcb() {
                 if (cb) {
                     result = (bool)cb(*ctx, change_cb);
@@ -320,8 +324,11 @@ namespace binred {
                     to = std::move(p);
                     return true;
                 };
-                if (is_current()) {
-                    if (ctx.is_token(";")) {
+                if (is_current() || is_current_p(1, "IFCOND")) {
+                    if (ctx.is_type(cl2s::MatchingType::eos)) {
+                        return finish();
+                    }
+                    else if (ctx.is_token(";")) {
                         if (!get_to(stmt->init)) {
                             return false;
                         }
@@ -341,9 +348,11 @@ namespace binred {
                             return broken();
                         }
                         stmt->block = std::move(p->stmt);
-                        return finish();
+                        return true;
                     }
                     return broken();
+                }
+                else if (is_current_p(1, "ELSESTMT")) {
                 }
                 if (!cb) {
                     cb = VarInitParser();
