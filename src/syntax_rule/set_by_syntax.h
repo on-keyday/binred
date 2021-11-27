@@ -328,7 +328,7 @@ namespace binred {
                 ctx.set_errmsg("unexpected rollback. if statement expected.");
                 return false;
             }
-            if (ctx.is_current(stack)) {
+            if (ctx.is_current(stack) || (ctx.is_current_p(stack, 1) && ctx.is_current("IFCOND"))) {
                 if (ctx.is_token(";")) {
                     auto tree = cb.move_from_rawfunc<ExprStmt, VarInitStmt>(move_to_shared<Stmt>());
                     if (!tree) {
