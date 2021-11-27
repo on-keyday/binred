@@ -45,12 +45,19 @@ namespace binred {
             varinit,
             if_,
             expr,
+            stmts,
         };
 
         struct Stmt {
             StmtType type;
             constexpr Stmt(StmtType t)
                 : type(t) {}
+        };
+
+        struct Stmts : Stmt {
+            Stmts()
+                : Stmt(StmtType::stmts) {}
+            std::vector<std::shared_ptr<Stmt>> block;
         };
 
         struct VarInit : Stmt {
@@ -70,8 +77,8 @@ namespace binred {
             constexpr IfStmt()
                 : Stmt(StmtType::if_) {}
             std::shared_ptr<Stmt> init;
-            std::shared_ptr<ExprStmt> cond;
-            std::vector<std::shared_ptr<Stmt>> block;
+            std::shared_ptr<Stmt> cond;
+            std::shared_ptr<Stmts> block;
         };
     }  // namespace stmt
 }  // namespace binred

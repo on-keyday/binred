@@ -21,6 +21,7 @@ namespace binred {
             const cl2s::MatchingContext* ctx = nullptr;
             SyntaxCb cb;
 
+            //return true if first time to call
             bool set_ctx(const cl2s::MatchingContext& ctx) {
                 this->ctx = &ctx;
                 result = false;
@@ -46,6 +47,7 @@ namespace binred {
                     result = (bool)cb(*ctx, change_cb);
                     return true;
                 }
+                return false;
             }
 
             bool is_cbsucceed() const {
@@ -77,6 +79,10 @@ namespace binred {
             bool finish(bool& chcb) {
                 chcb = true;
                 return true;
+            }
+
+            virtual std::shared_ptr<Stmt> get_as_stmt() {
+                return nullptr;
             }
         };
 
@@ -206,6 +212,32 @@ namespace binred {
             }
         };
 
+        struct ExprStmtParser : ParserCallback {
+            std::shared_ptr<ExprStmt> stmt;
+            bool operator()(const cl2s::MatchingContext& ctx, bool& chcb) {
+                if (set_ctx(ctx)) {
+                    stmt = std::make_shared<ExprStmt>();
+                    return true;
+                }
+                if (is_current()) {
+                    if (ctx.is_type(cl2s::MatchingType::eos)) {
+                        auto p = cb.move_from_rawfunc<ExprParser>(commonlib2::move_to_shared<ExprParser>());
+                        if (!p) {
+                            return broken();
+                        }
+                        stmt->expr = std::move(p->expr);
+                        return true;
+                    }
+                    return broken();
+                }
+                if (!cb) {
+                    cb = ExprParser();
+                }
+                callcb();
+                return result;
+            }
+        };
+
         struct VarInitParser : ParserCallback {
             std::shared_ptr<VarInit> init;
             bool cantrollback = false;
@@ -220,7 +252,7 @@ namespace binred {
                     return rollback(chcb);
                 }
                 auto add_init = [&]() {
-                    auto p = cb.get_rawfunc<ExprStmt>();
+                    auto p = cb.get_rawfunc<ExprParser>();
                     if (!p) {
                         return broken();
                     }
@@ -258,12 +290,112 @@ namespace binred {
                     return broken();
                 }
                 if (!cb) {
+                    cb = ExprParser();
+                }
+                callcb();
+                return result;
+            }
+            std::shared_ptr<Stmt> get_as_stmt() override {
+                return std::move(init);
+            }
+        };
+
+        template <class StmtsParser>
+        struct IfStmtParser : ParserCallback {
+            std::shared_ptr<IfStmt> stmt;
+            bool operator()(const cl2s::MatchingContext& ctx, bool& chcb) {
+                if (set_ctx(ctx)) {
+                    stmt = std::shared_ptr<IfStmt>();
+                    if (!ctx.is_token("if")) {
+                        return broken();
+                    }
+                    return true;
+                }
+                auto get_to = [&](auto& to) {
+                    auto parser = cb.move_from_rawfunc<ExprParser, VarInitParser>(commonlib2::move_to_shared<ParserCallback>());
+                    auto p = parser->get_as_stmt();
+                    if (!p) {
+                        return broken();
+                    }
+                    to = std::move(p);
+                    return true;
+                };
+                if (is_current()) {
+                    if (ctx.is_token(";")) {
+                        if (!get_to(stmt->init)) {
+                            return false;
+                        }
+                        cb = ExprParser();
+                        return true;
+                    }
+                    else if (ctx.is_token("{")) {
+                        if (!get_to(stmt->cond)) {
+                            return false;
+                        }
+                        cb = StmtsParser();
+                        return true;
+                    }
+                    else if (ctx.is_token("}")) {
+                        auto p = cb.move_from_rawfunc<StmtsParser>(commonlib2::move_to_shared<StmtsParser>());
+                        if (!p) {
+                            return broken();
+                        }
+                        stmt->block = std::move(p->stmt);
+                        return finish();
+                    }
+                    return broken();
+                }
+                if (!cb) {
+                    cb = VarInitParser();
+                }
+                callcb();
+                if (is_cbrollback()) {
+                    cb = ExprParser();
+                    callcb();
+                    return result;
+                }
+                return result;
+            }
+        };
+
+        struct StmtsParser : ParserCallback {
+            std::shared_ptr<Stmts> stmt;
+            bool operator()(const cl2s::MatchingContext& ctx, bool& chcb) {
+                if (set_ctx(ctx)) {
+                    stmt = std::make_shared<Stmts>();
+                }
+                if (callcb()) {
+                    if (is_cbchange()) {
+                        auto p = cb.move_from_rawfunc<StmtsParser, IfStmtParser<Stmts>, VarInitParser, ExprStmtParser>(commonlib2::move_to_shared<ParserCallback>());
+                        if (!p) {
+                            return broken();
+                        }
+                        auto s = p->get_as_stmt();
+                        if (!s) {
+                            return broken();
+                        }
+                        stmt->block.push_back(std::move(s));
+                        return true;
+                    }
+                    else if (is_cbrollback()) {
+                        cb = nullptr;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                if (ctx.is_current("VARINIT")) {
+                    cb = VarInitParser();
+                }
+                else if (ctx.is_current("IFSTMT")) {
+                    cb = IfStmtParser<Stmts>();
+                }
+                else if (ctx.is_current("EXPRSTMT")) {
                     cb = ExprStmt();
                 }
                 callcb();
                 return result;
             }
         };
-
     }  // namespace stmt
 }  // namespace binred
