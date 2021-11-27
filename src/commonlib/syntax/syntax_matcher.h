@@ -890,6 +890,7 @@ namespace PROJECT_NAME {
                 stack.push(cr, &found->second);
                 stack.changed = false;
                 auto res = parse_on_vec(r);
+                stack.clear();
                 if (res > 0) {
                     p.errmsg.clear();
                 }
