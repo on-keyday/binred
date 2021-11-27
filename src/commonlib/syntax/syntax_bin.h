@@ -182,13 +182,21 @@ namespace PROJECT_NAME {
                                     currentfilt.clear();
                                     afterinit = false;
                                     reqline = false;
-                                    auto tmp = exists;
+                                    auto tmp = minimum >= 3 ? false : exists;
                                     exists = true;
                                     return tmp;
                                 }
                             }
-                            return exists;
                         }
+                        if (minimum >= 3) {  //lossy compression
+                            if (v->is_(tkpsr::TokenKind::spaces) || v->is_(tkpsr::TokenKind::line)) {
+                                return false;
+                            }
+                            if (v->is_(tkpsr::TokenKind::symbols) && v->has_("\"")) {
+                                return false;
+                            }
+                        }
+                        return exists;
                     }
                     return true;
                 };
