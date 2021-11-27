@@ -18,6 +18,7 @@ namespace binred {
 
         enum class ExprKind {
             number,
+            integer,
             id,
             op,
             call,

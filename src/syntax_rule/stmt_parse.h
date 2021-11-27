@@ -159,6 +159,76 @@ namespace binred {
                     callcb();
                     return result;
                 }
+                if (ctx.is_type(cl2s::MatchingType::symbol)) {
+                    if (ctx.is_token("(") || ctx.is_token(")")) {
+                        return true;
+                    }
+                    kind = ExprKind::op;
+                    if (!expr) {
+                        set_to(expr);
+                    }
+                    else {
+                        std::shared_ptr<Expr> tmp;
+                        set_to(tmp);
+                        tmp->left = std::move(expr);
+                        expr = std::move(tmp);
+                    }
+                }
+                else if (ctx.is_type(cl2s::MatchingType::keyword)) {
+                    if (ctx.is_token("nil")) {
+                        kind = ExprKind::nil;
+                    }
+                    else if (ctx.is_token("true") || ctx.is_token("false")) {
+                        kind = ExprKind::boolean;
+                    }
+                    else {
+                        return broken();
+                    }
+                    return set_prim();
+                }
+                else if (ctx.is_type(cl2s::MatchingType::identifier)) {
+                    kind = ExprKind::id;
+                    return set_prim();
+                }
+                else if (ctx.is_type(cl2s::MatchingType::integer)) {
+                    kind = ExprKind::integer;
+                    return set_prim();
+                }
+                else if (ctx.is_type(cl2s::MatchingType::number)) {
+                    kind = ExprKind::number;
+                    return set_prim();
+                }
+                else if (ctx.is_type(cl2s::MatchingType::string)) {
+                    kind = ExprKind::str;
+                    return set_prim();
+                }
+                return broken();
+            }
+        };
+
+        struct VarInitParser : ParserCallback {
+            std::shared_ptr<VarInit> init;
+            bool cantrollback = false;
+            bool operator()(const cl2s::MatchingContext& ctx, bool& chcb) {
+                set_ctx(ctx);
+                if (is_roolbacked()) {
+                    return rollback(chcb);
+                }
+                if (is_current()) {
+                    if (ctx.is_type(cl2s::MatchingType::eos)) {
+                        return finish(chcb);
+                    }
+                    else if (ctx.is_token(":=")) {
+                        cantrollback = true;
+                        return true;
+                    }
+                    else if (ctx.is_token(",")) {
+                        return true;
+                    }
+                    else {
+                        return broken();
+                    }
+                }
             }
         };
 
