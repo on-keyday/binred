@@ -63,7 +63,6 @@ void test_syntax(cl2::SubCmdDispatch<>::result_t&) {
         if (!c.is_invisible_type()) {
             cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
         }
-
         return stmts(c);
     };
     {
