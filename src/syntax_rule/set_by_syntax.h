@@ -224,7 +224,7 @@ namespace binred {
         std::vector<std::shared_ptr<Expr>> init;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (firstcall) {
-                if (ctx.is_rollbacked(stack)) {
+                if (ctx.is_rollbacked(stack, "VARSTMT")) {
                     ended = true;
                     return false;
                 }
