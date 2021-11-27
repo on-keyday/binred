@@ -196,7 +196,8 @@ namespace PROJECT_NAME {
                                 }
                             }
                         }
-                        if (minimum >= 3) {  //lossy compression
+                        //lossy compression vvv
+                        if (minimum >= 3) {
                             if (v->is_(tkpsr::TokenKind::spaces) || v->is_(tkpsr::TokenKind::line) || v->is_(tkpsr::TokenKind::root)) {
                                 return false;
                             }
