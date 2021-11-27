@@ -311,6 +311,10 @@ namespace PROJECT_NAME {
             LoopStack stack;
 
            public:
+            void set_recursion_limit(size_t limit = 1000) {
+                stack.stack_limit = limit;
+            }
+
             const std::string& mosterr() const {
                 return ctx.reach.errmsg;
             }

@@ -46,6 +46,10 @@ namespace PROJECT_NAME {
                 return true;
             }
 
+            void set_recursion_limit(size_t limit = 1000) {
+                match.set_recursion_limit(limit);
+            }
+
             template <class Reader>
             tkpsr::MergeErr parse(Reader& r) {
                 auto err = match.p.parse(r);
