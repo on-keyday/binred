@@ -99,7 +99,7 @@ namespace PROJECT_NAME {
             }
 
            private:
-            static bool is_removable(auto& v) {
+            static bool is_removable(auto& v, int minimum) {
                 if (v->is_(tkpsr::TokenKind::comments)) {
                     if (auto p = v->get_prev()) {
                         if (p->is_(tkpsr::TokenKind::symbols) && p->has_("#")) {
@@ -110,7 +110,7 @@ namespace PROJECT_NAME {
                 else if (v->is_(tkpsr::TokenKind::symbols) && v->has_("#")) {
                     return true;
                 }
-                else if (v->is_(tkpsr::TokenKind::line)) {
+                else if (minimum < 2 && v->is_(tkpsr::TokenKind::line)) {
                     if (auto p = v->get_prev()) {
                         if (p->is_(tkpsr::TokenKind::comments)) {
                             return true;
@@ -150,7 +150,7 @@ namespace PROJECT_NAME {
                     }
                     else {
                         if (minimum >= 1) {
-                            if (is_removable(v)) {
+                            if (is_removable(v, minimum)) {
                                 return false;
                             }
                         }
@@ -184,6 +184,11 @@ namespace PROJECT_NAME {
                                     reqline = false;
                                     auto tmp = minimum >= 3 ? false : exists;
                                     exists = true;
+                                    if (auto e = v->get_prev()) {
+                                        if (e->is_(tkpsr::TokenKind::comments)) {
+                                            tmp = false;
+                                        }
+                                    }
                                     return tmp;
                                 }
                             }
