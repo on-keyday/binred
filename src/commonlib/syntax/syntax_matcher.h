@@ -880,7 +880,7 @@ namespace PROJECT_NAME {
                 ctx.scope.push_back("ROOT");
                 ctx.reach.clear();
                 auto r = p.get_reader();
-                stack.push(r, &found->second);
+                stack.push(r.FromCurrent(), &found->second);
                 stack.changed = false;
                 auto res = parse_on_vec(r);
                 if (res > 0) {
