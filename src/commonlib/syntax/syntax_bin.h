@@ -182,10 +182,10 @@ namespace PROJECT_NAME {
                                     currentfilt.clear();
                                     afterinit = false;
                                     reqline = false;
+                                    auto tmp = exists;
+                                    exists = true;
+                                    return tmp;
                                 }
-                                auto tmp = exists;
-                                exists = true;
-                                return tmp;
                             }
                             return exists;
                         }
