@@ -149,6 +149,9 @@ namespace PROJECT_NAME {
                         count++;
                     }
                     else {
+                        if (minimum <= 1) {
+                            exists = true;
+                        }
                         if (minimum >= 1) {
                             if (is_removable(v, set_filter.size() != 0)) {
                                 return false;
