@@ -729,6 +729,7 @@ namespace PROJECT_NAME {
                     stack.current().or_count = info.or_count;
                     stack.current().or_cond = std::move(info.or_cond);
                     stack.current().or_errs = std::move(info.or_errs);
+                    stack.current().repeat = info.repeat;
                     return 1;
                 }
                 else if (res < 0) {
