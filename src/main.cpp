@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
             {
                 {"input-file", {'i'}, "set input file (required)", 1, true},
                 {"output-file", {'o'}, "set output file (required)", 1, true},
-                {"minimum", {'m'}, "compress tokens (level 0-3)", 1, true},
+                {"minimum", {'m'}, "compress tokens (level 0-4)", 1, true},
             },
             [](decltype(disp)::result_t& result) {
                 auto layer = result.get_layer("syntaxc");
