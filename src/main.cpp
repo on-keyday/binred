@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
             {
                 {"input-file", {'i'}, "set input file (required)", 1, true},
                 {"output-file", {'o'}, "set output file (required)", 1, true},
-                {"minimum", {'m'}, "remove comment and needless space"},
+                {"minimum", {'m'}, "compress tokens (level 0-2)", 1, true},
             },
             [](decltype(disp)::result_t& result) {
                 auto layer = result.get_layer("syntaxc");
@@ -196,14 +196,20 @@ int main(int argc, char** argv) {
                         cout << result.fmt("file " + output + " couldn't open");
                         return -1;
                     }
+                    int compress = 0;
+                    args = layer->has_("minimum");
+                    if (args) {
+                        cl2::Reader(args->arg()->at(0)) >> compress;
+                    }
                     commonlib2::Serializer<std::string> test;
-                    if (!commonlib2::syntax::SyntaxIO::save(test, syntaxc, 2)) {
+                    if (!commonlib2::syntax::SyntaxIO::save(test, syntaxc, compress)) {
                         cout << result.fmt("failed to write syntax to " + output);
                         return -1;
                     }
                     commonlib2::Deserializer<std::string&> test2(test.get());
                     auto res = commonlib2::syntax::SyntaxIO::load(test2, testc);
                     if (res) {
+                        cout << "compressed image:\n";
                         for (auto tok = testc.get_rawparser().GetParsed(); tok; tok = tok->get_next()) {
                             cout << tok->to_string();
                         }
