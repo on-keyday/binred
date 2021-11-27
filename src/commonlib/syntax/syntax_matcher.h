@@ -705,6 +705,10 @@ namespace PROJECT_NAME {
             int result_or(TokenReader& r, std::shared_ptr<OrSyntax>& v, int res) {
                 auto info = stack.pop();
                 if (res == 0) {
+                    if (info.or_errs.size()) {
+                        info.or_errs += '\n';
+                    }
+                    info.or_errs += p.errmsg;
                     info.or_count++;
                     if (info.or_count == v->syntax.size()) {
                         if (any(v->flag & SyntaxFlag::fatal)) {
@@ -720,10 +724,6 @@ namespace PROJECT_NAME {
                         report(&r, nullptr, v, info.or_errs);
                         return 0;
                     }
-                    if (info.or_errs.size()) {
-                        info.or_errs += '\n';
-                    }
-                    info.or_errs += p.errmsg;
                     r = info.r.FromCurrent();
                     stack.push(info.r, &v->syntax[info.or_count]);
                     stack.current().or_count = info.or_count;
