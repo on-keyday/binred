@@ -735,7 +735,9 @@ namespace PROJECT_NAME {
                     info.r.SeekTo(r);
                     r = std::move(info.r);
                     if (any(v->flag & SyntaxFlag::repeat)) {
-                        stack.push(info.r, &v->syntax[0]);
+                        auto cr = r.FromCurrent();
+                        stack.push(r, &v->syntax[0]);
+                        r = std::move(cr);
                         stack.current().or_count = 0;
                         stack.current().or_cond = std::move(info.or_cond);
                         if (any(v->flag & SyntaxFlag::once_each)) {
@@ -788,7 +790,9 @@ namespace PROJECT_NAME {
                         return -1;
                     }
                     if (any(v->flag & SyntaxFlag::repeat)) {
+                        auto cr = r.FromCurrent();
                         stack.push(r, info.loop);
+                        r = std::move(cr);
                         ctx.scope.push_back(std::move(tmp));
                         stack.current().repeat = true;
                     }
