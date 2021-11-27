@@ -63,10 +63,8 @@ void test_syntax(cl2::SubCmdDispatch<>::result_t&) {
         if (!c.is_invisible_type()) {
             cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
         }
-        if (c.is_token("}") && c.is_current("IFSTMT")) {
-            return;
-        }
-        //return stmts(c);
+
+        return stmts(c);
     };
     {
         File testfile(commonlib2::FileReader("src/syntax_file/test_syntax2.txt"));
