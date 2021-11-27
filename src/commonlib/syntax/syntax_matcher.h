@@ -878,6 +878,7 @@ namespace PROJECT_NAME {
                     if (e <= 0) {
                         break;
                     }
+                    stack.increment();
                 }
                 return e;
             }
