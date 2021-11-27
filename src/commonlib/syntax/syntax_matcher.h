@@ -147,7 +147,7 @@ namespace PROJECT_NAME {
                 }
                 else if (st.rootpos == pos && scope) {
                     if (get_stackptr() >= st.stackptr) {
-                        return this->scope[st.stackptr] == scope;
+                        return this->scope[st.stackptr] != scope;
                     }
                     else {
                         return true;
