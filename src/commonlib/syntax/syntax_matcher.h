@@ -223,6 +223,7 @@ namespace PROJECT_NAME {
             bool repeat = false;
             size_t or_count = 0;
             std::set<size_t> or_cond;
+            std::string or_errs;
         };
 
         struct LoopStack {
@@ -688,23 +689,11 @@ namespace PROJECT_NAME {
                 return 1;
             }
 
-            int parse_or(TokenReader& r, std::shared_ptr<OrSyntax>& v, int& idx) {
-                std::string errs;
-                for (auto i = 0; i < v->syntax.size(); i++) {
-                    auto cr = r.FromCurrent();
-                    auto res = parse_on_vec(cr, v->syntax[i]);
-                    if (res > 0) {
-                        idx = i;
-                        r.SeekTo(cr);
-                        return 1;
-                    }
-                    else if (res < 0) {
-                        return res;
-                    }
-                    errs += p.errmsg + "\n";
-                }
-                report(&r, nullptr, v, errs);
-                return 0;
+            int start_or(TokenReader& r, std::shared_ptr<OrSyntax>& v) {
+                auto cr = r.FromCurrent();
+                stack.push(r, &v->syntax[0]);
+                r = std::move(cr);
+                return 1;
             }
 
             int result_or(TokenReader& r, std::shared_ptr<OrSyntax>& v, int res) {
@@ -712,13 +701,41 @@ namespace PROJECT_NAME {
                 if (res == 0) {
                     info.or_count++;
                     if (info.or_count == v->syntax.size()) {
+                        r = std::move(info.r);
                         if (info.repeat || any(v->flag & SyntaxFlag::ifexists)) {
                             return 1;
                         }
+                        report(&r, nullptr, v, info.or_errs);
                         return 0;
                     }
+                    if (info.or_errs.size()) {
+                        info.or_errs += '\n';
+                    }
+                    info.or_errs += p.errmsg;
                     r = info.r.FromCurrent();
                     stack.push(info.r, &v->syntax[info.or_count]);
+                    stack.current().or_count = info.or_count;
+                    stack.current().or_cond = std::move(info.or_cond);
+                    return 1;
+                }
+                else if (res < 0) {
+                    r = std::move(info.r);
+                    return -1;
+                }
+                else {
+                    info.r.SeekTo(r);
+                    r = std::move(info.r);
+                    if (any(v->flag & SyntaxFlag::repeat)) {
+                        stack.push(info.r, &v->syntax[0]);
+                        stack.current().or_count = 0;
+                        stack.current().or_cond = std::move(info.or_cond);
+                        if (any(v->flag & SyntaxFlag::once_each)) {
+                            if (!stack.current().or_cond.insert(info.or_count).second) {
+                                report(&r, nullptr, v, "token index " + std::to_string(info.or_count) + " is already set");
+                                return 0;
+                            }
+                        }
+                    }
                     return 1;
                 }
             }
@@ -732,6 +749,7 @@ namespace PROJECT_NAME {
                 ctx.scope.push_back(found->first);
                 auto cr = r.FromCurrent();
                 stack.push(r, &found->second);
+                r = std::move(cr);
                 return 1;
             }
 
