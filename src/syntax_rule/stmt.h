@@ -46,6 +46,7 @@ namespace binred {
             if_,
             expr,
             stmts,
+            for_,
         };
 
         struct Stmt {
@@ -79,6 +80,7 @@ namespace binred {
             std::shared_ptr<Stmt> init;
             std::shared_ptr<Stmt> cond;
             std::shared_ptr<Stmts> block;
+            std::shared_ptr<Stmt> els;
         };
     }  // namespace stmt
 }  // namespace binred

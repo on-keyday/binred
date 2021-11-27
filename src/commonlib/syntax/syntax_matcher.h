@@ -152,6 +152,10 @@ namespace PROJECT_NAME {
                 return current() == n;
             }
 
+            bool is_current_p(const MatchingStackInfo& st, int plus) const {
+                return st.stackptr + plus == get_stackptr();
+            }
+
             template <class String, class... Str>
             bool is_under_and_not(const String& n, const Str&... a) {
                 for (auto i = scope.size() - 1; i < scope.size(); i--) {
