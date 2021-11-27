@@ -966,11 +966,22 @@ namespace PROJECT_NAME {
                     }
                     else if (v->type == SyntaxType::or_) {
                         auto or_ = std::static_pointer_cast<OrSyntax>(v);
+                        for (auto& s : or_->syntax) {
+                            if (!check_rel_to_ROOT_impl(rel, s)) {
+                                return false;
+                            }
+                        }
                     }
                 }
+                return true;
             }
 
             bool checK_rel_to_ROOT(std::set<std::string>& rel) {
+                auto root = p.syntax.find("ROOT");
+                if (root == p.syntax.end()) {
+                    return false;
+                }
+                return check_rel_to_ROOT_impl(rel, root->second);
             }
         };
     }  // namespace syntax
