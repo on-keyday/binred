@@ -280,17 +280,12 @@ namespace binred {
         std::shared_ptr<Expr> expr;
         bool operator()(const syntax::MatchingContext& ctx) {
             if (firstcall) {
-                if (ctx.is_type(commonlib2::syntax::MatchingType::bos)) {
-                    return true;
-                }
                 stack = ctx.get_stack();
                 firstcall = false;
             }
-            else {
-                if (ctx.is_rollbacked(stack)) {
-                    ctx.set_errmsg("unexpexted rollback. expect expr");
-                    return false;
-                }
+            if (ctx.is_rollbacked(stack)) {
+                ctx.set_errmsg("unexpexted rollback. expect expr");
+                return false;
             }
             if (ctx.is_current(stack) && ctx.is_type(syntax::MatchingType::eos)) {
                 auto tree = cb.get_rawfunc<TreeBySyntax>();
