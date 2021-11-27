@@ -738,6 +738,7 @@ namespace PROJECT_NAME {
                         auto cr = r.FromCurrent();
                         stack.push(r, &v->syntax[0]);
                         r = std::move(cr);
+                        stack.current().repeat = true;
                         stack.current().or_count = 0;
                         stack.current().or_cond = std::move(info.or_cond);
                         if (any(v->flag & SyntaxFlag::once_each)) {
