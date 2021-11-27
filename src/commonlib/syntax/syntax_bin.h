@@ -98,40 +98,96 @@ namespace PROJECT_NAME {
                 }
             }
 
+           private:
+            bool is_removable(auto& v) {
+                if (v->is_(tkpsr::TokenKind::comments)) {
+                    if (auto p = v->get_prev()) {
+                        if (p->is_(tkpsr::TokenKind::symbols) && p->has_("#")) {
+                            return true;
+                        }
+                    }
+                }
+                else if (v->is_(tkpsr::TokenKind::symbols) && v->has_("#")) {
+                    return true;
+                }
+                else if (v->is_(tkpsr::TokenKind::line)) {
+                    if (auto p = v->get_prev()) {
+                        if (p->is_(tkpsr::TokenKind::comments)) {
+                            return true;
+                        }
+                    }
+                }
+                else if (v->is_(tkpsr::TokenKind::spaces)) {
+                    if (auto p = v->get_next()) {
+                        if (p->is_(tkpsr::TokenKind::line)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+           public:
             template <class Buf>
-            static bool save(Serializer<Buf>& target, SyntaxCompiler& syntaxc, bool minimum = false) {
+            static bool save(Serializer<Buf>& target, SyntaxCompiler& syntaxc, int minimum = 0) {
                 target.write_byte("StD0", 4);
                 size_t count = 0;
                 std::map<std::shared_ptr<token_t>, size_t> stxtok;
+                std::set<std::string> set_filter;
+                if (minimum >= 2) {
+                    if (!syntaxc.match.checK_rel_to_ROOT(set_filter)) {
+                        set_filter.clear();
+                    }
+                }
+                std::string currentfilt;
+                bool exists = false;
+                bool afterinit = false;
+                bool reqline = false;
                 auto cb = [&](auto& v, bool before) {
                     if (!before) {
                         stxtok.insert({v, count});
                         count++;
                     }
-                    else if (minimum) {
-                        if (v->is_(tkpsr::TokenKind::comments)) {
-                            if (auto p = v->get_prev()) {
-                                if (p->is_(tkpsr::TokenKind::symbols) && p->has_("#")) {
-                                    return false;
-                                }
+                    else {
+                        if (minimum >= 1) {
+                            if (is_removable(v)) {
+                                return false;
                             }
                         }
-                        else if (v->is_(tkpsr::TokenKind::symbols) && v->has_("#")) {
-                            return false;
-                        }
-                        else if (v->is_(tkpsr::TokenKind::line)) {
-                            if (auto p = v->get_prev()) {
-                                if (p->is_(tkpsr::TokenKind::comments)) {
-                                    return false;
+                        if (minimum >= 2 && set_filter.size()) {
+                            if (currentfilt.size() == 0) {
+                                if (v->is_(tkpsr::TokenKind::identifiers)) {
+                                    currentfilt = v->to_string();
+                                    auto found = set_filter.find(currentfilt);
+                                    if (found == set_filter.end()) {
+                                        exists = false;
+                                    }
+                                    else {
+                                        exists = true;
+                                    }
                                 }
                             }
-                        }
-                        else if (v->is_(tkpsr::TokenKind::spaces)) {
-                            if (auto p = v->get_next()) {
-                                if (p->is_(tkpsr::TokenKind::line)) {
-                                    return false;
+                            else if (!afterinit) {
+                                if (v->is_(tkpsr::TokenKind::symbols) && v->has_(":=")) {
+                                    afterinit = true;
                                 }
                             }
+                            else if (!reqline) {
+                                if (!v->is_nodisplay()) {
+                                    reqline = true;
+                                }
+                            }
+                            else {
+                                if (v->is_(tkpsr::TokenKind::line)) {
+                                    currentfilt.clear();
+                                    afterinit = false;
+                                    reqline = false;
+                                }
+                                auto tmp = exists;
+                                exists = true;
+                                return tmp;
+                            }
+                            return exists;
                         }
                     }
                     return true;
@@ -151,6 +207,11 @@ namespace PROJECT_NAME {
                     }
                 }
                 for (auto& stx : syntaxc.match.p.syntax) {
+                    if (set_filter.size()) {
+                        if (!set_filter.count(stx.first)) {
+                            continue;
+                        }
+                    }
                     if (!tkpsr::BinaryIO::write_string(target, stx.first)) {
                         return false;
                     }
