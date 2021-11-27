@@ -707,7 +707,6 @@ namespace PROJECT_NAME {
                 if (res == 0) {
                     info.or_count++;
                     if (info.or_count == v->syntax.size()) {
-                        r = std::move(info.r);
                         if (any(v->flag & SyntaxFlag::fatal)) {
                             r = std::move(info.r);
                             return -1;
