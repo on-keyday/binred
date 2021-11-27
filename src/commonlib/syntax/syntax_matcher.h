@@ -755,22 +755,24 @@ namespace PROJECT_NAME {
 
             int result_ref(TokenReader& r, std::shared_ptr<Syntax>& v, int res) {
                 auto info = stack.pop();
-                if (info.r.current == r.current) {
-                    report(&r, nullptr, v, "detected infinity loop. please check syntax especialiy around * and ?");
-                    return -1;
-                }
-                info.r.SeekTo(r);
-                r = std::move(info.r);
                 if (res < 0) {
+                    r = std::move(info.r);
                     return -1;
                 }
                 else if (res == 0) {
+                    r = std::move(info.r);
                     if (info.repeat || any(v->flag & SyntaxFlag::ifexists)) {
                         return 1;
                     }
                     return 0;
                 }
                 else {
+                    info.r.SeekTo(r);
+                    r = std::move(info.r);
+                    if (info.r.current == r.current) {
+                        report(&r, nullptr, v, "detected infinity loop. please check syntax especialiy around * and ?");
+                        return -1;
+                    }
                     if (any(v->flag & SyntaxFlag::repeat)) {
                         stack.push(r, info.loop);
                         stack.current().repeat = true;
@@ -803,7 +805,7 @@ namespace PROJECT_NAME {
                 return 1;
             }
 
-            int parse_on_vec(TokenReader& r, holder_t& vec) {
+            int parse_on_vec(TokenReader& r) {
                 auto call_v = [&](auto f, auto& v) {
                     return call_with_cond(r, f, v);
                 };
@@ -878,7 +880,9 @@ namespace PROJECT_NAME {
                 ctx.scope.push_back("ROOT");
                 ctx.reach.clear();
                 auto r = p.get_reader();
-                auto res = parse_on_vec(r, found->second);
+                stack.push(r, &found->second);
+                stack.changed = false;
+                auto res = parse_on_vec(r);
                 if (res > 0) {
                     p.errmsg.clear();
                 }

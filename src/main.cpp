@@ -64,7 +64,7 @@ void test_syntax(cl2::SubCmdDispatch<>::result_t&) {
             cout << c.current() << ":" << type_str(c.get_type()) << ":" << c.get_token() << "\n";
         }
 
-        return stmts(c);
+        //return stmts(c);
     };
     {
         File testfile(commonlib2::FileReader("src/syntax_file/test_syntax2.txt"));
