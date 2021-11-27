@@ -204,6 +204,11 @@ namespace PROJECT_NAME {
                                 return false;
                             }
                         }
+                        if (minimum >= 4) {
+                            if (v->is_(tkpsr::TokenKind::symbols) && !v->has_("[")) {
+                                return false;
+                            }
+                        }
                         return exists;
                     }
                     return true;
