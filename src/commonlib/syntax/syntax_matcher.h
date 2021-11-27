@@ -269,7 +269,7 @@ namespace PROJECT_NAME {
             }
 
             bool push(TokenReader& r, std::vector<std::shared_ptr<Syntax>>* loop) {
-                if (stack_limit >= loopstack.size()) {
+                if (stack_limit <= loopstack.size()) {
                     return false;
                 }
                 loopstack.push_back({loop, 0, std::move(r)});

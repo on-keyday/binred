@@ -28,7 +28,8 @@
 # エスケープシーケンスは無効(これもそのうち(略))
 # ROOTから解析が始まる
 
-ROOT:=IMPLSTMT EOF
+ROOT:=ROOT
+#IMPLSTMT EOF
 
 IMPLSTMT:=[IFSTMT|VARINIT|EXPRSTMT]*
 
