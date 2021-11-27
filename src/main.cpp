@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
                     cout << result.fmt("need input file name");
                     return 1;
                 }
-                binred::syntax::SyntaxCompiler syntaxc;
+                binred::syntax::SyntaxCompiler syntaxc, testc;
                 using File = commonlib2::Reader<commonlib2::FileReader>;
                 {
                     auto& input = args->arg()->at(0);
@@ -196,10 +196,13 @@ int main(int argc, char** argv) {
                         cout << result.fmt("file " + output + " couldn't open");
                         return -1;
                     }
+                    //commonlib2::Serializer<std::string> test;
                     if (!commonlib2::syntax::SyntaxIO::save(w, syntaxc, 2)) {
                         cout << result.fmt("failed to write syntax to " + output);
                         return -1;
                     }
+                    //commonlib2::Deserializer<std::string&> test2(test.get());
+                    //auto res = commonlib2::syntax::SyntaxIO::load(test2, testc);
                     cout << result.fmt("operation succeeded. result saved to " + output);
                 }
                 return 0;
