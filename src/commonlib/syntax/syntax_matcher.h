@@ -831,6 +831,16 @@ namespace PROJECT_NAME {
                                 break;
                             }
                         }
+                        else if (v->type == SyntaxType::or_) {
+                            auto tmp = std::static_pointer_cast<OrSyntax>(v);
+                            start_or(r, tmp);
+                        }
+                        else if (v->type == SyntaxType::ref) {
+                            e = start_ref(r, v);
+                            if (e <= 0) {
+                                break;
+                            }
+                        }
                     }
                     while (true) {
                         if (auto sus = stack.prev_suspend(); !sus) {
@@ -843,6 +853,11 @@ namespace PROJECT_NAME {
                             }
                         }
                         else if (sus->type == SyntaxType::or_) {
+                            auto v = std::static_pointer_cast<OrSyntax>(sus);
+                            e = result_or(r, v, e);
+                            if (e <= 0) {
+                                continue;
+                            }
                         }
                         break;
                     }
