@@ -229,6 +229,12 @@ namespace PROJECT_NAME {
         struct LoopStack {
             bool changed = false;
             std::vector<LoopInfo> loopstack;
+
+            void clear() {
+                loopstack.clear();
+                changed = false;
+            }
+
             auto& current() {
                 return loopstack.back();
             }
