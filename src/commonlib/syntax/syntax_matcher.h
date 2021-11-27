@@ -239,6 +239,7 @@ namespace PROJECT_NAME {
         };
 
         struct LoopStack {
+            size_t stack_limit = 1000;
             bool changed = false;
             std::vector<LoopInfo> loopstack;
 
@@ -267,9 +268,13 @@ namespace PROJECT_NAME {
                 return current().pos >= current().loop->size();
             }
 
-            void push(TokenReader& r, std::vector<std::shared_ptr<Syntax>>* loop) {
+            bool push(TokenReader& r, std::vector<std::shared_ptr<Syntax>>* loop) {
+                if (stack_limit >= loopstack.size()) {
+                    return false;
+                }
                 loopstack.push_back({loop, 0, std::move(r)});
                 changed = true;
+                return true;
             }
 
             LoopInfo pop() {
@@ -333,6 +338,10 @@ namespace PROJECT_NAME {
                     }
                 }
                 return true;
+            }
+
+            void report_recursion(TokenReader& r, auto& v) {
+                report(&r, nullptr, v, "recursion limit " + std::to_string(stack.stack_limit) + " reached\nplease reduce recursion");
             }
 
             int parse_literal(TokenReader& r, std::shared_ptr<Syntax>& v) {
@@ -709,7 +718,10 @@ namespace PROJECT_NAME {
 
             int start_or(TokenReader& r, std::shared_ptr<OrSyntax>& v) {
                 auto cr = r.FromCurrent();
-                stack.push(r, &v->syntax[0]);
+                if (!stack.push(r, &v->syntax[0])) {
+                    report_recursion(r, v);
+                    return -1;
+                }
                 r = std::move(cr);
                 return 1;
             }
@@ -777,7 +789,10 @@ namespace PROJECT_NAME {
                 }
                 ctx.scope.push_back(found->first);
                 auto cr = r.FromCurrent();
-                stack.push(r, &found->second);
+                if (!stack.push(r, &found->second)) {
+                    report_recursion(r, v);
+                    return -1;
+                }
                 r = std::move(cr);
                 return 1;
             }
