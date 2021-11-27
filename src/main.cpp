@@ -196,13 +196,19 @@ int main(int argc, char** argv) {
                         cout << result.fmt("file " + output + " couldn't open");
                         return -1;
                     }
-                    //commonlib2::Serializer<std::string> test;
-                    if (!commonlib2::syntax::SyntaxIO::save(w, syntaxc, 2)) {
+                    commonlib2::Serializer<std::string> test;
+                    if (!commonlib2::syntax::SyntaxIO::save(test, syntaxc, 2)) {
                         cout << result.fmt("failed to write syntax to " + output);
                         return -1;
                     }
-                    //commonlib2::Deserializer<std::string&> test2(test.get());
-                    //auto res = commonlib2::syntax::SyntaxIO::load(test2, testc);
+                    commonlib2::Deserializer<std::string&> test2(test.get());
+                    auto res = commonlib2::syntax::SyntaxIO::load(test2, testc);
+                    if (res) {
+                        for (auto tok = testc.get_rawparser().GetParsed(); tok; tok = tok->get_next()) {
+                            cout << tok->to_string();
+                        }
+                    }
+                    w.write_byte(test.get());
                     cout << result.fmt("operation succeeded. result saved to " + output);
                 }
                 return 0;
