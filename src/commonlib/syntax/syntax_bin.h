@@ -99,7 +99,7 @@ namespace PROJECT_NAME {
             }
 
            private:
-            bool is_removable(auto& v) {
+            static bool is_removable(auto& v) {
                 if (v->is_(tkpsr::TokenKind::comments)) {
                     if (auto p = v->get_prev()) {
                         if (p->is_(tkpsr::TokenKind::symbols) && p->has_("#")) {
