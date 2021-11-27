@@ -284,7 +284,7 @@ namespace binred {
                 firstcall = false;
                 return true;
             }
-            if (ctx.is_rollbacked(stack)) {
+            if (ctx.is_rollbacked(stack, "EXPRSTMT")) {
                 ctx.set_errmsg("unexpexted rollback. expect expr");
                 return false;
             }
