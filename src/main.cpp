@@ -213,6 +213,7 @@ int main(int argc, char** argv) {
                         for (auto tok = testc.get_rawparser().GetParsed(); tok; tok = tok->get_next()) {
                             cout << tok->to_string();
                         }
+                        cout << "\n";
                     }
                     w.write_byte(test.get());
                     cout << result.fmt("operation succeeded. result saved to " + output);
