@@ -140,8 +140,8 @@ namespace PROJECT_NAME {
                 };
             }
 
-            bool is_rollbacked(const MatchingStackInfo& st) const {
-                return st.rootpos >= get_tokpos();
+            bool is_rollbacked(const MatchingStackInfo& st, const char* scope = nullptr) const {
+                return st.rootpos > get_tokpos() || (scope ? is_current(scope) : false);
             }
 
             bool is_current(const MatchingStackInfo& st) const {

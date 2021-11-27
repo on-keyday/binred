@@ -282,6 +282,7 @@ namespace binred {
             if (firstcall) {
                 stack = ctx.get_stack();
                 firstcall = false;
+                return true;
             }
             if (ctx.is_rollbacked(stack)) {
                 ctx.set_errmsg("unexpexted rollback. expect expr");
