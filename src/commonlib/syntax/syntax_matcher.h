@@ -708,6 +708,9 @@ namespace PROJECT_NAME {
                     info.or_count++;
                     if (info.or_count == v->syntax.size()) {
                         r = std::move(info.r);
+                        if (any(v->flag & SyntaxFlag::fatal)) {
+                            return -1;
+                        }
                         if (info.repeat || any(v->flag & SyntaxFlag::ifexists)) {
                             return 1;
                         }
@@ -767,6 +770,9 @@ namespace PROJECT_NAME {
                 }
                 else if (res == 0) {
                     r = std::move(info.r);
+                    if (any(v->flag & SyntaxFlag::fatal)) {
+                        return -1;
+                    }
                     if (info.repeat || any(v->flag & SyntaxFlag::ifexists)) {
                         return 1;
                     }
