@@ -210,25 +210,58 @@ namespace binred {
             std::shared_ptr<VarInit> init;
             bool cantrollback = false;
             bool operator()(const cl2s::MatchingContext& ctx, bool& chcb) {
-                set_ctx(ctx);
+                if (set_ctx(ctx)) {
+                    init = std::make_shared<VarInit>();
+                }
                 if (is_roolbacked()) {
+                    if (cantrollback) {
+                        return broken();
+                    }
                     return rollback(chcb);
                 }
+                auto add_init = [&]() {
+                    auto p = cb.get_rawfunc<ExprStmt>();
+                    if (!p) {
+                        return broken();
+                    }
+                    init->inits.push_back(std::move(p->expr));
+                    return true;
+                };
                 if (is_current()) {
                     if (ctx.is_type(cl2s::MatchingType::eos)) {
+                        if (!add_init()) {
+                            return false;
+                        }
                         return finish(chcb);
+                    }
+                    else if (ctx.is_type(cl2s::MatchingType::identifier)) {
+                        init->varname.push_back(ctx.get_token());
+                        return true;
                     }
                     else if (ctx.is_token(":=")) {
                         cantrollback = true;
                         return true;
                     }
                     else if (ctx.is_token(",")) {
+                        if (cantrollback) {
+                            if (!add_init()) {
+                                return false;
+                            }
+                        }
                         return true;
                     }
                     else {
                         return broken();
                     }
                 }
+                if (!cantrollback) {
+                    return broken();
+                }
+                if (!cb) {
+                    cb = ExprStmt();
+                }
+                callcb();
+                return result;
             }
         };
 
