@@ -8,6 +8,7 @@
 #pragma once
 
 #include "project_name.h"
+#include <utility>
 
 namespace PROJECT_NAME {
 #define DEFINE_ENUMOP(TYPE)                              \
